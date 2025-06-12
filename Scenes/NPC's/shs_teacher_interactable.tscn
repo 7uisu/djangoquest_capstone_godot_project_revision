@@ -1,0 +1,64 @@
+[gd_scene load_steps=10 format=3 uid="uid://d2durbrxy6yfh"]
+
+[ext_resource type="Texture2D" uid="uid://c0miyv8sxqkk1" path="res://Textures/Player/Sprites/SHS_Teacher.png" id="1_ifpoe"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_24wsv"]
+atlas = ExtResource("1_ifpoe")
+region = Rect2(576, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kl25o"]
+atlas = ExtResource("1_ifpoe")
+region = Rect2(608, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gfagj"]
+atlas = ExtResource("1_ifpoe")
+region = Rect2(640, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sf2eu"]
+atlas = ExtResource("1_ifpoe")
+region = Rect2(672, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_grk42"]
+atlas = ExtResource("1_ifpoe")
+region = Rect2(704, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lioaw"]
+atlas = ExtResource("1_ifpoe")
+region = Rect2(736, 71, 32, 71)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bf2w0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_24wsv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kl25o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gfagj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sf2eu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_grk42")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lioaw")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_13200"]
+
+[node name="SHSTeacherInteractable" type="Area2D"]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_bf2w0")
+frame_progress = 0.30098
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_13200")

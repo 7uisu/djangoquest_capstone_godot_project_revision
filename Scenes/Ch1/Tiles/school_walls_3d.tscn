@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dwlucttljmen7"]
+
+[sub_resource type="TileSet" id="TileSet_1muj8"]
+tile_size = Vector2i(32, 32)
+
+[node name="SchoolWalls3D" type="TileMapLayer"]
+tile_set = SubResource("TileSet_1muj8")

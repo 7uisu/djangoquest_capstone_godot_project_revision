@@ -1,0 +1,98 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqwigqhlgstac"]
+
+[ext_resource type="FontFile" uid="uid://cnsbcnhbqh6em" path="res://textures/Fonts/Linden_Hill/LindenHill-Regular.ttf" id="1_b0a1u"]
+[ext_resource type="Script" uid="uid://c77b1ou2kamaq" path="res://Revision/Scenes/Ch1/Games/Game Scripts/python_history_quiz_game.gd" id="1_jvqy0"]
+
+[node name="PythonHistoryQuizGame" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 480.0
+offset_bottom = 270.0
+script = ExtResource("1_jvqy0")
+
+[node name="DrawingArea" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 270.0
+
+[node name="QuestionLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 73.0
+offset_top = 74.0
+offset_right = 229.0
+offset_bottom = 97.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+text = "Question will appear here"
+
+[node name="OptionA" type="Label" parent="."]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 127.0
+offset_right = 94.0
+offset_bottom = 150.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+text = "Option A"
+vertical_alignment = 1
+
+[node name="OptionB" type="Label" parent="."]
+layout_mode = 0
+offset_left = 261.0
+offset_top = 126.0
+offset_right = 318.0
+offset_bottom = 149.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+text = "Option B"
+vertical_alignment = 1
+
+[node name="OptionC" type="Label" parent="."]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 197.0
+offset_right = 94.0
+offset_bottom = 220.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+text = "Option C"
+vertical_alignment = 1
+
+[node name="OptionD" type="Label" parent="."]
+layout_mode = 0
+offset_left = 259.0
+offset_top = 196.0
+offset_right = 319.0
+offset_bottom = 219.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+text = "Option D"
+vertical_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 408.0
+offset_top = 2.0
+offset_right = 471.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+text = "Score: 0/5"
+
+[node name="NextButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 419.0
+offset_top = 233.0
+offset_right = 464.0
+offset_bottom = 264.0
+disabled = true
+text = "Next"
+
+[node name="RestartButton" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 6.0
+offset_top = 233.0
+offset_right = 71.0
+offset_bottom = 264.0
+text = "Restart"

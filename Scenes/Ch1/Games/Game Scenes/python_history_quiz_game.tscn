@@ -1,0 +1,114 @@
+[gd_scene load_steps=4 format=3 uid="uid://bqwigqhlgstac"]
+
+[ext_resource type="FontFile" uid="uid://cnsbcnhbqh6em" path="res://Textures/Fonts/Linden_Hill/LindenHill-Regular.ttf" id="1_b0a1u"]
+[ext_resource type="Script" uid="uid://c77b1ou2kamaq" path="res://Scenes/Ch1/Games/Game Scripts/python_history_quiz_game.gd" id="1_jvqy0"]
+[ext_resource type="Texture2D" uid="uid://bmilup1pvwkxw" path="res://Textures/Paper Texture/Paper Texture1.jpg" id="2_l25o4"]
+
+[node name="PythonHistoryQuizGame" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1024.0
+offset_bottom = 576.0
+script = ExtResource("1_jvqy0")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 1024.0
+offset_bottom = 1239.0
+texture = ExtResource("2_l25o4")
+expand_mode = 1
+
+[node name="DrawingArea" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1024.0
+offset_bottom = 576.0
+color = Color(1, 1, 1, 0)
+
+[node name="QuestionLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 38.0
+offset_top = 66.0
+offset_right = 525.0
+offset_bottom = 135.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 50
+text = "Question will appear here"
+
+[node name="OptionA" type="Label" parent="."]
+layout_mode = 0
+offset_left = 31.0
+offset_top = 256.0
+offset_right = 222.0
+offset_bottom = 327.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 38
+text = "Option A"
+vertical_alignment = 1
+
+[node name="OptionB" type="Label" parent="."]
+layout_mode = 0
+offset_left = 498.0
+offset_top = 252.0
+offset_right = 681.0
+offset_bottom = 323.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 38
+text = "Option B"
+vertical_alignment = 1
+
+[node name="OptionC" type="Label" parent="."]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 415.0
+offset_right = 216.0
+offset_bottom = 486.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 38
+text = "Option C"
+vertical_alignment = 1
+
+[node name="OptionD" type="Label" parent="."]
+layout_mode = 0
+offset_left = 498.0
+offset_top = 409.0
+offset_right = 690.0
+offset_bottom = 480.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 38
+text = "Option D"
+vertical_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 556.0
+offset_top = 66.0
+offset_right = 754.0
+offset_bottom = 136.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 51
+text = "Score: 0/5"
+
+[node name="NextButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 859.0
+offset_top = 478.0
+offset_right = 1001.0
+offset_bottom = 565.0
+theme_override_font_sizes/font_size = 58
+disabled = true
+text = "Next"
+
+[node name="RestartButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 11.0
+offset_top = 481.0
+offset_right = 187.0
+offset_bottom = 556.0
+theme_override_font_sizes/font_size = 48
+text = "Restart"
