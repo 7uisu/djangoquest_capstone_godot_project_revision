@@ -1,4 +1,4 @@
-[gd_resource type="SpriteFrames" load_steps=99 format=3 uid="uid://drsil5pv62mvl"]
+[gd_resource type="SpriteFrames" format=3 uid="uid://drsil5pv62mvl"]
 
 [ext_resource type="Texture2D" uid="uid://c06opkb8h1osh" path="res://Textures/Player/Sprites/Solmi.png" id="1_aaq5e"]
 [ext_resource type="Texture2D" uid="uid://bxeynvt5ybjfk" path="res://Textures/Player/Sprites/Mateo.png" id="2_unhhb"]
