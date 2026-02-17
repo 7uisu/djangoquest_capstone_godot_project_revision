@@ -9,7 +9,7 @@ var questions = [
 	},
 	{
 		"question": "What inspired the name \"Python\"?",
-		"options": ["A) The snake", "B) A Dutch comic book", "C) Monty Python's Flying Circus", "D) A Greek god"],
+		"options": ["A) The snake", "B) A Dutch comic book", "C) Monty Python's\n    Flying Circus", "D) A Greek god"],
 		"correct": 2  # C) Monty Python's Flying Circus
 	},
 	{
@@ -36,6 +36,7 @@ var selected_answer = -1
 var is_drawing = false
 var drawing_points = []
 var quiz_completed = false
+var answer_locked = false  # NEW: prevent re-drawing after selection
 
 # UI nodes
 @onready var question_label = $QuestionLabel
@@ -44,9 +45,14 @@ var quiz_completed = false
 @onready var next_button = $NextButton
 @onready var score_label = $ScoreLabel
 @onready var restart_button = $RestartButton
+@onready var progress_label = $ProgressLabel        # NEW
+@onready var feedback_label = $FeedbackLabel        # NEW
+@onready var correct_sfx = $CorrectSFX              # NEW
+@onready var wrong_sfx = $WrongSFX                  # NEW
 
 func _ready():
 	setup_ui()
+	shuffle_questions()  # NEW: randomize order
 	load_question()
 	next_button.pressed.connect(_on_next_button_pressed)
 	restart_button.pressed.connect(_on_restart_button_pressed)
@@ -60,8 +66,23 @@ func setup_ui():
 	next_button.disabled = true
 	restart_button.visible = false
 	
-	# Hide score during quiz
-	score_label.visible = false
+	# Show live score during quiz (was hidden before)
+	score_label.visible = true
+	score_label.text = "Score: 0/5"
+	
+	# NEW: progress & feedback labels
+	progress_label.visible = true
+	feedback_label.visible = false
+
+# NEW: Shuffle questions for variety on each play
+func shuffle_questions():
+	var rng = RandomNumberGenerator.new()
+	rng.randomize()
+	for i in range(questions.size() - 1, 0, -1):
+		var j = rng.randi_range(0, i)
+		var tmp = questions[i]
+		questions[i] = questions[j]
+		questions[j] = tmp
 
 func load_question():
 	if current_question >= questions.size():
@@ -76,9 +97,22 @@ func load_question():
 	
 	# Reset drawing state
 	selected_answer = -1
+	answer_locked = false  # NEW: unlock drawing
 	drawing_points.clear()
 	drawing_area.queue_redraw()
 	next_button.disabled = true
+	feedback_label.visible = false  # NEW: hide previous feedback
+	
+	# NEW: update progress label
+	progress_label.text = "Question " + str(current_question + 1) + " of " + str(questions.size())
+	
+	# NEW: update live score
+	score_label.text = "Score: " + str(score) + "/" + str(questions.size())
+	
+	# NEW: animated fade-in for question text
+	question_label.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(question_label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 func _on_drawing_area_gui_input(event):
 	if quiz_completed:
@@ -118,12 +152,13 @@ func check_circle_selection():
 		for i in range(4):
 			if is_letter_encircled(i, center, radius):
 				selected_answer = i
+				answer_locked = true  # NEW: lock drawing after selection
 				print("Detected circle around option ", i, ": ", questions[current_question].options[i])
 				highlight_selection(i)
 				next_button.disabled = false
 				break
 
-# NEW: Check if the circle specifically encircles the letter portion
+# Check if the circle specifically encircles the letter portion
 func is_letter_encircled(option_index, circle_center, circle_radius):
 	# Get the letter position (left side of the option label)
 	var option_label = option_labels[option_index]
@@ -131,19 +166,17 @@ func is_letter_encircled(option_index, circle_center, circle_radius):
 	var drawing_area_global = drawing_area.global_position
 	
 	# Calculate letter position relative to drawing area
-	# Assuming the letter is at the left edge + some padding
 	var letter_pos = option_global_pos - drawing_area_global
-	letter_pos.x += 10  # Adjust this value based on your label padding
+	letter_pos.x += 10  # Adjust based on label padding
 	letter_pos.y += option_label.size.y / 2  # Center vertically
 	
 	# Check if circle center is close to letter position
 	var distance_to_letter = circle_center.distance_to(letter_pos)
 	
-	# The circle should be centered around the letter area
-	# Allow some tolerance but keep it focused on the left side
-	var max_distance = 25  # Adjust this based on your UI layout
+	# UPGRADED: more forgiving detection zone
+	var max_distance = 60  # Was 25 — wider tolerance
 	
-	return distance_to_letter < max_distance and circle_radius > 15 and circle_radius < 50
+	return distance_to_letter < max_distance and circle_radius > 15 and circle_radius < 80  # Was < 50
 
 func get_drawing_center():
 	var sum = Vector2.ZERO
@@ -158,7 +191,7 @@ func get_average_radius(center):
 	return total_distance / drawing_points.size()
 
 func is_roughly_circular(center, expected_radius):
-	var variance_threshold = expected_radius * 0.4  # Allow 40% variance for more flexibility
+	var variance_threshold = expected_radius * 0.4  # Allow 40% variance
 	var good_points = 0
 	
 	for point in drawing_points:
@@ -189,10 +222,30 @@ func _on_next_button_pressed():
 		score += 1
 		option_labels[selected_answer].modulate = Color.GREEN
 		print("Correct! Score: ", score)
+		# NEW: feedback text + SFX
+		feedback_label.text = "✓ Correct!"
+		feedback_label.add_theme_color_override("font_color", Color(0.1, 0.7, 0.1))
+		if correct_sfx.stream:
+			correct_sfx.play()
 	else:
 		option_labels[selected_answer].modulate = Color.RED
 		option_labels[correct_answer].modulate = Color.GREEN
 		print("Wrong! Score remains: ", score)
+		# NEW: feedback text + SFX
+		var correct_letter = questions[current_question].options[correct_answer]
+		feedback_label.text = "✗ Wrong — answer was " + correct_letter
+		feedback_label.add_theme_color_override("font_color", Color(0.8, 0.15, 0.15))
+		if wrong_sfx.stream:
+			wrong_sfx.play()
+	
+	# NEW: show feedback label with fade-in
+	feedback_label.visible = true
+	feedback_label.modulate.a = 0.0
+	var fb_tween = create_tween()
+	fb_tween.tween_property(feedback_label, "modulate:a", 1.0, 0.3)
+	
+	# NEW: update live score immediately
+	score_label.text = "Score: " + str(score) + "/" + str(questions.size())
 	
 	# Wait a moment to show the result, then move to next question
 	await get_tree().create_timer(1.5).timeout
@@ -216,6 +269,10 @@ func show_final_score():
 	# Show score label at the end
 	score_label.visible = true
 	score_label.text = "Final Score: " + str(score) + "/5"
+	
+	# Hide progress label at end
+	progress_label.visible = false
+	feedback_label.visible = false
 	
 	var percentage = (score * 100) / 5
 	var grade = ""
@@ -243,6 +300,7 @@ func _on_restart_button_pressed():
 	score = 0
 	selected_answer = -1
 	quiz_completed = false
+	answer_locked = false
 	drawing_points.clear()
 	
 	# Reset UI
@@ -254,8 +312,12 @@ func _on_restart_button_pressed():
 	next_button.disabled = true
 	restart_button.visible = false
 	
-	# Hide score during quiz
-	score_label.visible = false
+	# Reset labels
+	score_label.visible = true
+	score_label.text = "Score: 0/5"
+	progress_label.visible = true
+	feedback_label.visible = false
 	
 	drawing_area.queue_redraw()
+	shuffle_questions()  # NEW: re-shuffle on restart
 	load_question()

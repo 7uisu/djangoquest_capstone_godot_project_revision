@@ -1,41 +1,42 @@
-[gd_scene load_steps=4 format=3 uid="uid://bqwigqhlgstac"]
+[gd_scene format=3 uid="uid://bqwigqhlgstac"]
 
 [ext_resource type="FontFile" uid="uid://cnsbcnhbqh6em" path="res://Textures/Fonts/Linden_Hill/LindenHill-Regular.ttf" id="1_b0a1u"]
 [ext_resource type="Script" uid="uid://c77b1ou2kamaq" path="res://Scenes/Ch1/Games/Game Scripts/python_history_quiz_game.gd" id="1_jvqy0"]
 [ext_resource type="Texture2D" uid="uid://bmilup1pvwkxw" path="res://Textures/Paper Texture/Paper Texture1.jpg" id="2_l25o4"]
 
-[node name="PythonHistoryQuizGame" type="Control"]
+[node name="PythonHistoryQuizGame" type="Control" unique_id=1573328105]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1024.0
 offset_bottom = 576.0
 script = ExtResource("1_jvqy0")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=2061452932]
 layout_mode = 0
 offset_right = 1024.0
 offset_bottom = 1239.0
 texture = ExtResource("2_l25o4")
 expand_mode = 1
 
-[node name="DrawingArea" type="ColorRect" parent="."]
+[node name="DrawingArea" type="ColorRect" parent="." unique_id=684976654]
 layout_mode = 0
 offset_right = 1024.0
 offset_bottom = 576.0
 color = Color(1, 1, 1, 0)
 
-[node name="QuestionLabel" type="Label" parent="."]
+[node name="QuestionLabel" type="Label" parent="." unique_id=1167319063]
 layout_mode = 0
 offset_left = 38.0
-offset_top = 66.0
-offset_right = 525.0
-offset_bottom = 135.0
+offset_top = 30.0
+offset_right = 540.0
+offset_bottom = 140.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("1_b0a1u")
-theme_override_font_sizes/font_size = 50
+theme_override_font_sizes/font_size = 36
 text = "Question will appear here"
+autowrap_mode = 2
 
-[node name="OptionA" type="Label" parent="."]
+[node name="OptionA" type="Label" parent="." unique_id=1369878033]
 layout_mode = 0
 offset_left = 31.0
 offset_top = 256.0
@@ -47,7 +48,7 @@ theme_override_font_sizes/font_size = 38
 text = "Option A"
 vertical_alignment = 1
 
-[node name="OptionB" type="Label" parent="."]
+[node name="OptionB" type="Label" parent="." unique_id=862881533]
 layout_mode = 0
 offset_left = 498.0
 offset_top = 252.0
@@ -59,19 +60,19 @@ theme_override_font_sizes/font_size = 38
 text = "Option B"
 vertical_alignment = 1
 
-[node name="OptionC" type="Label" parent="."]
+[node name="OptionC" type="Label" parent="." unique_id=2014359199]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 415.0
+offset_top = 408.0
 offset_right = 216.0
-offset_bottom = 486.0
+offset_bottom = 479.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("1_b0a1u")
 theme_override_font_sizes/font_size = 38
 text = "Option C"
 vertical_alignment = 1
 
-[node name="OptionD" type="Label" parent="."]
+[node name="OptionD" type="Label" parent="." unique_id=491005444]
 layout_mode = 0
 offset_left = 498.0
 offset_top = 409.0
@@ -83,18 +84,18 @@ theme_override_font_sizes/font_size = 38
 text = "Option D"
 vertical_alignment = 1
 
-[node name="ScoreLabel" type="Label" parent="."]
+[node name="ScoreLabel" type="Label" parent="." unique_id=1074588820]
 layout_mode = 0
-offset_left = 556.0
-offset_top = 66.0
-offset_right = 754.0
-offset_bottom = 136.0
+offset_left = 803.0
+offset_top = 23.0
+offset_right = 1001.0
+offset_bottom = 93.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_fonts/font = ExtResource("1_b0a1u")
 theme_override_font_sizes/font_size = 51
 text = "Score: 0/5"
 
-[node name="NextButton" type="Button" parent="."]
+[node name="NextButton" type="Button" parent="." unique_id=1686908562]
 layout_mode = 0
 offset_left = 859.0
 offset_top = 478.0
@@ -104,7 +105,7 @@ theme_override_font_sizes/font_size = 58
 disabled = true
 text = "Next"
 
-[node name="RestartButton" type="Button" parent="."]
+[node name="RestartButton" type="Button" parent="." unique_id=376782444]
 layout_mode = 0
 offset_left = 11.0
 offset_top = 481.0
@@ -112,3 +113,29 @@ offset_right = 187.0
 offset_bottom = 556.0
 theme_override_font_sizes/font_size = 48
 text = "Restart"
+
+[node name="ProgressLabel" type="Label" parent="." unique_id=1736286006]
+layout_mode = 0
+offset_left = 38.0
+offset_top = 140.0
+offset_right = 350.0
+offset_bottom = 180.0
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 28
+text = "Question 1 of 5"
+
+[node name="FeedbackLabel" type="Label" parent="." unique_id=1833818140]
+visible = false
+layout_mode = 0
+offset_left = 38.0
+offset_top = 190.0
+offset_right = 700.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(0.1, 0.7, 0.1, 1)
+theme_override_fonts/font = ExtResource("1_b0a1u")
+theme_override_font_sizes/font_size = 32
+
+[node name="CorrectSFX" type="AudioStreamPlayer" parent="." unique_id=350885602]
+
+[node name="WrongSFX" type="AudioStreamPlayer" parent="." unique_id=1468299763]
