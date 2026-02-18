@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://b8y5bh6o8qf1n"]
+
+[ext_resource type="Script" uid="uid://cbt643icj8ogk" path="res://Scripts/Interactables/dialogue_interactable.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_font"]
+[ext_resource type="Texture2D" uid="uid://c0miyv8sxqkk1" path="res://Textures/Player/Sprites/SHS_Teacher.png" id="2_lpi83"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
+size = Vector2(48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_24wsv"]
+atlas = ExtResource("2_lpi83")
+region = Rect2(576, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kl25o"]
+atlas = ExtResource("2_lpi83")
+region = Rect2(608, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gfagj"]
+atlas = ExtResource("2_lpi83")
+region = Rect2(640, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sf2eu"]
+atlas = ExtResource("2_lpi83")
+region = Rect2(672, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_grk42"]
+atlas = ExtResource("2_lpi83")
+region = Rect2(704, 71, 32, 71)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lioaw"]
+atlas = ExtResource("2_lpi83")
+region = Rect2(736, 71, 32, 71)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_8cqje"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_24wsv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kl25o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gfagj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sf2eu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_grk42")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lioaw")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="DialogueInteractable" type="Area2D" unique_id=2081945892]
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=476634909]
+shape = SubResource("RectangleShape2D_area")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=265595737]
+sprite_frames = SubResource("SpriteFrames_8cqje")
+
+[node name="Label" type="Label" parent="." unique_id=1042429684]
+z_index = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30.0
+offset_top = -40.0
+offset_right = 30.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+text = "(F) to Talk"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]
