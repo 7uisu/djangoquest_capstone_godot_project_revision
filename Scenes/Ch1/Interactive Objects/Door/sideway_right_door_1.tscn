@@ -1,6 +1,6 @@
-[gd_scene load_steps=19 format=3 uid="uid://c7oy7ceah68qu"]
+[gd_scene format=3 uid="uid://c7oy7ceah68qu"]
 
-[ext_resource type="Script" uid="uid://drbv70af0j88x" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/sideway_right_door_1.gd" id="1_7tys3"]
+[ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_8ex5a"]
 [ext_resource type="Texture2D" uid="uid://mbkvva1q6i1r" path="res://Textures/3_Animated_objects/32x32/spritesheets/animated_door_vertical_right_1_32x32.png" id="2_8ex5a"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="3_1gsc3"]
 
@@ -117,18 +117,18 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_60mjt"]
 size = Vector2(8, 82.5)
 
-[node name="SidewayRightDoor1" type="Area2D"]
-script = ExtResource("1_7tys3")
+[node name="SidewayRightDoor1" type="Area2D" unique_id=772612451]
+script = ExtResource("1_8ex5a")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1639156990]
 position = Vector2(-9.5, 31.5)
 shape = SubResource("RectangleShape2D_8ex5a")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=662607035]
 sprite_frames = SubResource("SpriteFrames_yi52s")
 animation = &"close_idle"
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=1836039342]
 visible = false
 z_index = 5
 anchors_preset = 8
@@ -149,11 +149,11 @@ text = "Text"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1759100669]
 collision_layer = 16
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=640773352]
 position = Vector2(-10, 7.25)
 shape = SubResource("RectangleShape2D_60mjt")
 

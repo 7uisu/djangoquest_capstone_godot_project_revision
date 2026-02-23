@@ -1,6 +1,6 @@
 [gd_scene load_steps=19 format=3 uid="uid://dtlui10prrlxp"]
 
-[ext_resource type="Script" uid="uid://d04al8etw4ejq" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/front_door_1.gd" id="1_lqk10"]
+[ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_lqk10"]
 [ext_resource type="Texture2D" uid="uid://ds0csnsahq2d0" path="res://Textures/3_Animated_objects/32x32/spritesheets/animated_door_big_4_32x32.png" id="1_sxbg4"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="3_mtj3g"]
 
