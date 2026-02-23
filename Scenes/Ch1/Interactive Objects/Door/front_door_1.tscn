@@ -1,10 +1,8 @@
-[gd_scene format=3 uid="uid://dtlui10prrlxp"]
+[gd_scene load_steps=19 format=3 uid="uid://dtlui10prrlxp"]
 
-[ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_rjpje"]
+[ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_lqk10"]
 [ext_resource type="Texture2D" uid="uid://ds0csnsahq2d0" path="res://Textures/3_Animated_objects/32x32/spritesheets/animated_door_big_4_32x32.png" id="1_sxbg4"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="3_mtj3g"]
-[ext_resource type="AudioStream" uid="uid://b3uhia1mil5i8" path="res://Sounds/dragon-studio-door-opening-454242.mp3" id="4_rjpje"]
-[ext_resource type="AudioStream" uid="uid://dlp13v36d8mjq" path="res://Sounds/dragon-studio-close-door-382723.mp3" id="5_6m221"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ewqf3"]
 size = Vector2(32, 66)
@@ -119,20 +117,20 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bxbcn"]
 size = Vector2(32, 24)
 
-[node name="FrontDoor1" type="Area2D" unique_id=521220222]
+[node name="FrontDoor1" type="Area2D"]
 y_sort_enabled = true
-script = ExtResource("1_rjpje")
+script = ExtResource("1_lqk10")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1669904064]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 4)
 shape = SubResource("RectangleShape2D_ewqf3")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1161483955]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(0, -22)
 sprite_frames = SubResource("SpriteFrames_g74vv")
 animation = &"close_idle"
 
-[node name="Label" type="Label" parent="." unique_id=410999821]
+[node name="Label" type="Label" parent="."]
 z_index = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -152,20 +150,14 @@ text = "Text"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=428847220]
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
 collision_layer = 16
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1544013052]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 y_sort_enabled = true
 position = Vector2(0, 12)
 shape = SubResource("RectangleShape2D_bxbcn")
-
-[node name="Open_sfx" type="AudioStreamPlayer2D" parent="." unique_id=1289615452]
-stream = ExtResource("4_rjpje")
-
-[node name="Close_sfx" type="AudioStreamPlayer2D" parent="." unique_id=292567785]
-stream = ExtResource("5_6m221")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="body_exited" from="." to="." method="_on_body_exited"]

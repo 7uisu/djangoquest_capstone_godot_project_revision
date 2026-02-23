@@ -4,9 +4,6 @@
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_font"]
 [ext_resource type="Texture2D" uid="uid://c0miyv8sxqkk1" path="res://Textures/Player/Sprites/SHS_Teacher.png" id="2_lpi83"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
-size = Vector2(48, 48)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_24wsv"]
 atlas = ExtResource("2_lpi83")
 region = Rect2(576, 71, 32, 71)
@@ -57,11 +54,11 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_lpi83"]
+
 [node name="DialogueInteractable" type="Area2D" unique_id=2081945892]
 script = ExtResource("1_script")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=476634909]
-shape = SubResource("RectangleShape2D_area")
+dialogue_line_2 = "How are you doing in this fine day?"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=265595737]
 sprite_frames = SubResource("SpriteFrames_8cqje")
@@ -84,6 +81,9 @@ theme_override_fonts/font = ExtResource("2_font")
 text = "(F) to Talk"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1865194984]
+shape = SubResource("CircleShape2D_lpi83")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="body_exited" from="." to="." method="_on_body_exited"]
