@@ -46,15 +46,19 @@ position = Vector2(528, 1064)
 
 [node name="SidewayRightDoor1" parent="." unique_id=1302816724 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 16)
+script = null
 
 [node name="SidewayRightDoor2" parent="." unique_id=1806009318 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 336)
+script = null
 
 [node name="SidewayRightDoor3" parent="." unique_id=1016245613 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 560)
+script = null
 
 [node name="SidewayRightDoor4" parent="." unique_id=1971528363 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 880)
+script = null
 
 [node name="SHSTeacherInteractable" parent="." unique_id=182597534 instance=ExtResource("10_2htki")]
 position = Vector2(207, 414)
