@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://d2durbrxy6yfh" path="res://Scenes/NPC's/shs_teacher_interactable.tscn" id="10_2htki"]
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="10_60tn0"]
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="11_2htki"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/dialogue_box.tscn" id="13_utip4"]
+[ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="13_utip4"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 
@@ -46,19 +46,15 @@ position = Vector2(528, 1064)
 
 [node name="SidewayRightDoor1" parent="." unique_id=1302816724 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 16)
-script = null
 
 [node name="SidewayRightDoor2" parent="." unique_id=1806009318 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 336)
-script = null
 
 [node name="SidewayRightDoor3" parent="." unique_id=1016245613 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 560)
-script = null
 
 [node name="SidewayRightDoor4" parent="." unique_id=1971528363 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 880)
-script = null
 
 [node name="SHSTeacherInteractable" parent="." unique_id=182597534 instance=ExtResource("10_2htki")]
 position = Vector2(207, 414)
