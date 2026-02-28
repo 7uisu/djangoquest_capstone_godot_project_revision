@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://b32023ohc1foq" path="res://Textures/School Textures/ME_Singles_School_32x32_School_1.png" id="2_hhyer"]
 [ext_resource type="PackedScene" uid="uid://dp2nfuwgoyl6f" path="res://Scenes/Player/player.tscn" id="3_pkncv"]
 [ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="4_ptnoj"]
+[ext_resource type="Script" uid="uid://c08g5g7gvdo8j" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/map_door.gd" id="5_mapdoor"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ptnoj"]
 texture = ExtResource("1_e7hby")
@@ -14989,9 +14990,15 @@ tile_set = SubResource("TileSet_1erip")
 
 [node name="SchoolFrontDoor1" parent="." unique_id=977725345 instance=ExtResource("4_ptnoj")]
 position = Vector2(320, 870)
+script = ExtResource("5_mapdoor")
+target_scene = "res://Scenes/Ch1/school_map.tscn"
+spawn_position = Vector2(410, -16)
 
 [node name="SchoolFrontDoor2" parent="." unique_id=2023569469 instance=ExtResource("4_ptnoj")]
 position = Vector2(512, 870)
+script = ExtResource("5_mapdoor")
+target_scene = "res://Scenes/Ch1/school_map.tscn"
+spawn_position = Vector2(520, -16)
 
 [node name="Player" parent="." unique_id=833241429 instance=ExtResource("3_pkncv")]
 position = Vector2(194, 1090)

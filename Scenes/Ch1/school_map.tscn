@@ -13,6 +13,8 @@
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="10_60tn0"]
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="11_2htki"]
 [ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="13_utip4"]
+[ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="14_bokrp"]
+[ext_resource type="Script" uid="uid://c08g5g7gvdo8j" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/map_door.gd" id="14_mapdoor"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 
@@ -61,6 +63,18 @@ position = Vector2(207, 414)
 
 [node name="DialogueInteractable" parent="." unique_id=1546610243 instance=ExtResource("11_2htki")]
 position = Vector2(526, 228)
+
+[node name="ExitDoor1" parent="." unique_id=977725345 instance=ExtResource("14_bokrp")]
+position = Vector2(410, -36)
+script = ExtResource("14_mapdoor")
+target_scene = "res://Scenes/Ch1/outdoor_map.tscn"
+spawn_position = Vector2(320, 895)
+
+[node name="ExitDoor2" parent="." unique_id=1840702569 instance=ExtResource("14_bokrp")]
+position = Vector2(520, -36)
+script = ExtResource("14_mapdoor")
+target_scene = "res://Scenes/Ch1/outdoor_map.tscn"
+spawn_position = Vector2(512, 895)
 
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 position = Vector2(443, 151)

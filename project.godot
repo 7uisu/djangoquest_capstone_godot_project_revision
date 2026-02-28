@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="djangoquest_capstone_godot_project_revision"
-run/main_scene="uid://hgo4sas2g712"
+run/main_scene="res://Scenes/Ch1/outdoor_map.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -23,6 +23,7 @@ config/icon="res://icon.svg"
 
 CharacterData="*res://Scripts/Autoload or Global/character_data.gd"
 SaveManager="*res://Scripts/Autoload or Global/save_manager.gd"
+SceneTransition="*res://Scripts/Autoload or Global/scene_transition.tscn"
 
 [display]
 
