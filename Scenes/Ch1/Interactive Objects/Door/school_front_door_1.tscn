@@ -5,7 +5,7 @@
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="3_w4eva"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qiwub"]
-size = Vector2(94, 40)
+size = Vector2(94, 33)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_r076d"]
 atlas = ExtResource("2_w3gb2")
@@ -149,7 +149,7 @@ size = Vector2(94, 63)
 script = ExtResource("1_3towo")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1093803789]
-position = Vector2(0, 35)
+position = Vector2(0, 31.5)
 shape = SubResource("RectangleShape2D_qiwub")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2145882985]

@@ -5,6 +5,7 @@
 [ext_resource type="SpriteFrames" uid="uid://drsil5pv62mvl" path="res://Animations/Player/player_animation.tres" id="2_gqjuk"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_wt17y"]
+radius = 15.0
 
 [sub_resource type="Animation" id="Animation_is3ju"]
 resource_name = "Female_idle_down"
@@ -293,7 +294,7 @@ wall_min_slide_angle = 0.174533
 script = ExtResource("1_1kbk7")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1582260408]
-position = Vector2(0, 8)
+position = Vector2(0, 3)
 shape = SubResource("CircleShape2D_wt17y")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=875735497]
