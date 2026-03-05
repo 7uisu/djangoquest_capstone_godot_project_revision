@@ -147,6 +147,7 @@ size = Vector2(94, 63)
 
 [node name="SchoolFrontDoor1" type="Area2D" unique_id=977725345]
 script = ExtResource("1_3towo")
+interaction_text = "(F) Inside School"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1093803789]
 position = Vector2(0, 31.5)
