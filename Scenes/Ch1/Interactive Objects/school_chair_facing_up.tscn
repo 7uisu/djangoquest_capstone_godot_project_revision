@@ -1,0 +1,204 @@
+[gd_scene format=3 uid="uid://bgwjauga0lr0w"]
+
+[ext_resource type="Texture2D" uid="uid://ci5m4xowh3bm6" path="res://Textures/Outdoor Textures/School/School_Door_32x32.png" id="1_scfpj"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_yawpc"]
+[ext_resource type="Texture2D" uid="uid://cpm5j2xlhj07k" path="res://Textures/School Textures/Chairs/Classroom_and_Library_Singles_32x32_2.png" id="3_0pjg5"]
+[ext_resource type="Script" uid="uid://2w6a0qrlsnr1" path="res://Scripts/Interactables/seating.gd" id="4_bench"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8r5kq"]
+size = Vector2(37, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r076d"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(896, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vh3ga"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(1024, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l15ew"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(1152, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_845aj"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(1280, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nvshs"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(1408, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jhld"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(1536, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i005d"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(1664, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hthff"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(0, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_50uwr"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(0, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1ou1s"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(128, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_txmsg"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(256, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_adlts"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(384, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_it1ig"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(640, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_twa8n"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(768, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dflcf"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(896, 0, 128, 76)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a5q30"]
+atlas = ExtResource("1_scfpj")
+region = Rect2(896, 0, 128, 76)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_v743h"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r076d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vh3ga")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l15ew")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_845aj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nvshs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jhld")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i005d")
+}],
+"loop": true,
+"name": &"close_animation",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hthff")
+}],
+"loop": true,
+"name": &"close_idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_50uwr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1ou1s")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_txmsg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_adlts")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_it1ig")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_twa8n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dflcf")
+}],
+"loop": true,
+"name": &"open_animation",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a5q30")
+}],
+"loop": true,
+"name": &"open_idle",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mtx7s"]
+size = Vector2(28, 30)
+
+[node name="SchoolChairFacingUp" type="Area2D" unique_id=1970534602]
+y_sort_enabled = true
+script = ExtResource("4_bench")
+sit_direction = "up"
+seat_offset = Vector2(0, -8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=194489875]
+y_sort_enabled = true
+position = Vector2(-0.5, -6)
+shape = SubResource("RectangleShape2D_8r5kq")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1421691573]
+visible = false
+y_sort_enabled = true
+sprite_frames = SubResource("SpriteFrames_v743h")
+animation = &"close_animation"
+
+[node name="Label" type="Label" parent="." unique_id=1874036295]
+z_index = 5
+y_sort_enabled = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -21.0
+offset_right = 15.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(47.5, 10.5)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_yawpc")
+text = "Text"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=772650458]
+y_sort_enabled = true
+position = Vector2(0, 17)
+texture = ExtResource("3_0pjg5")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=2063529414]
+y_sort_enabled = true
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1215462984]
+y_sort_enabled = true
+position = Vector2(0, -7)
+shape = SubResource("RectangleShape2D_mtx7s")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

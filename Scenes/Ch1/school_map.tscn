@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="13_utip4"]
 [ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="14_bokrp"]
 [ext_resource type="Script" uid="uid://c08g5g7gvdo8j" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/map_door.gd" id="14_mapdoor"]
+[ext_resource type="PackedScene" uid="uid://bgwjauga0lr0w" path="res://Scenes/Ch1/Interactive Objects/school_chair_facing_up.tscn" id="16_bokrp"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 y_sort_enabled = true
@@ -93,8 +94,14 @@ target_scene = "res://Scenes/Ch1/outdoor_map.tscn"
 spawn_position = Vector2(512, 895)
 entry_direction = "up"
 
+[node name="SchoolChairFacingUp" parent="YSortLayer" unique_id=1970534602 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(-49, 127)
+seat_offset = Vector2(0, -10)
+
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
-position = Vector2(243, 1157)
+y_sort_enabled = false
+position = Vector2(-4, 124)
 
 [node name="DialogueBox" parent="." unique_id=735967189 instance=ExtResource("13_utip4")]
 visible = false

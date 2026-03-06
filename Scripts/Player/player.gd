@@ -18,6 +18,7 @@ var current_interactive_object = null
 var current_dir: String = "down"
 var can_interact: bool = false
 var can_move: bool = true
+var is_sitting: bool = false
 
 func _ready():
 	add_to_group("player")
@@ -33,6 +34,11 @@ func _ready():
 	update_player_name_label()
 
 func _physics_process(delta):
+	# When sitting, freeze completely — no movement, no animation changes
+	if is_sitting:
+		velocity = Vector2.ZERO
+		return
+
 	if not can_move:
 		velocity = velocity.lerp(Vector2.ZERO, DECELERATION * delta)
 		move_and_slide()
@@ -109,6 +115,13 @@ func play_walk_animation(direction: String) -> void:
 		animated_sprite.play("male_walking_" + anim_dir)
 	else:
 		animated_sprite.play("female_walking_" + anim_dir)
+
+func play_sitting_animation(direction: String) -> void:
+	var anim_dir = direction if direction in ["right", "left", "up", "down"] else "down"
+	if character_data.selected_gender == "male":
+		animated_sprite.play("male_sitting_" + anim_dir)
+	else:
+		animated_sprite.play("female_sitting_" + anim_dir)
 
 func _input(event):
 	if event.is_action_pressed("interact") and can_interact:
