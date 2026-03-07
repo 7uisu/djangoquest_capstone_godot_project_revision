@@ -97,7 +97,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"close_animation",
-"speed": 5.0
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -105,7 +105,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"close_idle",
-"speed": 5.0
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -131,7 +131,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"open_animation",
-"speed": 5.0
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -139,7 +139,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"open_idle",
-"speed": 5.0
+"speed": 15.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_us2ym"]

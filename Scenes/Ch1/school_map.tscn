@@ -16,6 +16,8 @@
 [ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="14_bokrp"]
 [ext_resource type="Script" uid="uid://c08g5g7gvdo8j" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/map_door.gd" id="14_mapdoor"]
 [ext_resource type="PackedScene" uid="uid://bgwjauga0lr0w" path="res://Scenes/Ch1/Interactive Objects/school_chair_facing_up.tscn" id="16_bokrp"]
+[ext_resource type="PackedScene" uid="uid://h4xkyv8oainb" path="res://Scenes/Interactables/item_interactable.tscn" id="17_8rrk8"]
+[ext_resource type="Texture2D" uid="uid://i1u10ydkuv0g" path="res://Textures/School Textures/Items/Interactable/ME_Singles_School_32x32_Basketball_Ball_1.png" id="18_3l2mi"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 y_sort_enabled = true
@@ -35,7 +37,7 @@ tile_map_data = PackedByteArray("AAAAAP7/AAABABIAAAAAAP//AAABABMAAAABAP7/AAABABI
 
 [node name="SchoolClassroomObjects" parent="." unique_id=2041768073 instance=ExtResource("5_2htki")]
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAAHAP//AAAAAAYAAAAIAP//AAABAAYAAAAJAP7/AAADAA0AAAAJAP//AAADAA4AAAAJAAAAAAADAA8AAAAGAP7/AAANAAUAABAFAP7/AAAOAAUAABAGAP//AAANAAYAABAFAP//AAAOAAYAABACAAUAAAACAAEAAAACAAYAAAACAAIAAAAHAAUAAAACAAEAAAAHAAYAAAACAAIAAAAJAAUAAAABAAEAAAAJAAYAAAACAAIAAAACAAgAAAABAAEAABACAAkAAAACAAIAAAAAAAgAAAADAAEAAAAAAAkAAAACAAIAAAAHAAgAAAACAAEAAAAHAAkAAAACAAIAAAAJAAgAAAADAAEAABAJAAkAAAACAAIAAAAFAA8AAAAOAAUAABAFABAAAAAOAAYAABAGAA8AAAANAAUAABAGABAAAAANAAYAABAEAA8AAAAOAAUAAAADAA8AAAANAAUAAAAEABAAAAAOAAYAAAADABAAAAANAAYAAAAJAA8AAAANABsAAAAJABAAAAANABwAAAAJABEAAAANAB0AAAAIABAAAAABAAYAAAAHABAAAAAAAAYAAAAAABMAAAADAAEAAAAAABQAAAACAAIAAAAAABYAAAACAAEAAAAAABcAAAACAAIAAAAAABkAAAADAAEAABAAABoAAAACAAIAAAACABMAAAABAAEAABACABQAAAACAAIAAAACABYAAAAEAAEAABACABcAAAACAAIAAAACABkAAAACAAEAAAACABoAAAACAAIAAAAHABMAAAACAAEAAAAHABQAAAACAAIAAAAHABYAAAABAAEAABAHABcAAAACAAIAAAAHABkAAAACAAEAAAAHABoAAAACAAIAAAAJABMAAAADAAEAABAJABQAAAACAAIAAAAJABYAAAACAAEAAAAJABcAAAACAAIAAAAJABkAAAABAAEAAAAJABoAAAACAAIAAAAJAAIAAAACAAEAAAAJAAMAAAACAAIAAAAHAAIAAAABAAEAABAHAAMAAAACAAIAAAAFAAIAAAACAAEAAAAFAAMAAAACAAIAAAACAAIAAAAEAAEAABACAAMAAAACAAIAAAAAAAIAAAACAAEAAAAAAAMAAAACAAIAAAD+/wIAAAACAAEAAAD+/wMAAAACAAIAAAAFAAUAAAACAAEAAAAFAAYAAAACAAIAAAAAAAUAAAADAAEAABAAAAYAAAACAAIAAAD+/wUAAAACAAEAAAD+/wYAAAACAAIAAAAFAAgAAAACAAEAAAAFAAkAAAACAAIAAAD+/wgAAAACAAEAAAD+/wkAAAACAAIAAAAFABMAAAACAAEAAAAFABQAAAACAAIAAAD+/xMAAAACAAEAAAD+/xQAAAACAAIAAAD+/xYAAAACAAEAAAD+/xcAAAACAAIAAAD+/xkAAAACAAEAAAD+/xoAAAACAAIAAAAFABYAAAACAAEAAAAFABcAAAACAAIAAAAFABkAAAACAAEAAAAFABoAAAACAAIAAAACAAsAAAANAAUAAAACAAwAAAANAAYAAAADAAsAAAAOAAUAAAADAAwAAAAOAAYAAAD+//7/AAAAAA0AAAD+////AAAAAA4AAAD+/wAAAAAAAA8AAAD///7/AAABAA0AAAD/////AAABAA4AAAD//wAAAAABAA8AAAAAAP7/AAACAA0AAAAAAP//AAACAA4AAAAAAAAAAAACAA8AAAABAP7/AAANAAUAAAABAP//AAANAAYAAAACAP7/AAAOAAUAAAACAP//AAAOAAYAAAADAP7/AAANAAUAAAADAP//AAANAAYAAAAEAP7/AAAOAAUAAAAEAP//AAAOAAYAAAD+/w8AAAAEABAAAAD+/xAAAAAEABEAAAD+/xEAAAAEABIAAAD//w8AAAAFABAAAAD//xAAAAAFABEAAAD//xEAAAAFABIAAAAAAA8AAAADABAAAAAAABAAAAADABEAAAAAABEAAAADABIAAAABAA8AAAANAAUAAAABABAAAAANAAYAAAACAA8AAAAOAAUAAAACABAAAAAOAAYAAAADABEAAAAGAAEAABADABIAAAAGAAIAABAEABEAAAAFAAEAABAEABIAAAAFAAIAABADAAAAAAAGAAEAABADAAEAAAAGAAIAABAEAAAAAAAFAAEAABAEAAEAAAAFAAIAABA=")
+tile_map_data = PackedByteArray("AAAHAP//AAAAAAYAAAAIAP//AAABAAYAAAAJAP7/AAADAA0AAAAJAP//AAADAA4AAAAJAAAAAAADAA8AAAAGAP7/AAANAAUAABAFAP7/AAAOAAUAABAGAP//AAANAAYAABAFAP//AAAOAAYAABACAAUAAAACAAEAAAACAAYAAAACAAIAAAAHAAUAAAACAAEAAAAHAAYAAAACAAIAAAAJAAUAAAABAAEAAAAJAAYAAAACAAIAAAACAAgAAAABAAEAABACAAkAAAACAAIAAAAAAAgAAAADAAEAAAAAAAkAAAACAAIAAAAHAAgAAAACAAEAAAAHAAkAAAACAAIAAAAJAAgAAAADAAEAABAJAAkAAAACAAIAAAAFAA8AAAAOAAUAABAFABAAAAAOAAYAABAGAA8AAAANAAUAABAGABAAAAANAAYAABAEAA8AAAAOAAUAAAADAA8AAAANAAUAAAAEABAAAAAOAAYAAAADABAAAAANAAYAAAAJAA8AAAANABsAAAAJABAAAAANABwAAAAJABEAAAANAB0AAAAIABAAAAABAAYAAAAHABAAAAAAAAYAAAAAABMAAAADAAEAAAAAABQAAAACAAIAAAAAABYAAAACAAEAAAAAABcAAAACAAIAAAAAABkAAAADAAEAABAAABoAAAACAAIAAAACABMAAAABAAEAABACABQAAAACAAIAAAACABYAAAAEAAEAABACABcAAAACAAIAAAACABkAAAACAAEAAAACABoAAAACAAIAAAAHABMAAAACAAEAAAAHABQAAAACAAIAAAAHABYAAAABAAEAABAHABcAAAACAAIAAAAHABkAAAACAAEAAAAHABoAAAACAAIAAAAJABMAAAADAAEAABAJABQAAAACAAIAAAAJABYAAAACAAEAAAAJABcAAAACAAIAAAAJABkAAAABAAEAAAAJABoAAAACAAIAAAAJAAIAAAACAAEAAAAJAAMAAAACAAIAAAAHAAIAAAABAAEAABAHAAMAAAACAAIAAAAFAAIAAAACAAEAAAAFAAMAAAACAAIAAAACAAIAAAAEAAEAABACAAMAAAACAAIAAAAAAAIAAAACAAEAAAAAAAMAAAACAAIAAAD+/wIAAAACAAEAAAD+/wMAAAACAAIAAAAFAAUAAAACAAEAAAAFAAYAAAACAAIAAAAAAAUAAAADAAEAABAAAAYAAAACAAIAAAD+/wUAAAACAAEAAAD+/wYAAAACAAIAAAAFAAgAAAACAAEAAAAFAAkAAAACAAIAAAD+/wgAAAACAAEAAAD+/wkAAAACAAIAAAAFABMAAAACAAEAAAAFABQAAAACAAIAAAD+/xMAAAACAAEAAAD+/xQAAAACAAIAAAD+/xYAAAACAAEAAAD+/xcAAAACAAIAAAD+/xkAAAACAAEAAAD+/xoAAAACAAIAAAAFABYAAAACAAEAAAAFABcAAAACAAIAAAAFABkAAAACAAEAAAAFABoAAAACAAIAAAD+//7/AAAAAA0AAAD+////AAAAAA4AAAD+/wAAAAAAAA8AAAD///7/AAABAA0AAAD/////AAABAA4AAAD//wAAAAABAA8AAAAAAP7/AAACAA0AAAAAAP//AAACAA4AAAAAAAAAAAACAA8AAAABAP7/AAANAAUAAAABAP//AAANAAYAAAACAP7/AAAOAAUAAAACAP//AAAOAAYAAAADAP7/AAANAAUAAAADAP//AAANAAYAAAAEAP7/AAAOAAUAAAAEAP//AAAOAAYAAAD+/w8AAAAEABAAAAD+/xAAAAAEABEAAAD+/xEAAAAEABIAAAD//w8AAAAFABAAAAD//xAAAAAFABEAAAD//xEAAAAFABIAAAAAAA8AAAADABAAAAAAABAAAAADABEAAAAAABEAAAADABIAAAABAA8AAAANAAUAAAABABAAAAANAAYAAAACAA8AAAAOAAUAAAACABAAAAAOAAYAAAADABEAAAAGAAEAABADABIAAAAGAAIAABAEABEAAAAFAAEAABAEABIAAAAFAAIAABADAAAAAAAGAAEAABADAAEAAAAGAAIAABAEAAAAAAAFAAEAABAEAAEAAAAFAAIAABA=")
 
 [node name="CommonObjects" parent="." unique_id=8742977 instance=ExtResource("6_utip4")]
 y_sort_enabled = true
@@ -69,11 +71,12 @@ position = Vector2(334, 560)
 [node name="SidewayRightDoor4" parent="." unique_id=1971528363 instance=ExtResource("10_60tn0")]
 position = Vector2(334, 880)
 
-[node name="SHSTeacherInteractable" parent="." unique_id=182597534 instance=ExtResource("10_2htki")]
-position = Vector2(207, 414)
-
 [node name="DialogueInteractable" parent="." unique_id=1546610243 instance=ExtResource("11_2htki")]
-position = Vector2(526, 228)
+position = Vector2(-840, 384)
+dialogue_line_2 = "What do you think you're doing here huh?"
+
+[node name="SHSTeacherInteractable" parent="." unique_id=1025152090 instance=ExtResource("10_2htki")]
+position = Vector2(128, 551)
 
 [node name="YSortLayer" type="Node2D" parent="." unique_id=885562442]
 y_sort_enabled = true
@@ -94,14 +97,200 @@ target_scene = "res://Scenes/Ch1/outdoor_map.tscn"
 spawn_position = Vector2(512, 895)
 entry_direction = "up"
 
-[node name="SchoolChairFacingUp" parent="YSortLayer" unique_id=1970534602 instance=ExtResource("16_bokrp")]
+[node name="SchoolChairs" type="Node2D" parent="YSortLayer" unique_id=725453054]
+
+[node name="SchoolChairFacingUp" parent="YSortLayer/SchoolChairs" unique_id=1970534602 instance=ExtResource("16_bokrp")]
 z_index = -1
 position = Vector2(-49, 127)
 seat_offset = Vector2(0, -10)
 
+[node name="SchoolChairFacingUp2" parent="YSortLayer/SchoolChairs" unique_id=724142732 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(15, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp3" parent="YSortLayer/SchoolChairs" unique_id=1935739912 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(79, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp4" parent="YSortLayer/SchoolChairs" unique_id=2132262344 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(175, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp5" parent="YSortLayer/SchoolChairs" unique_id=146264183 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(239, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp6" parent="YSortLayer/SchoolChairs" unique_id=244515759 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(303, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp7" parent="YSortLayer/SchoolChairs" unique_id=1082580897 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(-49, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp8" parent="YSortLayer/SchoolChairs" unique_id=1141413917 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(15, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp9" parent="YSortLayer/SchoolChairs" unique_id=1969292901 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(79, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp10" parent="YSortLayer/SchoolChairs" unique_id=327294705 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(175, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp11" parent="YSortLayer/SchoolChairs" unique_id=1769857405 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(239, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp12" parent="YSortLayer/SchoolChairs" unique_id=1555516221 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(303, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp13" parent="YSortLayer/SchoolChairs" unique_id=1588343873 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(-49, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp14" parent="YSortLayer/SchoolChairs" unique_id=121876129 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(15, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp15" parent="YSortLayer/SchoolChairs" unique_id=349572046 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(79, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp16" parent="YSortLayer/SchoolChairs" unique_id=710694699 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(175, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp17" parent="YSortLayer/SchoolChairs" unique_id=1101668766 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(239, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp18" parent="YSortLayer/SchoolChairs" unique_id=661769278 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(303, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp19" parent="YSortLayer/SchoolChairs" unique_id=310380867 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(-49, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp20" parent="YSortLayer/SchoolChairs" unique_id=754223286 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(15, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp21" parent="YSortLayer/SchoolChairs" unique_id=197495048 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(79, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp22" parent="YSortLayer/SchoolChairs" unique_id=450758795 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(175, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp23" parent="YSortLayer/SchoolChairs" unique_id=2042150173 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(239, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp24" parent="YSortLayer/SchoolChairs" unique_id=1971846260 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(303, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp25" parent="YSortLayer/SchoolChairs" unique_id=2104660278 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(-49, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp26" parent="YSortLayer/SchoolChairs" unique_id=1888494804 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(15, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp27" parent="YSortLayer/SchoolChairs" unique_id=462821392 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(79, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp28" parent="YSortLayer/SchoolChairs" unique_id=1320097606 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(175, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp29" parent="YSortLayer/SchoolChairs" unique_id=1561142193 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(239, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp30" parent="YSortLayer/SchoolChairs" unique_id=310438039 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(303, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp31" parent="YSortLayer/SchoolChairs" unique_id=164946334 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(-49, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp32" parent="YSortLayer/SchoolChairs" unique_id=617039813 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(15, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp33" parent="YSortLayer/SchoolChairs" unique_id=106607457 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(79, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp34" parent="YSortLayer/SchoolChairs" unique_id=309999319 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(175, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp35" parent="YSortLayer/SchoolChairs" unique_id=408362857 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(239, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp36" parent="YSortLayer/SchoolChairs" unique_id=768433474 instance=ExtResource("16_bokrp")]
+z_index = -1
+position = Vector2(303, 861)
+seat_offset = Vector2(0, -10)
+
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 y_sort_enabled = false
-position = Vector2(-4, 124)
+position = Vector2(-16, 50)
 
 [node name="DialogueBox" parent="." unique_id=735967189 instance=ExtResource("13_utip4")]
 visible = false
+
+[node name="ItemInteractable" parent="." unique_id=1022846617 instance=ExtResource("17_8rrk8")]
+position = Vector2(217, 28)
+item_id = "basket_ball"
+item_name = "Basketball"
+item_description = "Its just a basketball"
+item_icon = ExtResource("18_3l2mi")
+dialogue_line_1 = "You found a Ball."
+dialogue_line_2 = "I wonder what it is for?"

@@ -1,0 +1,80 @@
+[gd_scene format=3 uid="uid://by6bv1pwkq76m"]
+
+[ext_resource type="Script" uid="uid://inventory_ui_script" path="res://Scripts/UI/inventory_ui.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://d2st8v7vx3p07" path="res://Textures/Fonts/CyberpunkCraftpixPixel.otf" id="2_font_title"]
+[ext_resource type="FontFile" uid="uid://dywjttgy6mph5" path="res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="3_font_body"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.06, 0.06, 0.12, 0.92)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.45, 0.55, 0.85, 0.9)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.2, 0.3, 0.6, 0.35)
+shadow_size = 8
+
+[node name="InventoryUI" type="CanvasLayer" groups=["inventory_ui"]]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.82, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.15, 0.2, 0.4, 0.8)
+theme_override_fonts/font = ExtResource("2_font_title")
+theme_override_font_sizes/font_size = 20
+text = "Inventory"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="EmptyLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.55, 0.7, 0.7)
+theme_override_fonts/font = ExtResource("3_font_body")
+theme_override_font_sizes/font_size = 12
+text = "No items yet..."
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="GridContainer" type="GridContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 4
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8

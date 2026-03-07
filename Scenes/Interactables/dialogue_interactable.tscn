@@ -58,10 +58,10 @@ animations = [{
 
 [node name="DialogueInteractable" type="Area2D" unique_id=2081945892]
 script = ExtResource("1_script")
-dialogue_line_2 = "How are you doing in this fine day?"
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=265595737]
 sprite_frames = SubResource("SpriteFrames_8cqje")
+autoplay = "default"
 
 [node name="Label" type="Label" parent="." unique_id=1042429684]
 z_index = 5

@@ -4,6 +4,9 @@ extends CharacterBody2D
 const MOVEMENT_SPEED = 225.0
 const SPRINT_MULTIPLIER = 1.5
 const ACCELERATION = 12.0
+
+var inventory_ui_scene = preload("res://Scenes/UI/inventory_ui.tscn")
+var inventory_ui = null
 const DECELERATION = 18.0
 
 @onready var pages_label = $Camera2D/Guide1Label
@@ -32,6 +35,10 @@ func _ready():
 		tutorial_manager.page_collected.connect(_on_page_collected)
 	update_pages_label()
 	update_player_name_label()
+	# Instance inventory UI (available on every map)
+	if inventory_ui_scene:
+		inventory_ui = inventory_ui_scene.instantiate()
+		get_tree().current_scene.add_child.call_deferred(inventory_ui)
 
 func _physics_process(delta):
 	# When sitting, freeze completely — no movement, no animation changes
@@ -124,6 +131,19 @@ func play_sitting_animation(direction: String) -> void:
 		animated_sprite.play("female_sitting_" + anim_dir)
 
 func _input(event):
+	# Toggle inventory
+	if event.is_action_pressed("toggle_inventory"):
+		if inventory_ui and inventory_ui.has_method("open") and inventory_ui.has_method("close"):
+			if inventory_ui.is_open:
+				inventory_ui.close()
+			else:
+				inventory_ui.open()
+		return
+
+	# Don't allow interactions while inventory is open
+	if inventory_ui and inventory_ui.is_open:
+		return
+
 	if event.is_action_pressed("interact") and can_interact:
 		for area in interaction_area.get_overlapping_areas():
 			if area.has_method("interact"):

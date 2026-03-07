@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://dtlui10prrlxp"]
+[gd_scene format=3 uid="uid://dtlui10prrlxp"]
 
 [ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_lqk10"]
 [ext_resource type="Texture2D" uid="uid://ds0csnsahq2d0" path="res://Textures/3_Animated_objects/32x32/spritesheets/animated_door_big_4_32x32.png" id="1_sxbg4"]
@@ -75,7 +75,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"close_animation",
-"speed": 5.0
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -83,7 +83,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"close_idle",
-"speed": 5.0
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -103,7 +103,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"open_animation",
-"speed": 5.0
+"speed": 15.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -111,26 +111,26 @@ animations = [{
 }],
 "loop": true,
 "name": &"open_idle",
-"speed": 5.0
+"speed": 15.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bxbcn"]
-size = Vector2(32, 24)
+size = Vector2(32, 30)
 
-[node name="FrontDoor1" type="Area2D"]
+[node name="FrontDoor1" type="Area2D" unique_id=765459355]
 y_sort_enabled = true
 script = ExtResource("1_lqk10")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=36910233]
 position = Vector2(0, 4)
 shape = SubResource("RectangleShape2D_ewqf3")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1069598829]
 position = Vector2(0, -22)
 sprite_frames = SubResource("SpriteFrames_g74vv")
 animation = &"close_idle"
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=91813434]
 z_index = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -150,13 +150,13 @@ text = "Text"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=862331386]
 collision_layer = 16
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=686667679]
 y_sort_enabled = true
-position = Vector2(0, 12)
+position = Vector2(0, 9)
 shape = SubResource("RectangleShape2D_bxbcn")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

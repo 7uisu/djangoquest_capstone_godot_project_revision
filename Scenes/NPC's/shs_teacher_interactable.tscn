@@ -1,6 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://d2durbrxy6yfh"]
+[gd_scene format=3 uid="uid://d2durbrxy6yfh"]
 
 [ext_resource type="Texture2D" uid="uid://c0miyv8sxqkk1" path="res://Textures/Player/Sprites/SHS_Teacher.png" id="1_ifpoe"]
+[ext_resource type="Script" uid="uid://cbt643icj8ogk" path="res://Scripts/Interactables/dialogue_interactable.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_font"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_24wsv"]
 atlas = ExtResource("1_ifpoe")
@@ -53,12 +55,50 @@ animations = [{
 }]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_13200"]
+radius = 18.110771
 
-[node name="SHSTeacherInteractable" type="Area2D"]
+[sub_resource type="CircleShape2D" id="CircleShape2D_kl25o"]
+radius = 12.0
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="SHSTeacherInteractable" type="Area2D" unique_id=488154674]
+script = ExtResource("1_script")
+speaker_name = "SHS Teacher"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=459251799]
 sprite_frames = SubResource("SpriteFrames_bf2w0")
-frame_progress = 0.30098
+autoplay = "default"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="Label" type="Label" parent="." unique_id=1205911088]
+z_index = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30.0
+offset_top = -40.0
+offset_right = 30.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+text = "(F) to Talk"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=68584983]
+position = Vector2(0, 9)
 shape = SubResource("CircleShape2D_13200")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1974977013]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=425250348]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_kl25o")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]
