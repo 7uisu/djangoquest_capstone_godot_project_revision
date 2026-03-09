@@ -11,6 +11,8 @@ const FADE_OUT_DURATION := 0.35
 const HOLD_DURATION := 0.3
 const FADE_IN_DURATION := 0.45
 
+var _bus_transition_scene = preload("res://Scenes/UI/bus_transition.tscn")
+
 func _ready():
 	color_rect.color = Color(0, 0, 0, 0)
 	color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -96,3 +98,38 @@ func _set_player_movement(enabled: bool) -> void:
 	var player = _find_player()
 	if player and "can_move" in player:
 		player.can_move = enabled
+
+## Fast travel: teleport the player on the SAME map with a bus transition overlay.
+## No scene change — just teleport + animation.
+func fast_travel(target_position: Vector2) -> void:
+	# Disable player input
+	_set_player_movement(false)
+
+	# Instantiate the bus transition overlay
+	var bus_transition = _bus_transition_scene.instantiate()
+	add_child(bus_transition)
+
+	# When the screen is fully covered, teleport the player
+	bus_transition.screen_covered.connect(func():
+		var player = _find_player()
+		if player:
+			player.global_position = target_position
+			player.current_dir = "down"
+			player.play_idle_animation("down")
+
+			# Snap camera so there's no lerp visible
+			var cam = player.get_node_or_null("Camera2D")
+			if cam:
+				cam.force_update_scroll()
+	)
+
+	# Play the full transition (fade in → hold → fade out)
+	await bus_transition.play_transition()
+
+	# Clean up
+	await get_tree().create_timer(0.1).timeout
+	bus_transition.queue_free()
+
+	# Re-enable player movement
+	_set_player_movement(true)
+
