@@ -65,10 +65,15 @@ func _open_destination_menu():
 
 func _on_destination_selected(target_position: Vector2):
 	_cleanup_ui()
+	# Determine bus direction: if destination is to the right of player, bus goes left-to-right
+	var goes_right: bool = true
+	var players = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		goes_right = target_position.x > players[0].global_position.x
 	# Use SceneTransition's fast_travel to teleport with animation
 	var scene_transition = get_node("/root/SceneTransition")
 	if scene_transition:
-		scene_transition.fast_travel(target_position)
+		scene_transition.fast_travel(target_position, goes_right)
 
 func _on_destination_cancelled():
 	_cleanup_ui()

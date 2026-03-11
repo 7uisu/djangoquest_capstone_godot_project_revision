@@ -1,78 +1,78 @@
-[gd_scene format=3 uid="uid://bhr0fikkpuw57"]
+[gd_scene format=3 uid="uid://dt64biyct5v6f"]
 
-[ext_resource type="Texture2D" uid="uid://ci5m4xowh3bm6" path="res://Textures/Outdoor Textures/School/School_Door_32x32.png" id="1_jd50u"]
-[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_kcxtr"]
-[ext_resource type="Texture2D" uid="uid://cckkoh416ns6i" path="res://Textures/Outdoor Textures/Bus/ME_Singles_Vehicles_32x32_Bus_Down_1.png" id="3_6eqtx"]
+[ext_resource type="Texture2D" uid="uid://ci5m4xowh3bm6" path="res://Textures/Outdoor Textures/School/School_Door_32x32.png" id="1_fhhpf"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_jeq15"]
+[ext_resource type="Texture2D" uid="uid://cs4ydbtsul67n" path="res://Textures/Outdoor Textures/Bus/ME_Singles_Vehicles_32x32_Bus_Right_1.png" id="3_b7c38"]
 [ext_resource type="Script" uid="uid://b38dr41ewe55e" path="res://Scripts/Interactables/bus_fast_travel.gd" id="4_script"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_1doxw"]
-size = Vector2(104, 238.75)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3b17f"]
+size = Vector2(257, 109)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_r076d"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(896, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vh3ga"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(1024, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_l15ew"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(1152, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_845aj"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(1280, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nvshs"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(1408, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8jhld"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(1536, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_i005d"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(1664, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hthff"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(0, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_50uwr"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(0, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1ou1s"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(128, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_txmsg"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(256, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_adlts"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(384, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_it1ig"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(640, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_twa8n"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(768, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dflcf"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(896, 0, 128, 76)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_a5q30"]
-atlas = ExtResource("1_jd50u")
+atlas = ExtResource("1_fhhpf")
 region = Rect2(896, 0, 128, 76)
 
-[sub_resource type="SpriteFrames" id="SpriteFrames_2fkaf"]
+[sub_resource type="SpriteFrames" id="SpriteFrames_554qp"]
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -143,24 +143,24 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lk34i"]
-size = Vector2(74, 182)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kemqw"]
+size = Vector2(220, 54)
 
-[node name="BusFastTravel" type="Area2D" unique_id=1322523405]
+[node name="BusFastTravel2" type="Area2D" unique_id=1828258418]
 script = ExtResource("4_script")
 destination_names = ["School", "Internet Cafe", "Store"]
 destination_positions = Array[Vector2]([Vector2(728, 1081), Vector2(5809, 1389), Vector2(2500, 400)])
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=546489123]
-position = Vector2(0, 4.625)
-shape = SubResource("RectangleShape2D_1doxw")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1231557392]
+position = Vector2(0.5, 23.5)
+shape = SubResource("RectangleShape2D_3b17f")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=948044829]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1077399726]
 visible = false
-sprite_frames = SubResource("SpriteFrames_2fkaf")
+sprite_frames = SubResource("SpriteFrames_554qp")
 animation = &"close_idle"
 
-[node name="Label" type="Label" parent="." unique_id=1015329219]
+[node name="Label" type="Label" parent="." unique_id=761964171]
 z_index = 5
 anchors_preset = 8
 anchor_left = 0.5
@@ -175,22 +175,22 @@ grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(47.5, 10.5)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("2_kcxtr")
+theme_override_fonts/font = ExtResource("2_jeq15")
 text = "(F) to Travel"
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=326316797]
-texture = ExtResource("3_6eqtx")
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1891907551]
+texture = ExtResource("3_b7c38")
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=299466499]
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1166648088]
 collision_layer = 16
 collision_mask = 0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=79017909]
-position = Vector2(0, 13)
-shape = SubResource("RectangleShape2D_lk34i")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=947101392]
+position = Vector2(0, 20)
+shape = SubResource("RectangleShape2D_kemqw")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="body_exited" from="." to="." method="_on_body_exited"]

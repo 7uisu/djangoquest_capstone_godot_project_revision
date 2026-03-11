@@ -29,7 +29,8 @@ func _ready():
 	_set_children_alpha(0.0)
 
 ## Play the full transition. Emits screen_covered when safe to teleport.
-func play_transition() -> void:
+## goes_right: true = bus drives left-to-right, false = right-to-left
+func play_transition(goes_right: bool = true) -> void:
 	# --- Randomize which building set is shown ---
 	_randomize_buildings()
 
@@ -41,9 +42,7 @@ func play_transition() -> void:
 	# Screen is now fully covered — safe to teleport the player
 	screen_covered.emit()
 
-	# --- Step 2: Animate bus driving across the screen randomly ---
-	# 50% chance to go left-to-right or right-to-left
-	var goes_right: bool = randf() > 0.5
+	# --- Step 2: Animate bus driving across the screen ---
 	var start_x: float
 	var end_x: float
 

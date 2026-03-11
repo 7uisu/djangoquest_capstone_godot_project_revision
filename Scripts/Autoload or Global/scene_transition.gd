@@ -101,7 +101,7 @@ func _set_player_movement(enabled: bool) -> void:
 
 ## Fast travel: teleport the player on the SAME map with a bus transition overlay.
 ## No scene change — just teleport + animation.
-func fast_travel(target_position: Vector2) -> void:
+func fast_travel(target_position: Vector2, goes_right: bool = true) -> void:
 	# Disable player input
 	_set_player_movement(false)
 
@@ -124,7 +124,7 @@ func fast_travel(target_position: Vector2) -> void:
 	)
 
 	# Play the full transition (fade in → hold → fade out)
-	await bus_transition.play_transition()
+	await bus_transition.play_transition(goes_right)
 
 	# Clean up
 	await get_tree().create_timer(0.1).timeout
