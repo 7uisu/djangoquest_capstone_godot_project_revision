@@ -12,15 +12,18 @@
 [ext_resource type="PackedScene" uid="uid://d2durbrxy6yfh" path="res://Scenes/NPC's/shs_teacher_interactable.tscn" id="10_2htki"]
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="10_60tn0"]
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="11_2htki"]
+[ext_resource type="Texture2D" uid="uid://bmilup1pvwkxw" path="res://Textures/Paper Texture/Paper Texture1.jpg" id="12_10o3i"]
 [ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="13_utip4"]
 [ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="14_bokrp"]
 [ext_resource type="Script" uid="uid://c08g5g7gvdo8j" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/map_door.gd" id="14_mapdoor"]
 [ext_resource type="PackedScene" uid="uid://bgwjauga0lr0w" path="res://Scenes/Ch1/Interactive Objects/school_chair_facing_up.tscn" id="16_bokrp"]
 [ext_resource type="PackedScene" uid="uid://h4xkyv8oainb" path="res://Scenes/Interactables/item_interactable.tscn" id="17_8rrk8"]
 [ext_resource type="Texture2D" uid="uid://i1u10ydkuv0g" path="res://Textures/School Textures/Items/Interactable/ME_Singles_School_32x32_Basketball_Ball_1.png" id="18_3l2mi"]
+[ext_resource type="Script" path="res://Scripts/UI/school_map_tutorial.gd" id="19_tutorial"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 y_sort_enabled = true
+script = ExtResource("19_tutorial")
 
 [node name="SchoolFloor" parent="." unique_id=389712821 instance=ExtResource("1_lnoto")]
 z_index = -1
@@ -77,6 +80,10 @@ dialogue_line_2 = "What do you think you're doing here huh?"
 
 [node name="SHSTeacherInteractable" parent="." unique_id=1025152090 instance=ExtResource("10_2htki")]
 position = Vector2(128, 551)
+speaker_name = "Professor"
+speaker_portrait = ExtResource("12_10o3i")
+dialogue_line_2 = "anyone?"
+dialogue_line_2_mode = 1
 
 [node name="YSortLayer" type="Node2D" parent="." unique_id=885562442]
 y_sort_enabled = true
@@ -281,7 +288,7 @@ seat_offset = Vector2(0, -10)
 
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 y_sort_enabled = false
-position = Vector2(-16, 50)
+position = Vector2(34, 569)
 
 [node name="DialogueBox" parent="." unique_id=735967189 instance=ExtResource("13_utip4")]
 visible = false

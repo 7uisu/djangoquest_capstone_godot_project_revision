@@ -1,23 +1,48 @@
-# dialogue_interactable.gd — Simple interactable that triggers visual novel dialogue
-# Attach to an Area2D node. Add a Sprite2D/AnimatedSprite2D as a child for visuals.
+# dialogue_interactable.gd — Interactable that triggers dialogue
+# Each line can independently use VISUAL_NOVEL or CHAT_BUBBLE mode.
 extends Area2D
+
+## Which dialogue UI to use for this NPC.
+enum DialogueMode { VISUAL_NOVEL, CHAT_BUBBLE }
 
 @export var interaction_text: String = "(F) to Talk"
 @export var speaker_name: String = "???"
 @export var speaker_portrait: Texture2D = null
 
 ## Dialogue lines — each entry is one text box.
-## Set these in the inspector or override _get_dialogue_lines().
+@export_group("Dialogue Line 1")
 @export_multiline var dialogue_line_1: String = "Hello, adventurer!"
+@export var dialogue_line_1_mode: DialogueMode = DialogueMode.VISUAL_NOVEL
+
+@export_group("Dialogue Line 2")
 @export_multiline var dialogue_line_2: String = ""
+@export var dialogue_line_2_mode: DialogueMode = DialogueMode.VISUAL_NOVEL
+
+@export_group("Dialogue Line 3")
 @export_multiline var dialogue_line_3: String = ""
+@export var dialogue_line_3_mode: DialogueMode = DialogueMode.VISUAL_NOVEL
+
+@export_group("Dialogue Line 4")
 @export_multiline var dialogue_line_4: String = ""
+@export var dialogue_line_4_mode: DialogueMode = DialogueMode.VISUAL_NOVEL
+
+@export_group("Dialogue Line 5")
 @export_multiline var dialogue_line_5: String = ""
+@export var dialogue_line_5_mode: DialogueMode = DialogueMode.VISUAL_NOVEL
+
+@export_group("")
+
+const CHAT_BUBBLE_SCENE = preload("res://Scenes/UI/chat_bubble.tscn")
 
 @onready var interaction_label: Label = $Label
 
 var player_is_inside: bool = false
 var _label_tween: Tween = null
+var _chat_bubble_instance: Control = null
+
+# Queue of dialogue groups: each is { "mode": DialogueMode, "lines": Array }
+var _dialogue_queue: Array = []
+var _is_sequencing: bool = false
 
 func _ready():
 	if interaction_label:
@@ -37,26 +62,92 @@ func _on_body_exited(body: Node2D) -> void:
 
 ## Called by the player's _input() when pressing interact
 func interact():
-	var lines = _build_dialogue_lines()
-	if lines.is_empty():
+	if _is_sequencing:
+		return  # Already playing dialogue
+
+	var all_lines = _build_dialogue_lines()
+	if all_lines.is_empty():
 		return
 
-	# Find the dialogue box in the scene tree
-	var dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start(lines, speaker_portrait)
+	# Group consecutive lines that share the same mode
+	_dialogue_queue = _group_lines_by_mode(all_lines)
+	_is_sequencing = true
+	_play_next_group()
 
+## Build lines with per-line mode info.
 func _build_dialogue_lines() -> Array:
 	var lines: Array = []
-	var raw_lines = [dialogue_line_1, dialogue_line_2, dialogue_line_3, dialogue_line_4, dialogue_line_5]
-	for line_text in raw_lines:
-		if line_text != "":
+	var raw = [
+		[dialogue_line_1, dialogue_line_1_mode],
+		[dialogue_line_2, dialogue_line_2_mode],
+		[dialogue_line_3, dialogue_line_3_mode],
+		[dialogue_line_4, dialogue_line_4_mode],
+		[dialogue_line_5, dialogue_line_5_mode],
+	]
+	for entry in raw:
+		var text = entry[0]
+		var mode = entry[1]
+		if text != "":
 			lines.append({
 				"name": speaker_name,
-				"text": line_text,
-				"portrait": speaker_portrait
+				"text": text,
+				"portrait": speaker_portrait,
+				"mode": mode,
 			})
 	return lines
+
+## Group consecutive lines that share the same mode into batches.
+## Returns: Array of { "mode": DialogueMode, "lines": Array[Dict] }
+func _group_lines_by_mode(all_lines: Array) -> Array:
+	var groups: Array = []
+	var current_mode = all_lines[0]["mode"]
+	var current_lines: Array = []
+
+	for line in all_lines:
+		if line["mode"] == current_mode:
+			current_lines.append(line)
+		else:
+			groups.append({ "mode": current_mode, "lines": current_lines })
+			current_mode = line["mode"]
+			current_lines = [line]
+	# Push the last group
+	if current_lines.size() > 0:
+		groups.append({ "mode": current_mode, "lines": current_lines })
+
+	return groups
+
+## Play the next group in the queue. Called after each group finishes.
+func _play_next_group():
+	if _dialogue_queue.is_empty():
+		_is_sequencing = false
+		return
+
+	var group = _dialogue_queue.pop_front()
+	var mode = group["mode"]
+	var lines = group["lines"]
+
+	match mode:
+		DialogueMode.VISUAL_NOVEL:
+			var dialogue_box = _get_dialogue_box()
+			if dialogue_box:
+				# Connect to finished signal for this batch
+				if not dialogue_box.dialogue_finished.is_connected(_on_group_finished):
+					dialogue_box.dialogue_finished.connect(_on_group_finished)
+				dialogue_box.start(lines, speaker_portrait)
+			else:
+				_play_next_group()  # Skip if no box found
+		DialogueMode.CHAT_BUBBLE:
+			var bubble = _get_or_create_chat_bubble()
+			if bubble:
+				if not bubble.dialogue_finished.is_connected(_on_group_finished):
+					bubble.dialogue_finished.connect(_on_group_finished)
+				bubble.start(lines, speaker_portrait)
+			else:
+				_play_next_group()
+
+## When a dialogue group finishes, play the next one.
+func _on_group_finished():
+	_play_next_group()
 
 func _get_dialogue_box():
 	# Try to find an existing DialogueBox in the scene
@@ -72,6 +163,16 @@ func _get_dialogue_box():
 		if child.has_method("start") and child is CanvasLayer:
 			return child
 	return null
+
+## Lazily create a ChatBubble as a child of this NPC node.
+func _get_or_create_chat_bubble() -> Control:
+	# Reuse existing instance if available
+	if _chat_bubble_instance and is_instance_valid(_chat_bubble_instance):
+		return _chat_bubble_instance
+	# Instantiate the placeholder chat bubble scene
+	_chat_bubble_instance = CHAT_BUBBLE_SCENE.instantiate()
+	add_child(_chat_bubble_instance)
+	return _chat_bubble_instance
 
 # --- Label fade helpers (same pattern as door.gd) ---
 

@@ -133,3 +133,47 @@ func fast_travel(target_position: Vector2, goes_right: bool = true) -> void:
 	# Re-enable player movement
 	_set_player_movement(true)
 
+## Transition to a NEW scene with the bus driving animation.
+## Unlike fast_travel(), this actually changes the scene.
+func transition_to_scene_with_bus(scene_path: String, goes_right: bool = true, spawn_pos: Vector2 = Vector2.ZERO, entry_dir: String = "down") -> void:
+	_spawn_position = spawn_pos
+	_has_pending_spawn = spawn_pos != Vector2.ZERO
+	_spawn_direction = entry_dir
+
+	# Disable player input
+	_set_player_movement(false)
+
+	# Instantiate the bus transition overlay
+	var bus_transition = _bus_transition_scene.instantiate()
+	add_child(bus_transition)
+
+	# When the screen is fully covered, change the scene
+	bus_transition.screen_covered.connect(func():
+		get_tree().change_scene_to_file(scene_path)
+
+		# Wait for new scene to load
+		await get_tree().process_frame
+		await get_tree().process_frame
+
+		# Reposition the player if needed
+		if _has_pending_spawn:
+			var new_player = _find_player()
+			if new_player:
+				new_player.global_position = _spawn_position
+				new_player.current_dir = _spawn_direction
+				new_player.play_idle_animation(_spawn_direction)
+				var cam = new_player.get_node_or_null("Camera2D")
+				if cam:
+					cam.force_update_scroll()
+			_has_pending_spawn = false
+	)
+
+	# Play the full bus transition
+	await bus_transition.play_transition(goes_right)
+
+	# Clean up
+	await get_tree().create_timer(0.1).timeout
+	bus_transition.queue_free()
+
+	# Re-enable player movement
+	_set_player_movement(true)
