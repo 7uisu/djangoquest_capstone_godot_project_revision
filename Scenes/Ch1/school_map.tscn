@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://cspky18x7odq8" path="res://Scenes/Ch1/Tiles/bathroom_objects.tscn" id="7_skiq6"]
 [ext_resource type="PackedScene" uid="uid://dp2nfuwgoyl6f" path="res://Scenes/Player/player.tscn" id="8_jorty"]
 [ext_resource type="PackedScene" uid="uid://dtlui10prrlxp" path="res://Scenes/Ch1/Interactive Objects/Door/front_door_1.tscn" id="9_kme6x"]
-[ext_resource type="PackedScene" uid="uid://d2durbrxy6yfh" path="res://Scenes/NPC's/shs_teacher_interactable.tscn" id="10_2htki"]
+[ext_resource type="PackedScene" uid="uid://d2durbrxy6yfh" path="res://Scenes/NPC/shs_teacher_interactable.tscn" id="10_2htki"]
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="10_60tn0"]
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="11_2htki"]
 [ext_resource type="Texture2D" uid="uid://bmilup1pvwkxw" path="res://Textures/Paper Texture/Paper Texture1.jpg" id="12_10o3i"]
@@ -19,7 +19,10 @@
 [ext_resource type="PackedScene" uid="uid://bgwjauga0lr0w" path="res://Scenes/Ch1/Interactive Objects/school_chair_facing_up.tscn" id="16_bokrp"]
 [ext_resource type="PackedScene" uid="uid://h4xkyv8oainb" path="res://Scenes/Interactables/item_interactable.tscn" id="17_8rrk8"]
 [ext_resource type="Texture2D" uid="uid://i1u10ydkuv0g" path="res://Textures/School Textures/Items/Interactable/ME_Singles_School_32x32_Basketball_Ball_1.png" id="18_3l2mi"]
-[ext_resource type="Script" path="res://Scripts/UI/school_map_tutorial.gd" id="19_tutorial"]
+[ext_resource type="Script" uid="uid://uekxgmahcn52" path="res://Scripts/UI/school_map_tutorial.gd" id="19_tutorial"]
+[ext_resource type="PackedScene" uid="uid://c5yijhjbajwy6" path="res://Scenes/Ch1/NPC's/Students/student_npc_01.tscn" id="21_dabgb"]
+[ext_resource type="PackedScene" uid="uid://cq352l1pjhmdu" path="res://Scenes/Ch1/NPC's/Best Friend/male_best_friend.tscn" id="22_5nxug"]
+[ext_resource type="PackedScene" uid="uid://b5h8sc5fxkxec" path="res://Scenes/Ch1/NPC's/Best Friend/female_best_friend.tscn" id="23_12s4j"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 y_sort_enabled = true
@@ -301,3 +304,12 @@ item_description = "Its just a basketball"
 item_icon = ExtResource("18_3l2mi")
 dialogue_line_1 = "You found a Ball."
 dialogue_line_2 = "I wonder what it is for?"
+
+[node name="StudentNPC-01" parent="." unique_id=869782952 instance=ExtResource("21_dabgb")]
+position = Vector2(128, 551)
+
+[node name="MaleBestFriend" parent="." unique_id=1326079520 instance=ExtResource("22_5nxug")]
+position = Vector2(-984, 31)
+
+[node name="FemaleBestFriend" parent="." unique_id=1312096163 instance=ExtResource("23_12s4j")]
+position = Vector2(-988, 188)
