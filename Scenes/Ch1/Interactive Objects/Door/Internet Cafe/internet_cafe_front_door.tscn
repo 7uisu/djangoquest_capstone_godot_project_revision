@@ -4,7 +4,7 @@
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_ngyuv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_q3l78"]
-size = Vector2(64, 33)
+size = Vector2(62, 94)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_brx48"]
 atlas = ExtResource("1_q3l78")
@@ -149,12 +149,12 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ngyuv"]
-size = Vector2(64, 63)
+size = Vector2(64, 56)
 
 [node name="InternetCafeFrontDoor" type="Area2D" unique_id=1501416757]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1805452734]
-position = Vector2(0, 31.5)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1693917715]
+position = Vector2(0, 1)
 shape = SubResource("RectangleShape2D_q3l78")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=67944330]
@@ -186,5 +186,8 @@ collision_layer = 16
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=90371251]
-position = Vector2(0, -2.5)
+position = Vector2(0, 1)
 shape = SubResource("RectangleShape2D_ngyuv")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]
