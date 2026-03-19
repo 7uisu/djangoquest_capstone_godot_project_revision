@@ -1,8 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://bonbxb0dhf6qh"]
 
-[ext_resource type="Script" path="res://Scripts/UI/intro_slides.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cbckpryi0jflm" path="res://Scripts/UI/intro_slides.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://dywjttgy6mph5" path="res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="2_font"]
-[ext_resource type="FontFile" uid="uid://d2st8v7vx3p07" path="res://Textures/Fonts/CyberpunkCraftpixPixel.otf" id="3_font_name"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_narration"]
 bg_color = Color(0.06, 0.06, 0.12, 0.92)
@@ -18,7 +17,7 @@ corner_radius_bottom_left = 8
 shadow_color = Color(0.2, 0.3, 0.6, 0.35)
 shadow_size = 6
 
-[node name="IntroSlides" type="Control"]
+[node name="IntroSlides" type="Control" unique_id=1859200057]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,7 +26,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="BackgroundColor" type="ColorRect" parent="."]
+[node name="BackgroundColor" type="ColorRect" parent="." unique_id=446008216]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,7 +35,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.15, 0.2, 0.35, 1)
 
-[node name="BackgroundImage" type="TextureRect" parent="."]
+[node name="BackgroundImage" type="TextureRect" parent="." unique_id=329818330]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,7 +45,7 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="SlideIndicator" type="Label" parent="."]
+[node name="SlideIndicator" type="Label" parent="." unique_id=933686770]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -62,7 +61,7 @@ theme_override_font_sizes/font_size = 12
 text = "1 / 6"
 horizontal_alignment = 2
 
-[node name="NarrationPanel" type="PanelContainer" parent="."]
+[node name="NarrationPanel" type="PanelContainer" parent="." unique_id=854115648]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -76,18 +75,18 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_narration")
 
-[node name="MarginContainer" type="MarginContainer" parent="NarrationPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="NarrationPanel" unique_id=1386361168]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 12
 
-[node name="VBoxContainer" type="VBoxContainer" parent="NarrationPanel/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="NarrationPanel/MarginContainer" unique_id=83849429]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="NarrationText" type="RichTextLabel" parent="NarrationPanel/MarginContainer/VBoxContainer"]
+[node name="NarrationText" type="RichTextLabel" parent="NarrationPanel/MarginContainer/VBoxContainer" unique_id=1167056708]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_colors/default_color = Color(0.92, 0.92, 0.95, 1)
@@ -97,7 +96,7 @@ bbcode_enabled = true
 fit_content = true
 scroll_active = false
 
-[node name="ContinueIndicator" type="Label" parent="NarrationPanel/MarginContainer/VBoxContainer"]
+[node name="ContinueIndicator" type="Label" parent="NarrationPanel/MarginContainer/VBoxContainer" unique_id=374239952]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_colors/font_color = Color(0.6, 0.75, 1, 0.8)

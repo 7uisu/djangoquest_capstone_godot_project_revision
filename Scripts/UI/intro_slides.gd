@@ -15,34 +15,28 @@ var _type_tween: Tween = null
 var _indicator_tween: Tween = null
 var is_typing: bool = false
 
-# Slide data — placeholder text; replace with your actual narration later.
-# Images will be loaded from res://Textures/Intro/male_1.png etc. when available.
+# Slide data — loading actual introduction backgrounds and text
 var male_slides: Array = [
-	{ "text": "In the bustling city, a young student named Mateo prepares for a new school year..." },
-	{ "text": "He's heard rumors about a special class that teaches web development with Django." },
-	{ "text": "Excited and curious, Mateo packs his bag and gets ready for the journey." },
-	{ "text": "The school is on the other side of town — a long bus ride away." },
-	{ "text": "As the cityscape passes by, Mateo imagines the projects he'll build." },
-	{ "text": "The bus slows down... his new school comes into view." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO1.png", "text": "In the bustling city, a young student named Mateo prepares for a new school year..." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO2BOY.png", "text": "He's heard rumors about a special class that teaches web development with Django." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO3BOY.png", "text": "Excited and curious, Mateo packs his bag and gets ready for the journey." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO4.png", "text": "The school is on the other side of town — a long bus ride away." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO5BOY.png", "text": "As the cityscape passes by, Mateo imagines the projects he'll build." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO6.png", "text": "The bus slows down... his new school comes into view." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO7.png", "text": "Taking a deep breath, Mateo prepares to step into a new chapter of his life." },
 ]
 
 var female_slides: Array = [
-	{ "text": "In the bustling city, a young student named Solmi prepares for a new school year..." },
-	{ "text": "She's heard rumors about a special class that teaches web development with Django." },
-	{ "text": "Excited and curious, Solmi packs her bag and gets ready for the journey." },
-	{ "text": "The school is on the other side of town — a long bus ride away." },
-	{ "text": "As the cityscape passes by, Solmi imagines the projects she'll build." },
-	{ "text": "The bus slows down... her new school comes into view." },
-]
-
-# Placeholder colors for slides (until real art is provided)
-var slide_colors: Array = [
-	Color(0.15, 0.2, 0.35),
-	Color(0.2, 0.15, 0.3),
-	Color(0.1, 0.25, 0.3),
-	Color(0.25, 0.2, 0.15),
-	Color(0.2, 0.25, 0.2),
-	Color(0.15, 0.15, 0.25),
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO1.png", "text": "In the bustling city, a young student named Solmi prepares for a new school year..." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO2GIRL.png", "text": "She's heard rumors about a special class that teaches web development with Django." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO3GIRL.png", "text": "Excited and curious, Solmi packs her bag and gets ready for the journey." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO4.png", "text": "The school is on the other side of town — a long bus ride away." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO5GIRL.png", "text": "As the cityscape passes by, Solmi imagines the projects she'll build." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO6.png", "text": "The bus slows down... her new school comes into view." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO7.png", "text": "Taking a deep breath, Solmi prepares to step into a new chapter of her life." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO8GIRL.png", "text": "The hallway seems larger, buzzing with students eager to learn." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO9GIRL.png", "text": "She finds her classroom, spotting a familiar face among the crowd." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO10GIRL.png", "text": "This is it – the beginning of her Django Quest!" },
 ]
 
 var current_slides: Array = []
@@ -85,12 +79,15 @@ func _advance():
 	# Update slide indicator
 	slide_label.text = str(current_slide_index + 1) + " / " + str(current_slides.size())
 
-	# Update background color (placeholder for actual images)
-	# TODO: When you have actual slide images, load them here:
-	#   background_image.texture = load("res://Textures/Intro/male_" + str(current_slide_index + 1) + ".png")
+	# Update background image
+	if background_image and slide.has("image"):
+		var tex = load(slide["image"])
+		if tex:
+			background_image.texture = tex
+			
 	var color_rect = $BackgroundColor
-	if color_rect and current_slide_index < slide_colors.size():
-		color_rect.color = slide_colors[current_slide_index]
+	if color_rect:
+		color_rect.visible = false # Hide placeholder color if we have real images
 
 	# Typewriter narration
 	continue_indicator.visible = false
