@@ -1,10 +1,9 @@
 [gd_scene format=3 uid="uid://b5h8sc5fxkxec"]
 
-[ext_resource type="Texture2D" uid="uid://cvhbh8mcfe8s1" path="res://Textures/NPC/Female Bestfriend/FemaleBestFriendNPCStudent.png" id="1_gkctx"]
-[ext_resource type="Texture2D" uid="uid://csd5htc0u1h6u" path="res://Textures/NPC/female Bestfriend/FemaleBestFriendNPCCollege.png" id="1_lp1uo"]
-[ext_resource type="Texture2D" uid="uid://cvhbh8mcfe8s1" path="res://Textures/NPC/female Bestfriend/FemaleBestFriendNPCStudent.png" id="2_hpkml"]
+[ext_resource type="Texture2D" uid="uid://csd5htc0u1h6u" path="res://Textures/NPC/Female Bestfriend/FemaleBestFriendNPCCollege.png" id="1_lp1uo"]
+[ext_resource type="Texture2D" uid="uid://cvhbh8mcfe8s1" path="res://Textures/NPC/Female Bestfriend/FemaleBestFriendNPCStudent.png" id="2_hpkml"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_ppmup"]
-[ext_resource type="Texture2D" uid="uid://cvqdmgishgbvg" path="res://Textures/NPC/female Bestfriend/FemaleBestFriendNPCWorking.png" id="4_67515"]
+[ext_resource type="Texture2D" uid="uid://cvqdmgishgbvg" path="res://Textures/NPC/Female Bestfriend/FemaleBestFriendNPCWorking.png" id="4_67515"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6nrrw"]
 atlas = ExtResource("1_lp1uo")
@@ -199,99 +198,99 @@ atlas = ExtResource("1_lp1uo")
 region = Rect2(352, 146, 32, 46)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ppmup"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(576, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hpkml"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(608, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lp1uo"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(640, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_67515"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(672, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bsafl"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(704, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tlxlw"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(736, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_cfwlh"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(384, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_y1hmb"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(416, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_c4wsb"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(448, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kesch"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(480, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uee65"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(512, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kae7b"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(544, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_glkf6"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(0, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wdh35"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(32, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_twc4s"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(64, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bi6lg"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(96, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2hai5"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(128, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fj3dj"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(160, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ho1id"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(192, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2x33b"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(224, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_agbav"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(256, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kjm8r"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(288, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ekd6w"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(320, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1eata"]
-atlas = ExtResource("1_gkctx")
+atlas = ExtResource("2_hpkml")
 region = Rect2(352, 75, 32, 63)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5pbnw"]
@@ -1139,8 +1138,9 @@ radius = 12.0
 [node name="FemaleBestFriend" type="CharacterBody2D" unique_id=1312096163]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1798379526]
+y_sort_enabled = true
 sprite_frames = SubResource("SpriteFrames_hpkml")
-animation = &"female_working_walking_left"
+animation = &"female_student_idle_down"
 autoplay = "female_student_idle_down"
 
 [node name="Label" type="Label" parent="." unique_id=1678930086]

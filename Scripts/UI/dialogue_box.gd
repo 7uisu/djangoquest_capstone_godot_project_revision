@@ -21,8 +21,18 @@ var is_typing: bool = false
 var is_active: bool = false
 var _type_tween: Tween = null
 var _indicator_tween: Tween = null
+var choice_container: HBoxContainer = null
+var is_waiting_for_choice: bool = false
+
+signal choice_selected(choice_index: int)
 
 func _ready():
+	choice_container = HBoxContainer.new()
+	choice_container.visible = false
+	choice_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	choice_container.add_theme_constant_override("separation", 20)
+	$Panel/MarginContainer/VBoxContainer.add_child(choice_container)
+
 	visible = false
 	panel.visible = false
 	continue_indicator.visible = false
@@ -36,10 +46,11 @@ func _input(event):
 		if is_typing:
 			# Skip typewriter — show full text immediately
 			_skip_typing()
-		else:
+			get_viewport().set_input_as_handled()
+		elif not is_waiting_for_choice:
 			# Advance to next line
 			_advance()
-		get_viewport().set_input_as_handled()
+			get_viewport().set_input_as_handled()
 
 ## Start a dialogue sequence.
 ## lines: Array of Dictionaries, each with:
@@ -113,7 +124,38 @@ func _skip_typing():
 
 func _on_typing_finished():
 	is_typing = false
-	continue_indicator.visible = true
+	var line = dialogue_lines[current_line_index]
+	var choices = line.get("choices", [])
+	
+	if choices.size() > 0:
+		_show_choices(choices)
+	else:
+		continue_indicator.visible = true
+
+func _show_choices(choices: Array):
+	is_waiting_for_choice = true
+	continue_indicator.visible = false
+	
+	for c in choice_container.get_children():
+		c.queue_free()
+		
+	for i in range(choices.size()):
+		var btn = Button.new()
+		btn.text = choices[i]
+		btn.add_theme_font_size_override("font_size", 16)
+		btn.pressed.connect(func(): _on_choice_pressed(i))
+		choice_container.add_child(btn)
+		
+	choice_container.visible = true
+	await get_tree().process_frame
+	if choice_container.get_child_count() > 0:
+		choice_container.get_child(0).grab_focus()
+
+func _on_choice_pressed(index: int):
+	is_waiting_for_choice = false
+	choice_container.visible = false
+	emit_signal("choice_selected", index)
+	_advance()
 
 func _close():
 	is_active = false

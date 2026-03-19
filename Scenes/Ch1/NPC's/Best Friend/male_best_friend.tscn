@@ -1,35 +1,10 @@
 [gd_scene format=3 uid="uid://cq352l1pjhmdu"]
 
-[ext_resource type="Texture2D" uid="uid://c0miyv8sxqkk1" path="res://Textures/Player/Sprites/SHS_Teacher.png" id="1_0qd2f"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_aloh6"]
 [ext_resource type="Texture2D" uid="uid://sjigvkna34wg" path="res://Textures/NPC/Male Bestfriend/MaleBestFriendNPCStudent.png" id="2_bl28f"]
 [ext_resource type="Texture2D" uid="uid://majujln87133" path="res://Textures/NPC/Male Bestfriend/MaleBestFriendNPCCollege.png" id="2_j0m0c"]
 [ext_resource type="Texture2D" uid="uid://bxeynvt5ybjfk" path="res://Textures/Player/Sprites/Mateo.png" id="3_j0m0c"]
-[ext_resource type="Texture2D" uid="uid://bbja7kllpfh2x" path="res://Textures/NPC/male Bestfriend/MaleBestFriendNPCWorking.png" id="5_eujg1"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_24wsv"]
-atlas = ExtResource("1_0qd2f")
-region = Rect2(576, 71, 32, 71)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_kl25o"]
-atlas = ExtResource("1_0qd2f")
-region = Rect2(608, 71, 32, 71)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_gfagj"]
-atlas = ExtResource("1_0qd2f")
-region = Rect2(640, 71, 32, 71)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_sf2eu"]
-atlas = ExtResource("1_0qd2f")
-region = Rect2(672, 71, 32, 71)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_grk42"]
-atlas = ExtResource("1_0qd2f")
-region = Rect2(704, 71, 32, 71)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_lioaw"]
-atlas = ExtResource("1_0qd2f")
-region = Rect2(736, 71, 32, 71)
+[ext_resource type="Texture2D" uid="uid://bbja7kllpfh2x" path="res://Textures/NPC/Male Bestfriend/MaleBestFriendNPCWorking.png" id="5_eujg1"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8k0ra"]
 atlas = ExtResource("2_j0m0c")
@@ -631,29 +606,6 @@ region = Rect2(352, 146, 32, 46)
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_24wsv")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_kl25o")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_gfagj")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_sf2eu")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_grk42")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lioaw")
-}],
-"loop": true,
-"name": &"default",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
 "texture": SubResource("AtlasTexture_8k0ra")
 }, {
 "duration": 1.0,
@@ -1232,11 +1184,11 @@ radius = 18.110771
 radius = 12.0
 
 [node name="MaleBestFriend" type="CharacterBody2D" unique_id=1326079520]
+y_sort_enabled = true
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=355944829]
 sprite_frames = SubResource("SpriteFrames_bl28f")
-animation = &"male_working_idle_up"
-autoplay = "default"
+animation = &"male_college_idle_down"
 
 [node name="Label" type="Label" parent="." unique_id=147172816]
 visible = false

@@ -1,5 +1,7 @@
 extends Control
 
+signal quiz_completed(score: int)
+
 # Quiz data
 var questions = [
 	{
@@ -35,7 +37,7 @@ var score = 0
 var selected_answer = -1
 var is_drawing = false
 var drawing_points = []
-var quiz_completed = false
+var is_quiz_completed = false
 var answer_locked = false  # NEW: prevent re-drawing after selection
 
 # UI nodes
@@ -115,7 +117,7 @@ func load_question():
 	tween.tween_property(question_label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 func _on_drawing_area_gui_input(event):
-	if quiz_completed:
+	if is_quiz_completed:
 		return
 		
 	if event is InputEventMouseButton:
@@ -259,7 +261,7 @@ func _on_next_button_pressed():
 	load_question()
 
 func show_final_score():
-	quiz_completed = true
+	is_quiz_completed = true
 	question_label.text = "Quiz Complete!\nFinal Score: " + str(score) + "/5"
 	
 	# Hide options and show score
@@ -290,7 +292,13 @@ func show_final_score():
 	question_label.text += "\n" + str(percentage) + "% - " + grade
 	
 	next_button.visible = false
-	restart_button.visible = true
+	restart_button.visible = false
+	
+	# Show continue button to return to school map
+	if has_node("ContinueButton"):
+		$ContinueButton.visible = true
+		$ContinueButton.grab_focus()
+	
 	drawing_points.clear()
 	drawing_area.queue_redraw()
 
@@ -299,7 +307,7 @@ func _on_restart_button_pressed():
 	current_question = 0
 	score = 0
 	selected_answer = -1
-	quiz_completed = false
+	is_quiz_completed = false
 	answer_locked = false
 	drawing_points.clear()
 	
@@ -321,3 +329,8 @@ func _on_restart_button_pressed():
 	drawing_area.queue_redraw()
 	shuffle_questions()  # NEW: re-shuffle on restart
 	load_question()
+
+## Called when Continue button is pressed after quiz ends — emits signal and closes
+func _on_continue_pressed():
+	emit_signal("quiz_completed", score)
+	queue_free()

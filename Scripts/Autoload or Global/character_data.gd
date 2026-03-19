@@ -5,6 +5,11 @@ var selected_gender: String = ""  # "male" or "female"
 var player_name: String = ""
 var has_seen_tutorial: bool = false
 
+# Chapter 1 progress
+var ch1_teaching_done: bool = false
+var ch1_quiz_done: bool = false
+var ch1_post_quiz_dialogue_done: bool = false
+
 # Level unlock tracking (index 0 = level 1, etc.)
 const LEVEL_COUNT = 4
 var unlocked_levels: Array[bool] = [true, false, false, false]
@@ -14,6 +19,9 @@ func reset_data():
 	selected_gender = ""
 	player_name = ""
 	has_seen_tutorial = false
+	ch1_teaching_done = false
+	ch1_quiz_done = false
+	ch1_post_quiz_dialogue_done = false
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 

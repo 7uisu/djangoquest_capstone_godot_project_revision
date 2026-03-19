@@ -139,3 +139,15 @@ theme_override_font_sizes/font_size = 32
 [node name="CorrectSFX" type="AudioStreamPlayer" parent="." unique_id=350885602]
 
 [node name="WrongSFX" type="AudioStreamPlayer" parent="." unique_id=1468299763]
+
+[node name="ContinueButton" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 350.0
+offset_top = 481.0
+offset_right = 680.0
+offset_bottom = 556.0
+theme_override_font_sizes/font_size = 48
+text = "Continue"
+
+[connection signal="pressed" from="ContinueButton" to="." method="_on_continue_pressed"]
