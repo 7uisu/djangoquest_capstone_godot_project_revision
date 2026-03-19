@@ -27,7 +27,6 @@
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 y_sort_enabled = true
-position = Vector2(1, 0)
 script = ExtResource("19_tutorial")
 
 [node name="SchoolFloor" parent="." unique_id=389712821 instance=ExtResource("1_lnoto")]
