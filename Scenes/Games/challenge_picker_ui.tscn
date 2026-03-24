@@ -1,0 +1,64 @@
+[gd_scene format=3 uid="uid://b8hnhte8kr6uy"]
+
+[ext_resource type="Script" uid="uid://dm76uqh60vybj" path="res://Scripts/Games/challenge_picker_ui.gd" id="1_script"]
+
+[node name="ChallengePickerUI" type="Control" unique_id=2102126867]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=2143450518]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.08, 0.12, 0.95)
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1478367872]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 30.0
+offset_right = -40.0
+offset_bottom = -30.0
+
+[node name="TitleBar" type="HBoxContainer" parent="VBox" unique_id=396035897]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/TitleBar" unique_id=486963612]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "  📂 PYTHON Challenges"
+vertical_alignment = 1
+
+[node name="Count" type="Label" parent="VBox/TitleBar" unique_id=1319563303]
+layout_mode = 2
+text = "7 challenges"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="VBox/TitleBar" unique_id=1166144784]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+text = "✕"
+
+[node name="TopicBar" type="HBoxContainer" parent="VBox" unique_id=1051903783]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox" unique_id=1231255807]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ChallengeList" type="VBoxContainer" parent="VBox/ScrollContainer" unique_id=1132165823]
+layout_mode = 2
+size_flags_horizontal = 3

@@ -1,0 +1,250 @@
+[gd_scene format=3 uid="uid://3btlkjbfb3nq"]
+
+[ext_resource type="Script" uid="uid://bidptt8sj7w0m" path="res://Scripts/Games/coding_challenge_ui.gd" id="1_script"]
+
+[node name="CodingChallengeUI" type="Control" unique_id=1856862290]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1340795301]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.118, 0.118, 0.18, 1)
+
+[node name="TitleBar" type="HBoxContainer" parent="." unique_id=1471354963]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 36.0
+grow_horizontal = 2
+
+[node name="TitleBG" type="ColorRect" parent="TitleBar" unique_id=726581384]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.15, 0.15, 0.22, 1)
+
+[node name="TitleLabel" type="Label" parent="TitleBar" unique_id=2135794987]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "  DjangoQuest IDE"
+vertical_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="TitleBar" unique_id=351419015]
+layout_mode = 2
+text = "⏱ 30s"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="TitleBar" unique_id=1609112938]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+text = "✕"
+
+[node name="MainContent" type="HSplitContainer" parent="." unique_id=1943070014]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 40.0
+offset_bottom = -44.0
+split_offsets = PackedInt32Array(-300, 0)
+split_offset = -300
+
+[node name="MissionPanel" type="PanelContainer" parent="MainContent" unique_id=1956791998]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.25
+
+[node name="MissionScroll" type="ScrollContainer" parent="MainContent/MissionPanel" unique_id=1832495508]
+layout_mode = 2
+
+[node name="MissionVBox" type="VBoxContainer" parent="MainContent/MissionPanel/MissionScroll" unique_id=698626451]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MissionTitle" type="Label" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=703427392]
+layout_mode = 2
+text = "🔧 Mission"
+horizontal_alignment = 1
+
+[node name="Separator" type="HSeparator" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=981695158]
+layout_mode = 2
+
+[node name="StepsContainer" type="VBoxContainer" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=180834614]
+layout_mode = 2
+
+[node name="HintButton" type="Button" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=56338262]
+layout_mode = 2
+text = "💡 Show Hint"
+
+[node name="HintLabel" type="RichTextLabel" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=399674129]
+visible = false
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+
+[node name="CodePanel" type="PanelContainer" parent="MainContent" unique_id=669824303]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.45
+
+[node name="CodeVBox" type="VBoxContainer" parent="MainContent/CodePanel" unique_id=1529442680]
+layout_mode = 2
+
+[node name="FileTab" type="Label" parent="MainContent/CodePanel/CodeVBox" unique_id=1662724486]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+text = "  📄 code.py"
+vertical_alignment = 1
+
+[node name="CodeScroll" type="ScrollContainer" parent="MainContent/CodePanel/CodeVBox" unique_id=113197896]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CodeDisplay" type="RichTextLabel" parent="MainContent/CodePanel/CodeVBox/CodeScroll" unique_id=705703751]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+fit_content = true
+selection_enabled = true
+
+[node name="OptionsLabel" type="Label" parent="MainContent/CodePanel/CodeVBox" unique_id=89240933]
+layout_mode = 2
+text = "Select the fix:"
+
+[node name="OptionsContainer" type="VBoxContainer" parent="MainContent/CodePanel/CodeVBox" unique_id=823738236]
+layout_mode = 2
+
+[node name="FreeTypeEdit" type="TextEdit" parent="MainContent/CodePanel/CodeVBox" unique_id=2052874648]
+visible = false
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "Type your code here..."
+
+[node name="OutputPanel" type="PanelContainer" parent="MainContent" unique_id=1108858984]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+
+[node name="OutputVBox" type="VBoxContainer" parent="MainContent/OutputPanel" unique_id=538327847]
+layout_mode = 2
+
+[node name="OutputTitleBar" type="HBoxContainer" parent="MainContent/OutputPanel/OutputVBox" unique_id=165264032]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+
+[node name="OutputTitle" type="Label" parent="MainContent/OutputPanel/OutputVBox/OutputTitleBar" unique_id=159817805]
+layout_mode = 2
+size_flags_horizontal = 3
+text = " 🌐 Preview — http://localhost:8000"
+vertical_alignment = 1
+
+[node name="ReloadButton" type="Button" parent="MainContent/OutputPanel/OutputVBox/OutputTitleBar" unique_id=1784380331]
+layout_mode = 2
+text = "🔄"
+
+[node name="OutputBG" type="ColorRect" parent="MainContent/OutputPanel/OutputVBox" unique_id=1900914135]
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.95, 0.95, 0.95, 1)
+
+[node name="OutputScroll" type="ScrollContainer" parent="MainContent/OutputPanel/OutputVBox" unique_id=1255466862]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OutputDisplay" type="RichTextLabel" parent="MainContent/OutputPanel/OutputVBox/OutputScroll" unique_id=1785061269]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+
+[node name="BottomBar" type="HBoxContainer" parent="." unique_id=2025993095]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="BottomBG" type="ColorRect" parent="BottomBar" unique_id=1439929526]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.15, 0.15, 0.22, 1)
+
+[node name="RunButton" type="Button" parent="BottomBar" unique_id=1417654492]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "▶ Run"
+
+[node name="FeedbackLabel" type="Label" parent="BottomBar" unique_id=1635025129]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="BottomBar" unique_id=802294963]
+layout_mode = 2
+text = "PYTHON — Fix the Print"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ToggleOutputButton" type="Button" parent="BottomBar" unique_id=870860214]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "◀ Hide Output"
+
+[node name="ResultsOverlay" type="PanelContainer" parent="." unique_id=214735185]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -100.0
+offset_right = 180.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResultsVBox" type="VBoxContainer" parent="ResultsOverlay" unique_id=555773922]
+layout_mode = 2
+alignment = 1
+
+[node name="ResultsTitle" type="Label" parent="ResultsOverlay/ResultsVBox" unique_id=1066821280]
+layout_mode = 2
+text = "✅ Challenge Solved!"
+horizontal_alignment = 1
+
+[node name="ResultsText" type="Label" parent="ResultsOverlay/ResultsVBox" unique_id=1637110843]
+layout_mode = 2
+text = "Great job!"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ContinueButton" type="Button" parent="ResultsOverlay/ResultsVBox" unique_id=1681908533]
+layout_mode = 2
+text = "Continue"
+
+[node name="CorrectSFX" type="AudioStreamPlayer" parent="." unique_id=2048610809]
+
+[node name="WrongSFX" type="AudioStreamPlayer" parent="." unique_id=1732516016]
