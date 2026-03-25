@@ -55,6 +55,10 @@ var is_dark_theme: bool = true  # light theme troll toggle
 # Audio
 @onready var correct_sfx: AudioStreamPlayer = $CorrectSFX
 @onready var wrong_sfx: AudioStreamPlayer = $WrongSFX
+@onready var keypad_sfx: AudioStreamPlayer = $KeypadSFX
+@onready var mouse_click_sfx: AudioStreamPlayer = $MouseClickSFX
+var _keypad_cooldown: float = 0.0
+const KEYPAD_COOLDOWN_TIME: float = 0.15  # seconds between keypad clicks
 
 # Light Theme Troll
 @onready var light_flash: ColorRect = $LightFlash
@@ -115,6 +119,12 @@ func _ready():
 	code_display.add_theme_font_override("normal_font", custom_font)
 	output_display.add_theme_font_override("normal_font", custom_font)
 
+	# Ensure SFX streams are loaded
+	keypad_sfx.stream = preload("res://Sounds/UI SFX/UIClick_BLEEOOP_Keypad_Click.wav")
+	mouse_click_sfx.stream = preload("res://Sounds/UI SFX/UIClick_BLEEOOP_Mouse_Click.wav")
+	mouse_click_sfx.volume_db = -6.0
+	keypad_sfx.volume_db = -8.0
+
 	# Connect signals
 	close_button.pressed.connect(_on_close_pressed)
 	hint_button.pressed.connect(_on_hint_pressed)
@@ -149,6 +159,10 @@ func _ready():
 		load_challenge(ChallengeData.python_challenges[0])
 
 func _process(delta):
+	# Keypad cooldown timer
+	if _keypad_cooldown > 0:
+		_keypad_cooldown -= delta
+
 	if timer_running and time_remaining > 0:
 		time_remaining -= delta
 		_update_timer_display()
@@ -545,6 +559,9 @@ func _on_option_selected(index: int):
 	if is_completed:
 		return
 
+	# Play mouse click
+	_play_click()
+
 	selected_option = index
 	run_button.disabled = false
 
@@ -574,6 +591,9 @@ func _on_option_selected(index: int):
 func _on_run_pressed():
 	if is_completed:
 		return
+
+	# Play mouse click
+	_play_click()
 
 	# Handle free-type or terminal mode
 	if is_free_type or is_terminal:
@@ -675,6 +695,8 @@ func _on_time_up():
 	_show_results(false)
 
 func _on_hint_pressed():
+	# Play mouse click
+	_play_click()
 	# Open the Overflow Stack popup instead of toggling a label
 	_show_overflow_stack()
 
@@ -683,6 +705,7 @@ func _on_reload_pressed():
 	_setup_output_panel()
 
 func _on_toggle_output_pressed():
+	_play_click()
 	output_panel.visible = !output_panel.visible
 	toggle_output_button.text = "◀ Hide Output" if output_panel.visible else "▶ Show Output"
 
@@ -692,8 +715,20 @@ func _on_free_type_changed():
 		run_button.disabled = free_type_edit.text.strip_edges() == ""
 
 func _on_close_pressed():
+	_play_click()
 	emit_signal("challenge_completed", false, current_challenge.get("id", ""))
 	queue_free()
+
+# ─── SFX Helper ──────────────────────────────────────────────────────────────
+
+func _play_click():
+	# Create a fresh one-shot player to guarantee sound plays
+	var player = AudioStreamPlayer.new()
+	player.stream = preload("res://Sounds/UI SFX/UIClick_BLEEOOP_Mouse_Click.wav")
+	player.volume_db = -6.0
+	add_child(player)
+	player.play()
+	player.finished.connect(player.queue_free)
 
 func _on_continue_pressed():
 	var success = results_title.text.contains("Correct") or results_title.text.contains("Solved")
@@ -830,6 +865,10 @@ func _style_free_type_edit():
 func _input(event):
 	# When the player is typing in the free-type editor, let ALL keys through
 	if (is_free_type or is_terminal) and free_type_edit.has_focus():
+		# Play keypad SFX on real key presses only (not held-key echoes)
+		if event is InputEventKey and event.pressed and not event.is_echo():
+			if keypad_sfx and keypad_sfx.stream:
+				keypad_sfx.play()
 		return
 
 	# Otherwise block game-specific actions (movement, interact, etc.)

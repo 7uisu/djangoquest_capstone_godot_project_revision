@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://3btlkjbfb3nq"]
 
 [ext_resource type="Script" uid="uid://bidptt8sj7w0m" path="res://Scripts/Games/coding_challenge_ui.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://Sounds/UI SFX/UIClick_BLEEOOP_Keypad_Click.wav" id="2_keypad_sfx"]
+[ext_resource type="AudioStream" path="res://Sounds/UI SFX/UIClick_BLEEOOP_Mouse_Click.wav" id="3_mouse_sfx"]
 
 [node name="CodingChallengeUI" type="Control" unique_id=1856862290]
 layout_mode = 3
@@ -260,6 +262,14 @@ text = "Continue"
 [node name="CorrectSFX" type="AudioStreamPlayer" parent="." unique_id=2048610809]
 
 [node name="WrongSFX" type="AudioStreamPlayer" parent="." unique_id=1732516016]
+
+[node name="KeypadSFX" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_keypad_sfx")
+volume_db = -8.0
+
+[node name="MouseClickSFX" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_mouse_sfx")
+volume_db = -6.0
 
 [node name="LightFlash" type="ColorRect" parent="."]
 visible = false
