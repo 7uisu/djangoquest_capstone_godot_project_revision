@@ -26,6 +26,7 @@ const TYPE_ICONS = {
 	"follow_steps": "📝",
 	"predict_output": "🤔",
 	"free_type": "⌨️",
+	"terminal": "💻",
 }
 
 func _ready():

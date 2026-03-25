@@ -49,6 +49,11 @@ custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
 text = "✕"
 
+[node name="GearButton" type="Button" parent="TitleBar"]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+text = "⚙️"
+
 [node name="MainContent" type="HSplitContainer" parent="." unique_id=1943070014]
 layout_mode = 1
 anchors_preset = -1
@@ -134,6 +139,13 @@ custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 3
 placeholder_text = "Type your code here..."
+
+[node name="LinterLabel" type="RichTextLabel" parent="MainContent/CodePanel/CodeVBox"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 24)
+bbcode_enabled = true
+fit_content = true
 
 [node name="OutputPanel" type="PanelContainer" parent="MainContent" unique_id=1108858984]
 layout_mode = 2
@@ -248,3 +260,105 @@ text = "Continue"
 [node name="CorrectSFX" type="AudioStreamPlayer" parent="." unique_id=2048610809]
 
 [node name="WrongSFX" type="AudioStreamPlayer" parent="." unique_id=1732516016]
+
+[node name="LightFlash" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 1)
+
+[node name="TrollDialogue" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="TrollMargin" type="MarginContainer" parent="TrollDialogue"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="TrollVBox" type="VBoxContainer" parent="TrollDialogue/TrollMargin"]
+layout_mode = 2
+
+[node name="TrollName" type="Label" parent="TrollDialogue/TrollMargin/TrollVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 20)
+
+[node name="TrollText" type="RichTextLabel" parent="TrollDialogue/TrollMargin/TrollVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+
+[node name="TrollContinue" type="Label" parent="TrollDialogue/TrollMargin/TrollVBox"]
+layout_mode = 2
+text = "▼"
+horizontal_alignment = 2
+
+[node name="OverflowStackOverlay" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -160.0
+offset_right = 220.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StackVBox" type="VBoxContainer" parent="OverflowStackOverlay"]
+layout_mode = 2
+
+[node name="StackHeader" type="HBoxContainer" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 32)
+
+[node name="StackLogo" type="Label" parent="OverflowStackOverlay/StackVBox/StackHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "📚 Overflow Stack"
+vertical_alignment = 1
+
+[node name="StackCloseButton" type="Button" parent="OverflowStackOverlay/StackVBox/StackHeader"]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+text = "✕"
+
+[node name="StackSeparator" type="HSeparator" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+
+[node name="StackQuestion" type="Label" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="StackVotes" type="Label" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+
+[node name="StackSeparator2" type="HSeparator" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+
+[node name="StackAnswer" type="RichTextLabel" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+
+[node name="StackUser" type="Label" parent="OverflowStackOverlay/StackVBox"]
+layout_mode = 2
+horizontal_alignment = 2

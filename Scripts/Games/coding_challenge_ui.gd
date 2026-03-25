@@ -11,11 +11,14 @@ var is_completed: bool = false
 var timer_running: bool = false
 var time_remaining: float = 0.0
 var is_free_type: bool = false  # true when challenge uses free typing instead of options
+var is_terminal: bool = false   # true for terminal command challenges
+var is_dark_theme: bool = true  # light theme troll toggle
 
 # ─── Node References ─────────────────────────────────────────────────────────
 @onready var title_label: Label = $TitleBar/TitleLabel
 @onready var timer_label: Label = $TitleBar/TimerLabel
 @onready var close_button: Button = $TitleBar/CloseButton
+@onready var gear_button: Button = $TitleBar/GearButton
 
 # Mission Panel
 @onready var mission_title: Label = $MainContent/MissionPanel/MissionScroll/MissionVBox/MissionTitle
@@ -29,6 +32,7 @@ var is_free_type: bool = false  # true when challenge uses free typing instead o
 @onready var options_label: Label = $MainContent/CodePanel/CodeVBox/OptionsLabel
 @onready var options_container: VBoxContainer = $MainContent/CodePanel/CodeVBox/OptionsContainer
 @onready var free_type_edit: TextEdit = $MainContent/CodePanel/CodeVBox/FreeTypeEdit
+@onready var linter_label: RichTextLabel = $MainContent/CodePanel/CodeVBox/LinterLabel
 
 # Output Panel
 @onready var output_panel: PanelContainer = $MainContent/OutputPanel
@@ -51,6 +55,26 @@ var is_free_type: bool = false  # true when challenge uses free typing instead o
 # Audio
 @onready var correct_sfx: AudioStreamPlayer = $CorrectSFX
 @onready var wrong_sfx: AudioStreamPlayer = $WrongSFX
+
+# Light Theme Troll
+@onready var light_flash: ColorRect = $LightFlash
+@onready var troll_dialogue: PanelContainer = $TrollDialogue
+@onready var troll_name: Label = $TrollDialogue/TrollMargin/TrollVBox/TrollName
+@onready var troll_text: RichTextLabel = $TrollDialogue/TrollMargin/TrollVBox/TrollText
+@onready var troll_continue: Label = $TrollDialogue/TrollMargin/TrollVBox/TrollContinue
+var _troll_tween: Tween = null
+var _troll_lines: Array = []
+var _troll_line_index: int = 0
+var _troll_typing: bool = false
+
+# Overflow Stack
+@onready var overflow_overlay: PanelContainer = $OverflowStackOverlay
+@onready var stack_question: Label = $OverflowStackOverlay/StackVBox/StackQuestion
+@onready var stack_votes: Label = $OverflowStackOverlay/StackVBox/StackVotes
+@onready var stack_answer: RichTextLabel = $OverflowStackOverlay/StackVBox/StackAnswer
+@onready var stack_user: Label = $OverflowStackOverlay/StackVBox/StackUser
+@onready var stack_logo: Label = $OverflowStackOverlay/StackVBox/StackHeader/StackLogo
+@onready var stack_close_button: Button = $OverflowStackOverlay/StackVBox/StackHeader/StackCloseButton
 
 # ─── Syntax Colors ───────────────────────────────────────────────────────────
 const COLOR_KEYWORD = "#c678dd"    # purple
@@ -99,6 +123,10 @@ func _ready():
 	continue_button.pressed.connect(_on_continue_pressed)
 	toggle_output_button.pressed.connect(_on_toggle_output_pressed)
 	free_type_edit.text_changed.connect(_on_free_type_changed)
+	gear_button.pressed.connect(_on_gear_pressed)
+	stack_close_button.pressed.connect(func(): overflow_overlay.visible = false)
+	troll_dialogue.gui_input.connect(_on_troll_panel_clicked)
+	troll_dialogue.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# Initial state
 	results_overlay.visible = false
@@ -107,6 +135,10 @@ func _ready():
 	feedback_label.visible = false
 	run_button.disabled = true
 	free_type_edit.visible = false
+	linter_label.visible = false
+	overflow_overlay.visible = false
+	light_flash.visible = false
+	troll_dialogue.visible = false
 
 	# Style the free-type editor
 	_style_free_type_edit()
@@ -132,6 +164,7 @@ func load_challenge(challenge: Dictionary) -> void:
 	is_completed = false
 	selected_option = -1
 	is_free_type = challenge.get("type", "") == "free_type"
+	is_terminal = challenge.get("type", "") == "terminal"
 
 	_setup_title()
 	_setup_mission_panel()
@@ -148,10 +181,13 @@ func load_challenge(challenge: Dictionary) -> void:
 	output_panel.visible = show_output
 	toggle_output_button.text = "◀ Hide Output" if show_output else "▶ Show Output"
 
-	if is_free_type:
+	if is_free_type or is_terminal:
 		run_button.disabled = true  # enabled when they type something
 	else:
 		run_button.disabled = true
+
+	linter_label.visible = false
+	overflow_overlay.visible = false
 
 func load_challenge_set(challenges: Array, index: int = 0) -> void:
 	"""Load a set of challenges, showing progress like 'Challenge 1 / 5'."""
@@ -172,6 +208,7 @@ func _setup_mission_panel():
 		"follow_steps": type_label = "📝 FOLLOW STEPS"
 		"predict_output": type_label = "🤔 PREDICT OUTPUT"
 		"free_type": type_label = "⌨️ CODE IT"
+		"terminal": type_label = "💻 TERMINAL"
 	mission_title.text = type_label
 
 	# Clear old steps
@@ -188,10 +225,13 @@ func _setup_mission_panel():
 		step_label.add_theme_font_size_override("font_size", 13)
 		steps_container.add_child(step_label)
 
-	# Hint
+	# Hint — now opens Overflow Stack popup instead
 	hint_label.visible = false
 	hint_label.text = current_challenge.get("hint", "")
-	hint_button.visible = current_challenge.get("hint", "") != ""
+	var has_hint = current_challenge.get("hint", "") != ""
+	hint_button.visible = has_hint
+	if has_hint:
+		hint_button.text = "📚 Ask Overflow Stack"
 
 func _setup_code_panel():
 	# File tab
@@ -225,6 +265,27 @@ func _setup_code_panel():
 
 	# Determine challenge type
 	var ctype = current_challenge.get("type", "debug")
+
+	# Terminal mode: show TextEdit styled as a terminal, hide options
+	if is_terminal:
+		options_label.text = "Type your command:"
+		options_container.visible = false
+		free_type_edit.visible = true
+		free_type_edit.text = current_challenge.get("starter_code", "")
+		free_type_edit.placeholder_text = current_challenge.get("placeholder", "$ ")
+		# Style as terminal
+		var term_style = StyleBoxFlat.new()
+		term_style.bg_color = Color("0d0d0d")
+		term_style.border_color = Color("333333")
+		term_style.set_border_width_all(1)
+		term_style.set_corner_radius_all(4)
+		term_style.set_content_margin_all(8)
+		free_type_edit.add_theme_stylebox_override("normal", term_style)
+		free_type_edit.add_theme_stylebox_override("focus", term_style)
+		free_type_edit.add_theme_color_override("font_color", Color("00ff41"))  # Matrix green
+		for child in options_container.get_children():
+			child.queue_free()
+		return
 
 	# Free-type mode: show TextEdit, hide options
 	if is_free_type:
@@ -514,8 +575,8 @@ func _on_run_pressed():
 	if is_completed:
 		return
 
-	# Handle free-type mode
-	if is_free_type:
+	# Handle free-type or terminal mode
+	if is_free_type or is_terminal:
 		_run_free_type()
 		return
 
@@ -614,7 +675,8 @@ func _on_time_up():
 	_show_results(false)
 
 func _on_hint_pressed():
-	hint_label.visible = !hint_label.visible
+	# Open the Overflow Stack popup instead of toggling a label
+	_show_overflow_stack()
 
 func _on_reload_pressed():
 	# Re-show the initial output state
@@ -626,7 +688,7 @@ func _on_toggle_output_pressed():
 
 func _on_free_type_changed():
 	# Enable run button when player has typed something
-	if is_free_type and not is_completed:
+	if (is_free_type or is_terminal) and not is_completed:
 		run_button.disabled = free_type_edit.text.strip_edges() == ""
 
 func _on_close_pressed():
@@ -730,6 +792,11 @@ func _run_free_type():
 		free_type_edit.editable = true
 		run_button.disabled = false
 
+		# Show red squiggle linter
+		linter_label.visible = true
+		linter_label.bbcode_enabled = true
+		linter_label.text = "[color=#e06c75]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[/color] [color=#5c6370]syntax error[/color]"
+
 func _normalize_whitespace(text: String) -> String:
 	# Collapse all whitespace sequences into single spaces
 	var result = ""
@@ -762,7 +829,7 @@ func _style_free_type_edit():
 
 func _input(event):
 	# When the player is typing in the free-type editor, let ALL keys through
-	if is_free_type and free_type_edit.has_focus():
+	if (is_free_type or is_terminal) and free_type_edit.has_focus():
 		return
 
 	# Otherwise block game-specific actions (movement, interact, etc.)
@@ -770,3 +837,184 @@ func _input(event):
 		or event.is_action("move_up") or event.is_action("move_down") \
 		or event.is_action("move_left") or event.is_action("move_right"):
 		get_viewport().set_input_as_handled()
+
+# ─── Overflow Stack Popup ───────────────────────────────────────────────────
+
+const OVERFLOW_USERS = [
+	"xX_codeMaster69_Xx  •  ⭐ 42,069 rep",
+	"django_guru_420  •  ⭐ 1,337 rep",
+	"definitely_not_AI  •  ⭐ 99,999 rep",
+	"i_hate_css  •  ⭐ 8,008 rep",
+	"copy_paste_engineer  •  ⭐ 12,345 rep",
+	"stackoverflow_is_life  •  ⭐ 77,777 rep",
+]
+
+const OVERFLOW_INTROS = [
+	"Smh, this question again... Anyway, ",
+	"I literally answered this 5 minutes ago but okay. ",
+	"*sigh* Did you even try googling first? ",
+	"This is BASIC stuff but I'll help because I'm nice. ",
+	"Marking as duplicate but here's the answer anyway: ",
+	"Not sure why this has 47 upvotes but fine. ",
+]
+
+func _show_overflow_stack():
+	var hint_text = current_challenge.get("hint", "No hint available.")
+	var title = current_challenge.get("title", "Help")
+
+	# Style the overlay
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color("fdf7e2")  # Stack Overflow cream
+	panel_style.border_color = Color("e3d5a0")
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(8)
+	panel_style.set_content_margin_all(12)
+	overflow_overlay.add_theme_stylebox_override("panel", panel_style)
+
+	# Logo
+	stack_logo.add_theme_color_override("font_color", Color("f48024"))  # SO orange
+	stack_logo.add_theme_font_size_override("font_size", 16)
+
+	# Question
+	stack_question.text = "Q: How do I fix \"" + title + "\"? Please help!!!"
+	stack_question.add_theme_color_override("font_color", Color("3b4045"))
+	stack_question.add_theme_font_size_override("font_size", 13)
+
+	# Votes
+	var vote_count = randi_range(12, 247)
+	stack_votes.text = "▲ " + str(vote_count) + " votes  •  ✅ Accepted Answer"
+	stack_votes.add_theme_color_override("font_color", Color("6a9955"))
+	stack_votes.add_theme_font_size_override("font_size", 12)
+
+	# Answer — grumpy but helpful
+	var intro = OVERFLOW_INTROS[randi() % OVERFLOW_INTROS.size()]
+	stack_answer.bbcode_enabled = true
+	stack_answer.text = "[color=#3b4045]" + intro + hint_text + "[/color]"
+	stack_answer.add_theme_font_size_override("normal_font_size", 13)
+
+	# User
+	stack_user.text = "answered by " + OVERFLOW_USERS[randi() % OVERFLOW_USERS.size()]
+	stack_user.add_theme_color_override("font_color", Color("6a737c"))
+	stack_user.add_theme_font_size_override("font_size", 11)
+
+	overflow_overlay.visible = true
+
+	# Animate in
+	overflow_overlay.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(overflow_overlay, "modulate:a", 1.0, 0.25)
+
+# ─── Light Theme Troll ─────────────────────────────────────────────────────
+
+func _on_gear_pressed():
+	if is_dark_theme:
+		_troll_light_theme()
+	else:
+		_restore_dark_theme()
+
+func _troll_light_theme():
+	is_dark_theme = false
+
+	# Blinding white flash
+	light_flash.visible = true
+	light_flash.modulate.a = 1.0
+
+	# Screen shake
+	var original_pos = position
+	var tween = create_tween()
+	for i in range(6):
+		var shake_x = randf_range(-8, 8)
+		var shake_y = randf_range(-5, 5)
+		tween.tween_property(self, "position", original_pos + Vector2(shake_x, shake_y), 0.05)
+	tween.tween_property(self, "position", original_pos, 0.05)
+
+	# Fade flash down
+	var flash_tween = create_tween()
+	flash_tween.tween_property(light_flash, "modulate:a", 0.0, 0.8)
+	flash_tween.tween_callback(func(): light_flash.visible = false)
+
+	# Visual novel dialogue reaction
+	_show_troll_dialogue([
+		{"name": "☀️ IDE", "text": "AAAGHHH!!! MY PIXELS ARE BURNING!!!"},
+		{"name": "😵 You", "text": "...Why did I click that? WHO uses light theme?!"},
+		{"name": "🌙 IDE", "text": "Switching back to dark mode... my eyes thank you."},
+	])
+
+func _show_troll_dialogue(lines: Array):
+	_troll_lines = lines
+	_troll_line_index = 0
+
+	# Style the dialogue box
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color("1a1a2e")
+	panel_style.border_color = Color("e06c75")
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(8)
+	panel_style.set_content_margin_all(0)
+	troll_dialogue.add_theme_stylebox_override("panel", panel_style)
+
+	troll_dialogue.visible = true
+	_advance_troll_dialogue()
+
+func _advance_troll_dialogue():
+	if _troll_line_index >= _troll_lines.size():
+		# Done — close and restore dark theme
+		troll_dialogue.visible = false
+		_restore_dark_theme()
+		return
+
+	var line = _troll_lines[_troll_line_index]
+
+	# Speaker name
+	troll_name.text = line.get("name", "")
+	troll_name.add_theme_color_override("font_color", Color("61afef"))
+	troll_name.add_theme_font_size_override("font_size", 14)
+
+	# Typewriter effect
+	var text = line.get("text", "")
+	troll_text.text = text
+	troll_text.visible_ratio = 0.0
+	troll_text.add_theme_color_override("default_color", Color("e0e0e0"))
+	troll_text.add_theme_font_size_override("normal_font_size", 14)
+
+	troll_continue.visible = false
+	troll_continue.add_theme_color_override("font_color", Color("abb2bf"))
+
+	_troll_typing = true
+
+	if _troll_tween and _troll_tween.is_valid():
+		_troll_tween.kill()
+
+	var duration = text.length() / 40.0  # 40 chars per second
+	_troll_tween = create_tween()
+	_troll_tween.tween_property(troll_text, "visible_ratio", 1.0, duration)
+	_troll_tween.tween_callback(_on_troll_type_done)
+
+func _on_troll_type_done():
+	_troll_typing = false
+	troll_continue.visible = true
+
+	# Blink the continue indicator
+	var blink = create_tween().set_loops()
+	blink.tween_property(troll_continue, "modulate:a", 0.3, 0.4)
+	blink.tween_property(troll_continue, "modulate:a", 1.0, 0.4)
+
+func _on_troll_panel_clicked(event: InputEvent):
+	if not troll_dialogue.visible:
+		return
+	if event is InputEventMouseButton and event.pressed:
+		if _troll_typing:
+			# Skip typewriter
+			if _troll_tween and _troll_tween.is_valid():
+				_troll_tween.kill()
+			troll_text.visible_ratio = 1.0
+			_on_troll_type_done()
+		else:
+			# Advance to next line
+			_troll_line_index += 1
+			_advance_troll_dialogue()
+
+func _restore_dark_theme():
+	is_dark_theme = true
+	light_flash.visible = false
+	troll_dialogue.visible = false
