@@ -26,6 +26,48 @@ func _ready():
 	continue_indicator.visible = false
 	_start_indicator_blink()
 
+func _process(_delta):
+	if not is_active or not visible:
+		return
+	_clamp_to_viewport()
+
+func _clamp_to_viewport():
+	# Get camera and viewport info
+	var camera = get_viewport().get_camera_2d()
+	if camera == null:
+		return
+
+	var viewport_size = get_viewport_rect().size
+	var zoom = camera.zoom
+	# Camera visible area in world coords
+	var cam_pos = camera.global_position
+	var half_view = viewport_size / (2.0 * zoom)
+	var cam_left = cam_pos.x - half_view.x
+	var cam_top = cam_pos.y - half_view.y
+	var cam_right = cam_pos.x + half_view.x
+	var cam_bottom = cam_pos.y + half_view.y
+
+	# Bubble size in world coords
+	var bubble_size = panel.size / zoom
+	var padding = 8.0  # pixels of padding from screen edge
+
+	# Get parent NPC's world position as the anchor
+	var npc_pos = get_parent().global_position if get_parent() else global_position
+
+	# Default desired position: above the NPC, centered
+	var desired_x = npc_pos.x - bubble_size.x / 2.0
+	var desired_y = npc_pos.y - bubble_size.y - 20.0 / zoom.y  # 20px gap above NPC
+
+	# Clamp X: keep bubble within left/right edges
+	desired_x = clampf(desired_x, cam_left + padding, cam_right - bubble_size.x - padding)
+
+	# Clamp Y: if bubble would go above camera top, push it below the NPC instead
+	if desired_y < cam_top + padding:
+		desired_y = npc_pos.y + 16.0 / zoom.y  # Below the NPC sprite
+	desired_y = clampf(desired_y, cam_top + padding, cam_bottom - bubble_size.y - padding)
+
+	global_position = Vector2(desired_x, desired_y)
+
 func _input(event):
 	if not is_active:
 		return
