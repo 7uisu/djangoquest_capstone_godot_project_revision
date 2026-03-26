@@ -29,6 +29,11 @@ func _ready():
 		interaction_label.visible = false
 		interaction_label.modulate.a = 0.0
 
+	# Auto-set the Sprite2D texture to match the item_icon export
+	var sprite = get_node_or_null("Sprite2D")
+	if sprite and item_icon:
+		sprite.texture = item_icon
+
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and not has_been_picked_up:
 		player_is_inside = true
@@ -67,10 +72,15 @@ func _on_dialogue_finished():
 func _give_item():
 	has_been_picked_up = true
 
+	# Determine quantity to give (check CodingItems for pickup_quantity)
+	var qty = 1
+	if CodingItems.ITEMS.has(item_id):
+		qty = CodingItems.ITEMS[item_id].get("pickup_quantity", 1)
+
 	# Add to inventory
 	var inv = get_node_or_null("/root/InventoryManager")
 	if inv:
-		inv.add_item(item_id, item_name, item_description, item_icon)
+		inv.add_item(item_id, item_name, item_description, item_icon, qty)
 
 	# Show pickup message via player's Guide2Label
 	var players = get_tree().get_nodes_in_group("player")

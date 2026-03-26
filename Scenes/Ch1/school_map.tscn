@@ -24,6 +24,12 @@
 [ext_resource type="PackedScene" uid="uid://cq352l1pjhmdu" path="res://Scenes/Ch1/NPC's/Best Friend/male_best_friend.tscn" id="22_5nxug"]
 [ext_resource type="PackedScene" uid="uid://b5h8sc5fxkxec" path="res://Scenes/Ch1/NPC's/Best Friend/female_best_friend.tscn" id="23_12s4j"]
 [ext_resource type="Script" uid="uid://d2530bf874ieg" path="res://Scripts/Ch1/ch1_school_controller.gd" id="24_ch1ctrl"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/challenge_npc.tscn" id="25_4lbgn"]
+[ext_resource type="Texture2D" uid="uid://qtxybytnjjp6" path="res://Textures/School Textures/Items/Interactable/Rubber-Duck-32x32.png" id="26_h2wgi"]
+[ext_resource type="Texture2D" uid="uid://drhmk16aca3lh" path="res://Textures/School Textures/Items/Interactable/Wanster-Energy-32x32.png" id="27_62k5o"]
+[ext_resource type="Texture2D" uid="uid://cfnaqn0i45gra" path="res://Textures/School Textures/Items/Interactable/Hacker-Eyeglasses-32x32.png" id="28_6ctce"]
+[ext_resource type="Texture2D" uid="uid://c0l213o3m2bs1" path="res://Textures/School Textures/Items/Interactable/CreditCard-32x32.png" id="29_otfab"]
+[ext_resource type="Texture2D" uid="uid://qiyo21cvgwx2" path="res://Textures/School Textures/Items/Interactable/Encrypted Drive-32x32.png" id="30_aerbk"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
 y_sort_enabled = true
@@ -292,7 +298,7 @@ seat_offset = Vector2(0, -10)
 
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 y_sort_enabled = false
-position = Vector2(401, 10)
+position = Vector2(1887, 202)
 
 [node name="DialogueBox" parent="." unique_id=735967189 instance=ExtResource("13_utip4")]
 visible = false
@@ -317,3 +323,81 @@ position = Vector2(125, 690)
 
 [node name="Ch1SchoolController" type="Node" parent="." unique_id=1861285967]
 script = ExtResource("24_ch1ctrl")
+
+[node name="ChallengeNPC" parent="." unique_id=1143809311 instance=ExtResource("25_4lbgn")]
+position = Vector2(2007, 504)
+npc_name = "Bug Boy"
+intro_line_3 = "PYTHON!"
+challenge_id = "py_debug_01"
+
+[node name="ChallengeNPC2" parent="." unique_id=795328829 instance=ExtResource("25_4lbgn")]
+position = Vector2(1994, 397)
+npc_name = "Step Sister"
+challenge_id = "html_steps_01"
+challenge_topic = "html"
+
+[node name="ChallengeNPC3" parent="." unique_id=1364991588 instance=ExtResource("25_4lbgn")]
+position = Vector2(1999, 297)
+npc_name = "Professor Predict"
+challenge_id = "py_predict_01"
+
+[node name="ChallengeNPC4" parent="." unique_id=1661503793 instance=ExtResource("25_4lbgn")]
+position = Vector2(2001, 201)
+npc_name = "Django Dan"
+challenge_id = "dj_free_01"
+challenge_topic = "django"
+
+[node name="ChallengeNPC5" parent="." unique_id=422677344 instance=ExtResource("25_4lbgn")]
+position = Vector2(2000, 110)
+npc_name = "Terminal Tina"
+challenge_id = "dj_term_01"
+challenge_topic = "django"
+
+[node name="RubberDuck" parent="." unique_id=733640705 instance=ExtResource("17_8rrk8")]
+position = Vector2(1756, 499)
+item_id = "rubber_duck"
+item_name = "Rubber Duck"
+item_description = "An Highlights the bug line in yellow  tome filled with arcane knowledge."
+item_icon = ExtResource("26_h2wgi")
+dialogue_line_1 = "You found a Rubber Duck!"
+dialogue_line_2 = "Is it looking at me...? It looks like a good listener."
+
+[node name="WansterEnergy" parent="." unique_id=1959908888 instance=ExtResource("17_8rrk8")]
+position = Vector2(1691, 402)
+item_id = "wanster_energy"
+item_name = "Wanster Energy"
+item_icon = ExtResource("27_62k5o")
+dialogue_line_1 = "You found a can of Wanster Energy!"
+dialogue_line_2 = "The can says \"1000% Daily Value of Caffeine\". My heart is racing just holding it."
+
+[node name="WansterEnergy2" parent="." unique_id=1983264784 instance=ExtResource("17_8rrk8")]
+position = Vector2(1813, 402)
+item_id = "wanster_energy"
+item_name = "Wanster Energy"
+item_icon = ExtResource("27_62k5o")
+dialogue_line_1 = "You found a can of Wanster Energy!"
+dialogue_line_2 = "The can says \"1000% Daily Value of Caffeine\". My heart is racing just holding it."
+
+[node name="SyntaxGlasses" parent="." unique_id=1248262494 instance=ExtResource("17_8rrk8")]
+position = Vector2(1758, 303)
+item_id = "syntax_glasses"
+item_name = "Syntax Glasses"
+item_icon = ExtResource("28_6ctce")
+dialogue_line_1 = "You found Syntax Glasses!"
+dialogue_line_2 = "Whoa. When I put these on, I can almost see the code in everything."
+
+[node name="OSPremium" parent="." unique_id=812435766 instance=ExtResource("17_8rrk8")]
+position = Vector2(1756, 211)
+item_id = "os_premium"
+item_name = "OS Premium"
+item_icon = ExtResource("29_otfab")
+dialogue_line_1 = "You found an OS Premium Card!"
+dialogue_line_2 = "Wow, someone dropped their Overflow Stack Premium membership... sweet!"
+
+[node name="EncryptedDrive" parent="." unique_id=1541398741 instance=ExtResource("17_8rrk8")]
+position = Vector2(1755, 118)
+item_id = "encrypted_drive"
+item_name = "Encrypted Drive"
+item_icon = ExtResource("30_aerbk")
+dialogue_line_1 = "You found a mysterious Encrypted Drive!"
+dialogue_line_2 = "Someone hastily scratched 'SOLUTIONS' on the casing. Better keep this safe."

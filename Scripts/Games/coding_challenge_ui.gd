@@ -13,6 +13,7 @@ var time_remaining: float = 0.0
 var is_free_type: bool = false  # true when challenge uses free typing instead of options
 var is_terminal: bool = false   # true for terminal command challenges
 var is_dark_theme: bool = true  # light theme troll toggle
+var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 
 # ─── Node References ─────────────────────────────────────────────────────────
 @onready var title_label: Label = $TitleBar/TitleLabel
@@ -80,6 +81,13 @@ var _troll_typing: bool = false
 @onready var stack_logo: Label = $OverflowStackOverlay/StackVBox/StackHeader/StackLogo
 @onready var stack_close_button: Button = $OverflowStackOverlay/StackVBox/StackHeader/StackCloseButton
 
+# Item Buff System
+@onready var item_button: Button = $TitleBar/ItemButton
+@onready var item_popup: PanelContainer = $ItemPopup
+@onready var item_popup_title: Label = $ItemPopup/ItemPopupVBox/ItemPopupTitle
+@onready var item_list: VBoxContainer = $ItemPopup/ItemPopupVBox/ItemPopupScroll/ItemList
+@onready var item_popup_close: Button = $ItemPopup/ItemPopupVBox/ItemPopupClose
+
 # ─── Syntax Colors ───────────────────────────────────────────────────────────
 const COLOR_KEYWORD = "#c678dd"    # purple
 const COLOR_STRING = "#98c379"     # green
@@ -137,6 +145,8 @@ func _ready():
 	stack_close_button.pressed.connect(func(): overflow_overlay.visible = false)
 	troll_dialogue.gui_input.connect(_on_troll_panel_clicked)
 	troll_dialogue.mouse_filter = Control.MOUSE_FILTER_STOP
+	item_button.pressed.connect(_on_item_button_pressed)
+	item_popup_close.pressed.connect(func(): item_popup.visible = false)
 
 	# Initial state
 	results_overlay.visible = false
@@ -149,6 +159,7 @@ func _ready():
 	overflow_overlay.visible = false
 	light_flash.visible = false
 	troll_dialogue.visible = false
+	item_popup.visible = false
 
 	# Style the free-type editor
 	_style_free_type_edit()
@@ -744,6 +755,13 @@ func _show_results(success: bool):
 		results_title.text = "✅ Challenge Solved!"
 		results_title.add_theme_color_override("font_color", Color("98c379"))
 		results_text.text = "Great job! You got it right."
+
+		# Hide X button on success for NPC challenges so they can't accidentally quit
+		if hide_close_button:
+			close_button.visible = false
+			# Auto-emit success after a short delay
+			await get_tree().create_timer(2.0).timeout
+			emit_signal("challenge_completed", true, current_challenge.get("id", ""))
 	else:
 		results_title.text = "❌ Not Quite..."
 		results_title.add_theme_color_override("font_color", Color("e06c75"))
@@ -873,8 +891,8 @@ func _input(event):
 
 	# Otherwise block game-specific actions (movement, interact, etc.)
 	if event.is_action("interact") or event.is_action("ui_cancel") \
-		or event.is_action("move_up") or event.is_action("move_down") \
-		or event.is_action("move_left") or event.is_action("move_right"):
+		or event.is_action("up") or event.is_action("down") \
+		or event.is_action("left") or event.is_action("right"):
 		get_viewport().set_input_as_handled()
 
 # ─── Overflow Stack Popup ───────────────────────────────────────────────────
@@ -1057,3 +1075,225 @@ func _restore_dark_theme():
 	is_dark_theme = true
 	light_flash.visible = false
 	troll_dialogue.visible = false
+
+# ─── Item Buff System ────────────────────────────────────────────────────────
+
+func _on_item_button_pressed():
+	if is_completed:
+		return
+	_play_click()
+	if item_popup.visible:
+		item_popup.visible = false
+		return
+	_populate_item_popup()
+
+func _populate_item_popup():
+	# Clear old items
+	for child in item_list.get_children():
+		child.queue_free()
+
+	# Style the popup
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color("1e1e2e")
+	panel_style.border_color = Color("4a9eff")
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(8)
+	panel_style.set_content_margin_all(10)
+	item_popup.add_theme_stylebox_override("panel", panel_style)
+
+	item_popup_title.add_theme_color_override("font_color", Color("e0e0e0"))
+	item_popup_title.add_theme_font_size_override("font_size", 14)
+
+	# Get usable items for this challenge type
+	var challenge_type = current_challenge.get("type", "debug")
+	var inv = get_node_or_null("/root/InventoryManager")
+	if inv == null:
+		_show_no_items_message("Inventory not available")
+		return
+
+	var usable_items: Array = []
+	for item_id in CodingItems.ITEMS:
+		var item_def = CodingItems.ITEMS[item_id]
+		if challenge_type in item_def["usable_on"] and inv.has_item(item_id):
+			usable_items.append(item_def)
+
+	if usable_items.is_empty():
+		_show_no_items_message("No usable items for this challenge type")
+		return
+
+	# Create a button for each usable item
+	for item_def in usable_items:
+		var item_btn = Button.new()
+		var icon_text = ""
+		match item_def["id"]:
+			CodingItems.RUBBER_DUCK: icon_text = "🦆"
+			CodingItems.WANSTER_ENERGY: icon_text = "☕"
+			CodingItems.SYNTAX_GLASSES: icon_text = "👓"
+			CodingItems.OS_PREMIUM: icon_text = "💳"
+			CodingItems.ENCRYPTED_DRIVE: icon_text = "💾"
+
+		# Show remaining uses
+		var qty_text = ""
+		if item_def.get("consumable", false):
+			var qty = inv.get_item_quantity(item_def["id"])
+			qty_text = " (x" + str(qty) + ")"
+		else:
+			qty_text = " (∞)"
+
+		item_btn.text = icon_text + " " + item_def["name"] + qty_text
+		item_btn.tooltip_text = item_def.get("buff_description", item_def["description"])
+		item_btn.custom_minimum_size = Vector2(0, 36)
+		item_btn.add_theme_font_size_override("font_size", 12)
+
+		var btn_style = StyleBoxFlat.new()
+		btn_style.bg_color = Color("2a2a3e")
+		btn_style.border_color = Color("3d3d5c")
+		btn_style.set_border_width_all(1)
+		btn_style.set_corner_radius_all(4)
+		btn_style.set_content_margin_all(6)
+		item_btn.add_theme_stylebox_override("normal", btn_style)
+		item_btn.add_theme_color_override("font_color", Color("e0e0e0"))
+
+		var hover_style = btn_style.duplicate()
+		hover_style.bg_color = Color("3a3a5e")
+		hover_style.border_color = Color("4a9eff")
+		item_btn.add_theme_stylebox_override("hover", hover_style)
+
+		# Capture item_id for the lambda
+		var captured_id = item_def["id"]
+		item_btn.pressed.connect(func(): _use_item(captured_id))
+		item_list.add_child(item_btn)
+
+	item_popup.visible = true
+	# Animate in
+	item_popup.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(item_popup, "modulate:a", 1.0, 0.2)
+
+func _show_no_items_message(msg: String):
+	var label = Label.new()
+	label.text = msg
+	label.add_theme_color_override("font_color", Color("6a6a8a"))
+	label.add_theme_font_size_override("font_size", 12)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	item_list.add_child(label)
+	item_popup.visible = true
+
+func _use_item(item_id: String):
+	item_popup.visible = false
+
+	var inv = get_node_or_null("/root/InventoryManager")
+	if inv == null:
+		return
+
+	var item_def = CodingItems.ITEMS.get(item_id, {})
+	var item_name = item_def.get("name", "Item")
+
+	# Consume if consumable
+	if item_def.get("consumable", false):
+		inv.remove_item(item_id)
+
+	# Apply the buff
+	match item_id:
+		CodingItems.RUBBER_DUCK:
+			_buff_rubber_duck()
+		CodingItems.WANSTER_ENERGY:
+			_buff_wanster_energy()
+		CodingItems.SYNTAX_GLASSES:
+			_buff_syntax_glasses()
+		CodingItems.OS_PREMIUM:
+			_buff_os_premium()
+		CodingItems.ENCRYPTED_DRIVE:
+			_buff_encrypted_drive()
+
+	# Show usage feedback
+	feedback_label.text = "✨ Used: " + item_name + "!"
+	feedback_label.add_theme_color_override("font_color", Color("61afef"))
+	feedback_label.visible = true
+	await get_tree().create_timer(2.0).timeout
+	if not is_completed:
+		feedback_label.visible = false
+
+# ─── Buff Implementations ────────────────────────────────────────────────────
+
+func _buff_rubber_duck():
+	# Highlight the bug line in yellow in the code display
+	var bug_line = current_challenge.get("bug_line", -1)
+	if bug_line < 0:
+		feedback_label.text = "🦆 Quack! ...but there's no bug to find here."
+		return
+
+	var code_lines = current_challenge.get("code_lines", [])
+	var highlighted_code = ""
+	for i in range(code_lines.size()):
+		var line_num = str(i + 1).pad_zeros(2) if code_lines.size() > 9 else str(i + 1)
+		var line_text = code_lines[i]
+		if i == bug_line:
+			# Highlight this line with a yellow background marker
+			highlighted_code += "[color=#e5c07b][b]→ " + line_num + "  " + line_text + "  ◄ 🦆[/b][/color]\n"
+		else:
+			highlighted_code += "  " + line_num + "  " + line_text + "\n"
+	code_display.text = highlighted_code
+
+func _buff_wanster_energy():
+	# Add 15 seconds to the timer
+	if timer_running:
+		time_remaining += 15.0
+		_update_timer_display()
+		feedback_label.text = "☕ +15 SECONDS! MAXIMUM ENERGY!"
+	else:
+		feedback_label.text = "☕ No timer active, but you feel energized!"
+
+func _buff_syntax_glasses():
+	# Remove one incorrect option button
+	var buttons = options_container.get_children()
+	var wrong_buttons: Array = []
+	var options = current_challenge.get("options", [])
+
+	for i in range(min(buttons.size(), options.size())):
+		if not options[i].get("correct", false) and buttons[i].visible:
+			wrong_buttons.append(buttons[i])
+
+	if wrong_buttons.is_empty():
+		feedback_label.text = "👓 No wrong options to remove!"
+		return
+
+	# Pick a random wrong one and cross it out
+	var to_remove = wrong_buttons[randi() % wrong_buttons.size()]
+	to_remove.disabled = true
+	to_remove.modulate = Color(0.4, 0.4, 0.4, 0.5)
+	to_remove.text = "✕ " + to_remove.text
+
+func _buff_os_premium():
+	# Auto-type the first half of the expected answer
+	var expected = current_challenge.get("expected_answers", [])
+	if expected.is_empty():
+		feedback_label.text = "💳 No answer to auto-complete!"
+		return
+
+	var answer = expected[0]
+	var half = answer.substr(0, int(answer.length() * 0.5))
+	free_type_edit.text = half
+	free_type_edit.visible = true
+	run_button.disabled = false
+
+func _buff_encrypted_drive():
+	# Instantly solve the challenge
+	is_completed = true
+
+	# Show correct output
+	var correct_output = current_challenge.get("correct_output", "✓ Correct!")
+	output_display.text = correct_output
+
+	# Play correct SFX
+	if correct_sfx and correct_sfx.stream:
+		correct_sfx.play()
+
+	# Show results
+	feedback_label.text = "💾 Encrypted Drive activated! Solution uploaded."
+	feedback_label.add_theme_color_override("font_color", Color("98c379"))
+	feedback_label.visible = true
+	run_button.disabled = true
+
+	await get_tree().create_timer(1.5).timeout
+	_show_results(true)

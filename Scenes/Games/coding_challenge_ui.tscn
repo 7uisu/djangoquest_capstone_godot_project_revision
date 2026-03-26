@@ -56,6 +56,11 @@ custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
 text = "⚙️"
 
+[node name="ItemButton" type="Button" parent="TitleBar"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "🎒 Use Item"
+
 [node name="MainContent" type="HSplitContainer" parent="." unique_id=1943070014]
 layout_mode = 1
 anchors_preset = -1
@@ -372,3 +377,42 @@ fit_content = true
 [node name="StackUser" type="Label" parent="OverflowStackOverlay/StackVBox"]
 layout_mode = 2
 horizontal_alignment = 2
+
+[node name="ItemPopup" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -120.0
+offset_right = 160.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemPopupVBox" type="VBoxContainer" parent="ItemPopup"]
+layout_mode = 2
+
+[node name="ItemPopupTitle" type="Label" parent="ItemPopup/ItemPopupVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+text = "🎒 Use an Item"
+vertical_alignment = 1
+
+[node name="ItemPopupSeparator" type="HSeparator" parent="ItemPopup/ItemPopupVBox"]
+layout_mode = 2
+
+[node name="ItemPopupScroll" type="ScrollContainer" parent="ItemPopup/ItemPopupVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemList" type="VBoxContainer" parent="ItemPopup/ItemPopupVBox/ItemPopupScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemPopupClose" type="Button" parent="ItemPopup/ItemPopupVBox"]
+layout_mode = 2
+text = "Cancel"
