@@ -296,10 +296,6 @@ z_index = -1
 position = Vector2(303, 861)
 seat_offset = Vector2(0, -10)
 
-[node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
-y_sort_enabled = false
-position = Vector2(1887, 202)
-
 [node name="DialogueBox" parent="." unique_id=735967189 instance=ExtResource("13_utip4")]
 visible = false
 
@@ -401,3 +397,7 @@ item_name = "Encrypted Drive"
 item_icon = ExtResource("30_aerbk")
 dialogue_line_1 = "You found a mysterious Encrypted Drive!"
 dialogue_line_2 = "Someone hastily scratched 'SOLUTIONS' on the casing. Better keep this safe."
+
+[node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
+y_sort_enabled = false
+position = Vector2(1887, 202)

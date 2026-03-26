@@ -7,6 +7,8 @@ const ACCELERATION = 12.0
 
 var inventory_ui_scene = preload("res://Scenes/UI/inventory_ui.tscn")
 var inventory_ui = null
+var laptop_ui_scene = preload("res://Scenes/UI/laptop_ui.tscn")
+var laptop_ui = null
 const DECELERATION = 18.0
 
 @onready var pages_label = $Camera2D/Guide1Label
@@ -39,6 +41,10 @@ func _ready():
 	if inventory_ui_scene:
 		inventory_ui = inventory_ui_scene.instantiate()
 		get_tree().current_scene.add_child.call_deferred(inventory_ui)
+	# Instance laptop UI (available on every map)
+	if laptop_ui_scene:
+		laptop_ui = laptop_ui_scene.instantiate()
+		get_tree().current_scene.add_child.call_deferred(laptop_ui)
 
 func _physics_process(delta):
 	# When sitting, freeze completely — no movement, no animation changes
@@ -131,8 +137,10 @@ func play_sitting_animation(direction: String) -> void:
 		animated_sprite.play("female_sitting_" + anim_dir)
 
 func _input(event):
-	# Toggle inventory
+	# Toggle inventory (E key)
 	if event.is_action_pressed("toggle_inventory"):
+		if laptop_ui and laptop_ui.is_open:
+			return  # Don't open inventory while laptop is open
 		if inventory_ui and inventory_ui.has_method("open") and inventory_ui.has_method("close"):
 			if inventory_ui.is_open:
 				inventory_ui.close()
@@ -140,8 +148,19 @@ func _input(event):
 				inventory_ui.open()
 		return
 
-	# Don't allow interactions while inventory is open
-	if inventory_ui and inventory_ui.is_open:
+	# Toggle laptop (X key)
+	if event.is_action_pressed("toggle_laptop"):
+		if inventory_ui and inventory_ui.is_open:
+			return  # Don't open laptop while inventory is open
+		if laptop_ui and laptop_ui.has_method("open") and laptop_ui.has_method("close"):
+			if laptop_ui.is_open:
+				laptop_ui.close()
+			else:
+				laptop_ui.open()
+		return
+
+	# Don't allow interactions while inventory or laptop is open
+	if (inventory_ui and inventory_ui.is_open) or (laptop_ui and laptop_ui.is_open):
 		return
 
 	if event.is_action_pressed("interact") and can_interact:

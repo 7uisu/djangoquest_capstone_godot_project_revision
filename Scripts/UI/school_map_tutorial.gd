@@ -10,6 +10,7 @@ var tutorial_lines: Array = [
 	{ "name": "", "text": "Hold Shift to sprint." },
 	{ "name": "", "text": "Press F near objects and people to interact." },
 	{ "name": "", "text": "Press E to open your inventory." },
+	{ "name": "", "text": "Press X to open your Laptop (DjangoOS)." },
 	{ "name": "", "text": "Good luck on your journey!" },
 ]
 

@@ -391,6 +391,12 @@ func _setup_timer():
 		time_remaining = float(current_challenge.get("time_limit", 30))
 		timer_label.visible = true
 		timer_running = true
+
+		# Make timer more prominent
+		timer_label.add_theme_font_size_override("font_size", 16)
+		timer_label.custom_minimum_size = Vector2(90, 0)
+		timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
 		_update_timer_display()
 	else:
 		timer_label.visible = false
@@ -399,13 +405,32 @@ func _setup_timer():
 func _setup_bottom_bar():
 	progress_label.text = current_challenge.get("topic", "").to_upper() + " — " + current_challenge.get("title", "")
 
+var _timer_pulse_tween: Tween = null
+
 func _update_timer_display():
 	var seconds = int(time_remaining)
 	var color = "#98c379" # green
 	if seconds <= 10:
-		color = "#e06c75" # red
+		color = "#e06c75" # red — danger!
+		# Pulse effect when low
+		if _timer_pulse_tween == null or not _timer_pulse_tween.is_valid():
+			_timer_pulse_tween = create_tween().set_loops()
+			_timer_pulse_tween.tween_property(timer_label, "modulate:a", 0.4, 0.4)
+			_timer_pulse_tween.tween_property(timer_label, "modulate:a", 1.0, 0.4)
 	elif seconds <= 20:
-		color = "#d19a66" # orange
+		color = "#d19a66" # orange — warning
+		# Stop pulse if it was running
+		if _timer_pulse_tween and _timer_pulse_tween.is_valid():
+			_timer_pulse_tween.kill()
+			_timer_pulse_tween = null
+			timer_label.modulate.a = 1.0
+	else:
+		# Stop pulse if it was running
+		if _timer_pulse_tween and _timer_pulse_tween.is_valid():
+			_timer_pulse_tween.kill()
+			_timer_pulse_tween = null
+			timer_label.modulate.a = 1.0
+
 	timer_label.text = "⏱ " + str(seconds) + "s"
 	timer_label.add_theme_color_override("font_color", Color(color))
 
