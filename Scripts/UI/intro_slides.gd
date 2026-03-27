@@ -24,6 +24,9 @@ var male_slides: Array = [
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO5BOY.png", "text": "As the cityscape passes by, Mateo imagines the projects he'll build." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO6.png", "text": "The bus slows down... his new school comes into view." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO7.png", "text": "Taking a deep breath, Mateo prepares to step into a new chapter of his life." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO8BOY.png", "text": "The hallway seems larger, buzzing with students eager to learn." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO9BOY.png", "text": "She finds her classroom, spotting a familiar face among the crowd." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO10BOY.png", "text": "This is it – the beginning of her Django Quest!" },
 ]
 
 var female_slides: Array = [
