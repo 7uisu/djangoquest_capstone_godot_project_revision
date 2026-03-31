@@ -30,7 +30,7 @@ var teacher: Area2D = null
 var dialogue_box = null
 
 var _is_fading: bool = false
-var _teaching_image_rect: ColorRect = null
+var _teaching_image_rect: ColorRect = null  # DEPRECATED — kept for compatibility
 var _hallway_dialogue_played: bool = false
 var _did_remedial_class: bool = false
 
@@ -223,87 +223,224 @@ func _sit_player_instantly():
 		shadow.visible = false
 
 func _play_teaching_sequence():
-	# This shows the professor "teaching" with dialogue + chat bubble + 
-	# a placeholder rectangle for a picture (user will add art later)
-
-	# --- Step 1: Show the placeholder image rectangle ---
-	_show_teaching_image()
-
-	# --- Step 2: Mix of Dialogue Box and Chat Bubble ---
-	var lines_pt1 = [
-		{ "name": "Professor", "text": "Today we'll be learning about the history of Python." }
-	]
-	var lines_pt2 = [
-		{ "name": "Professor", "text": "Python was created by Guido van Rossum in the late 1980s." },
-		{ "name": "Professor", "text": "It was designed with code readability and simplicity in mind." }
-	]
-	var lines_pt3 = [
-		{ "name": "Professor", "text": "Alright, time for a quick quiz to see what you've learned!" }
-	]
-
+	# Multi-part teaching sequence with fullscreen slides + student banter
+	# All lines use dialogue box + fullscreen images (no chat bubbles — they go off-screen)
+	# Quiz-relevant terms are highlighted with [color=yellow][b]...[/b][/color]
+	
+	# Slide texture paths
+	const SLIDES = "res://Textures/SHS_Prof_Teaching_Slides/"
+	
+	# Pick gender-appropriate student images
+	var is_male = character_data.selected_gender == "male"
+	var img_student_raising = SLIDES + ("StudentRaisingHandMale.png" if is_male else "StudentRaisingHandFemale.png")
+	var img_student_talking = SLIDES + ("StudentTalkingMale.png" if is_male else "StudentTalkingFemale.png")
+	var img_player_with_students = SLIDES + ("PlayerWithStudentsMale.png" if is_male else "PlayerWithStudentsFemale.png")
+	
+	# ─── Part 1: Introduction ──────────────────────────────────────────
+	_show_teaching_image_fullscreen(SLIDES + "TeacherFacingStudentStanding.png")
+	
 	if dialogue_box:
-		dialogue_box.start(lines_pt1)
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Good morning, class! Today we'll be diving into the history of [color=yellow][b]Python[/b][/color]." },
+			{ "name": "Professor", "text": "Pay attention — there will be a quiz at the end!" }
+		])
 		await dialogue_box.dialogue_finished
 	
-	if teacher:
-		var chat_bubble_scene = preload("res://Scenes/UI/chat_bubble.tscn")
-		var bubble = teacher.get_node_or_null("ChatBubble")
-		if not bubble:
-			bubble = chat_bubble_scene.instantiate()
-			bubble.name = "ChatBubble"
-			teacher.add_child(bubble)
-		bubble.start(lines_pt2, null)
-		await bubble.dialogue_finished
-
+	# ─── Part 2: Creator & Origins (Quiz Q1 & Q3) ─────────────────────
+	_change_teaching_image(SLIDES + "TeacherFacingStudentPointingAtBoard.png")
+	
 	if dialogue_box:
-		dialogue_box.start(lines_pt3)
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Python was created by a Dutch programmer named [color=yellow][b]Guido van Rossum[/b][/color]." },
+			{ "name": "Professor", "text": "He began working on it back in [color=yellow][b]1989[/b][/color] — that's over 30 years ago!" },
+			{ "name": "Professor", "text": "He wanted to create a language that was easy to read and fun to use." }
+		])
 		await dialogue_box.dialogue_finished
 	
+	# Student raises hand — "Is Python named after the snake?"
+	_change_teaching_image(img_student_raising)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Student", "text": "Sir! Is Python named after the snake? 🐍" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# Professor reacts (amused)
+	_change_teaching_image(SLIDES + "TeacherFacingStudentArmsCrossed2.png")
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Ha! That's actually a very common misconception." },
+			{ "name": "Professor", "text": "A lot of people think it's named after a snake, but nope!" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# ─── Part 3: The Name (Quiz Q2) ───────────────────────────────────
+	_change_teaching_image(SLIDES + "TeacherFacingWWhiteboardLookingAtStudents1.png")
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Professor", "text": "The name actually comes from a British comedy show..." },
+			{ "name": "Professor", "text": "[color=yellow][b]\"Monty Python's Flying Circus!\"[/b][/color] Guido was a huge fan." },
+			{ "name": "Professor", "text": "He wanted his programming language to be just as fun and approachable." }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# Student reacts — surprised
+	_change_teaching_image(img_student_talking)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Student", "text": "Wait, so it's from a comedy show? That's actually cool!" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# Another student reacts — funny (use raising hand variant for variety)
+	_change_teaching_image(img_student_raising)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Student", "text": "I thought programmers were supposed to be serious... guess not! 😂" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# ─── Part 4: Design Goals (Quiz Q4) ───────────────────────────────
+	_change_teaching_image(SLIDES + "TeacherFacingWWhiteboardLookingAtStudents2.png")
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Now, one of Python's core design goals is [color=yellow][b]readability and simplicity[/b][/color]." },
+			{ "name": "Professor", "text": "Unlike other languages with lots of brackets and semicolons..." },
+			{ "name": "Professor", "text": "Python uses clean indentation. It almost reads like plain English!" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# Student raises hand — asks about readability
+	_change_teaching_image(img_student_raising)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Student", "text": "So that's why the code looks like English? That's neat!" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	_change_teaching_image(SLIDES + "TeacherFacingStudentArmsCrossed1.png")
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Exactly! That's one of the reasons Python is so popular with beginners." },
+			{ "name": "Professor", "text": "It lets you focus on solving problems instead of fighting with syntax." }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# ─── Part 5: Python Today (Quiz Q5) ───────────────────────────────
+	_change_teaching_image(SLIDES + "TeacherFacingWWhiteboardLookingAtStudents3.png")
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Today, Python is used everywhere — from web apps to science!" },
+			{ "name": "Professor", "text": "Even [color=yellow][b]NASA[/b][/color] uses Python for space-related tasks and data analysis." },
+			{ "name": "Professor", "text": "Companies like Google, Netflix, and Instagram also rely on it." }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# Student reacts — amazed
+	_change_teaching_image(img_student_raising)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Student", "text": "Wow, even NASA uses it?! That's awesome! 🚀" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	_change_teaching_image(img_student_talking)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Student", "text": "I bet we could build something cool with Python too!" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# ─── Part 6: Wrap-up & Quiz Announcement ──────────────────────────
+	_change_teaching_image(img_player_with_students)
+	
+	if dialogue_box:
+		dialogue_box.start([
+			{ "name": "Professor", "text": "Alright class, that wraps up our lesson on Python's history!" },
+			{ "name": "Professor", "text": "Now, let's see how well you were paying attention..." },
+			{ "name": "Professor", "text": "Time for a quick quiz! Good luck!" }
+		])
+		await dialogue_box.dialogue_finished
+	
+	# Hide the image before the quiz starts
+	_hide_teaching_image()
 	# Don't unfreeze the player yet — quiz comes next
 
-func _show_teaching_image():
-	# Create a placeholder rectangle (ColorRect) on a CanvasLayer
-	# The user can replace the color with a TextureRect + their picture later
-	var canvas = CanvasLayer.new()
-	canvas.name = "TeachingImageLayer"
-	canvas.layer = 5
-	get_parent().add_child(canvas)
 
-	_teaching_image_rect = ColorRect.new()
-	_teaching_image_rect.name = "TeachingImagePlaceholder"
-	_teaching_image_rect.color = Color(0.15, 0.15, 0.2, 0.95)
-	# Center it in the top half of the screen
-	_teaching_image_rect.position = Vector2(80, 20)
-	_teaching_image_rect.size = Vector2(480, 200)
-	canvas.add_child(_teaching_image_rect)
+# ── Fullscreen Teaching Image Helpers ─────────────────────────────────
 
-	# Add a label saying "Teaching Image Here"
-	var label = Label.new()
-	label.text = "[Teaching Image Placeholder]\nReplace with your art!"
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.position = Vector2(0, 0)
-	label.size = Vector2(480, 200)
-	label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	_teaching_image_rect.add_child(label)
+var _teaching_canvas: CanvasLayer = null
+var _teaching_texture_rect: TextureRect = null
+
+func _show_teaching_image_fullscreen(texture_path: String):
+	# Create the canvas layer if it doesn't exist yet
+	if not _teaching_canvas:
+		_teaching_canvas = CanvasLayer.new()
+		_teaching_canvas.name = "TeachingImageLayer"
+		_teaching_canvas.layer = 5
+		get_parent().add_child(_teaching_canvas)
+		
+		_teaching_texture_rect = TextureRect.new()
+		_teaching_texture_rect.name = "TeachingImage"
+		_teaching_texture_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+		_teaching_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_teaching_texture_rect.anchors_preset = Control.PRESET_FULL_RECT
+		_teaching_texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_teaching_canvas.add_child(_teaching_texture_rect)
+	
+	# Load and set the texture
+	var tex = load(texture_path)
+	if tex:
+		_teaching_texture_rect.texture = tex
+	
+	_teaching_canvas.visible = true
+
+func _change_teaching_image(texture_path: String):
+	if _teaching_texture_rect:
+		var tex = load(texture_path)
+		if tex:
+			_teaching_texture_rect.texture = tex
+		if _teaching_canvas:
+			_teaching_canvas.visible = true
+	else:
+		_show_teaching_image_fullscreen(texture_path)
 
 func _hide_teaching_image():
-	var canvas = get_parent().get_node_or_null("TeachingImageLayer")
-	if canvas:
-		canvas.queue_free()
-	_teaching_image_rect = null
+	if _teaching_canvas:
+		_teaching_canvas.visible = false
 
-func _on_teaching_dialogue_finished():
-	pass  # Handled by await
+func _cleanup_teaching_image():
+	if _teaching_canvas:
+		_teaching_canvas.queue_free()
+		_teaching_canvas = null
+		_teaching_texture_rect = null
+
+## Spawn or reuse a chat bubble on any NPC node and start dialogue
+func _start_bubble_on(npc: Node2D, bubble_scene: PackedScene, lines: Array):
+	var bubble = npc.get_node_or_null("ChatBubble")
+	if not bubble:
+		bubble = bubble_scene.instantiate()
+		bubble.name = "ChatBubble"
+		npc.add_child(bubble)
+	bubble.start(lines, null)
+	return bubble
 
 # -----------------------------------------------------------------------
 #  QUIZ
 # -----------------------------------------------------------------------
 
 func _show_quiz():
-	# Hide the teaching image before quiz
-	_hide_teaching_image()
-
 	# Instantiate the quiz as a CanvasLayer overlay
 	var quiz_canvas = CanvasLayer.new()
 	quiz_canvas.name = "QuizOverlay"
