@@ -102,7 +102,7 @@ y_sort_enabled = true
 y_sort_enabled = true
 position = Vector2(400, -36)
 script = ExtResource("14_mapdoor")
-target_scene = "res://Scenes/Ch1/outdoor_map.tscn"
+target_scene = "res://Scenes/Ch1/outdoor_map_convenience_store_cutscene2.tscn"
 spawn_position = Vector2(320, 895)
 entry_direction = "up"
 
@@ -110,7 +110,7 @@ entry_direction = "up"
 y_sort_enabled = true
 position = Vector2(528, -36)
 script = ExtResource("14_mapdoor")
-target_scene = "res://Scenes/Ch1/outdoor_map.tscn"
+target_scene = "res://Scres://Scenes/Ch1/outdoor_map_convenience_store_cutscene2.tscn"
 spawn_position = Vector2(512, 895)
 entry_direction = "up"
 
