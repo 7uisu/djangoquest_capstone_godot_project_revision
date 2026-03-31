@@ -309,7 +309,7 @@ dialogue_line_1 = "You found a Ball."
 dialogue_line_2 = "I wonder what it is for?"
 
 [node name="StudentNPC-01" parent="." unique_id=869782952 instance=ExtResource("21_dabgb")]
-position = Vector2(128, 551)
+position = Vector2(-799, 513)
 
 [node name="MaleBestFriend" parent="." unique_id=1326079520 instance=ExtResource("22_5nxug")]
 position = Vector2(261, 551)
@@ -400,4 +400,4 @@ dialogue_line_2 = "Someone hastily scratched 'SOLUTIONS' on the casing. Better k
 
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 y_sort_enabled = false
-position = Vector2(1885, 248)
+position = Vector2(481, 392)
