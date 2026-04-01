@@ -1,6 +1,8 @@
 # scene_transition.gd — Autoload for polished scene transitions
 extends CanvasLayer
 
+signal fast_travel_completed(target_position: Vector2)
+
 @onready var color_rect: ColorRect = $ColorRect
 
 var _spawn_position: Vector2 = Vector2.ZERO
@@ -96,8 +98,11 @@ func _find_player() -> Node2D:
 
 func _set_player_movement(enabled: bool) -> void:
 	var player = _find_player()
-	if player and "can_move" in player:
-		player.can_move = enabled
+	if player:
+		if "can_move" in player:
+			player.can_move = enabled
+		if "can_interact" in player:
+			player.can_interact = enabled
 
 ## Fast travel: teleport the player on the SAME map with a bus transition overlay.
 ## No scene change — just teleport + animation.
@@ -132,6 +137,9 @@ func fast_travel(target_position: Vector2, goes_right: bool = true) -> void:
 
 	# Re-enable player movement
 	_set_player_movement(true)
+
+	# Notify listeners that fast travel is complete
+	fast_travel_completed.emit(target_position)
 
 ## Transition to a NEW scene with the bus driving animation.
 ## Unlike fast_travel(), this actually changes the scene.

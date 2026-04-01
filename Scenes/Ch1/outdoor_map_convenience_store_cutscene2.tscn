@@ -33,6 +33,8 @@
 [ext_resource type="PackedScene" uid="uid://dp2nfuwgoyl6f" path="res://Scenes/Player/player.tscn" id="31_6bkyb"]
 [ext_resource type="PackedScene" uid="uid://b5h8sc5fxkxec" path="res://Scenes/Ch1/NPC's/Best Friend/female_best_friend.tscn" id="32_u6irl"]
 [ext_resource type="PackedScene" uid="uid://cq352l1pjhmdu" path="res://Scenes/Ch1/NPC's/Best Friend/male_best_friend.tscn" id="33_wc76f"]
+[ext_resource type="PackedScene" uid="uid://5acxv7p5l5dl" path="res://Scenes/Ch1/NPC's/shs_teacher.tscn" id="34_6tvux"]
+[ext_resource type="Script" uid="uid://bmlkuoq5msthd" path="res://Scripts/Ch1/ch1_convenience_store_controller.gd" id="35_ctrl"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_hhyer"]
 texture = ExtResource("1_foyf0")
@@ -56892,7 +56894,7 @@ tile_set = SubResource("TileSet_m7bvw")
 position = Vector2(6714, 1374)
 script = ExtResource("6_h3fih")
 target_scene = "res://Scenes/Ch1/internet_cafe_map.tscn"
-spawn_position = Vector2(382, 293)
+spawn_position = Vector2(134, 440)
 
 [node name="InternetCafeFrontDoor2" parent="City/InternetCafe" unique_id=1101334705 instance=ExtResource("27_dlroy")]
 position = Vector2(6789, 1376)
@@ -56903,10 +56905,6 @@ spawn_position = Vector2(449, 293)
 [node name="cars_design-01" type="TileMapLayer" parent="City" unique_id=1768156564]
 tile_map_data = PackedByteArray("AACuACgAAQAaABkAAACuACkAAQAaABoAAACuACoAAQAaABsAAACvACgAAQAbABkAAACvACkAAQAbABoAAACvACoAAQAbABsAAACwACgAAQAcABkAAACwACkAAQAcABoAAACwACoAAQAcABsAAACxACgAAQAdABkAAACxACkAAQAdABoAAACxACoAAQAdABsAAACyACgAAQAeABkAAACyACkAAQAeABoAAACyACoAAQAeABsAAACzACgAAQAfABkAAACzACkAAQAfABoAAACzACoAAQAfABsAAAA=")
 tile_set = SubResource("TileSet_psjw4")
-
-[node name="BusFastTravel2" parent="City" unique_id=1828258418 instance=ExtResource("28_2dgey")]
-position = Vector2(5679, 1418)
-destination_names = ["School", "Internet Cafe", "Store "]
 
 [node name="11-7" type="Node2D" parent="City" unique_id=2111358275]
 
@@ -56930,10 +56928,20 @@ tile_map_data = PackedByteArray("AAC+ACIAAAAbAB0AAAC+ACMAAAAbAB4AAAC+ACQAAAAbAB8
 tile_set = SubResource("TileSet_wctbs")
 
 [node name="Player" parent="." unique_id=833241429 instance=ExtResource("31_6bkyb")]
-position = Vector2(5885, 1412)
+position = Vector2(5792, 1378)
 
 [node name="FemaleBestFriend" parent="." unique_id=1312096163 instance=ExtResource("32_u6irl")]
-position = Vector2(6010, 1345)
+position = Vector2(5930, 1375)
 
 [node name="MaleBestFriend" parent="." unique_id=1326079520 instance=ExtResource("33_wc76f")]
-position = Vector2(6041, 1385)
+position = Vector2(5900, 1370)
+
+[node name="SHSTeacher" parent="." unique_id=490620993 instance=ExtResource("34_6tvux")]
+position = Vector2(6065, 1350)
+
+[node name="Ch1ConvenienceStoreController" type="Node" parent="." unique_id=1540636594]
+script = ExtResource("35_ctrl")
+
+[node name="BusFastTravel2" parent="." unique_id=1828258418 instance=ExtResource("28_2dgey")]
+position = Vector2(5679, 1418)
+destination_names = ["School", "Internet Cafe", "Store "]

@@ -1188,7 +1188,8 @@ y_sort_enabled = true
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=355944829]
 sprite_frames = SubResource("SpriteFrames_bl28f")
-animation = &"male_college_idle_down"
+animation = &"male_student_idle_left"
+autoplay = "male_student_idle_left"
 
 [node name="Label" type="Label" parent="." unique_id=147172816]
 visible = false

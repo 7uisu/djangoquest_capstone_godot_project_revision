@@ -1140,8 +1140,8 @@ radius = 12.0
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1798379526]
 y_sort_enabled = true
 sprite_frames = SubResource("SpriteFrames_hpkml")
-animation = &"female_student_idle_down"
-autoplay = "female_student_idle_down"
+animation = &"female_student_idle_left"
+autoplay = "female_student_idle_left"
 
 [node name="Label" type="Label" parent="." unique_id=1678930086]
 visible = false

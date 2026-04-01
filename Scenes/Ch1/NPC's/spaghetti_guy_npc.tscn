@@ -1,0 +1,98 @@
+[gd_scene format=3 uid="uid://dtdkf5whbgonw"]
+
+[ext_resource type="Texture2D" uid="uid://2xbiby75taka" path="res://Textures/NPC/NPC Male Students/NPCMaleStudent01.png" id="1_h4phq"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_73ix8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qxack"]
+atlas = ExtResource("1_h4phq")
+region = Rect2(192, 265, 32, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ac48p"]
+atlas = ExtResource("1_h4phq")
+region = Rect2(224, 265, 32, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o26my"]
+atlas = ExtResource("1_h4phq")
+region = Rect2(256, 265, 32, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cd3mm"]
+atlas = ExtResource("1_h4phq")
+region = Rect2(288, 265, 32, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r8qn4"]
+atlas = ExtResource("1_h4phq")
+region = Rect2(320, 265, 32, 53)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_obp1o"]
+atlas = ExtResource("1_h4phq")
+region = Rect2(352, 265, 32, 53)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_a0s04"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qxack")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ac48p")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_o26my")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cd3mm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_r8qn4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_obp1o")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_15syp"]
+radius = 18.110771
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_qnixx"]
+radius = 12.0
+
+[node name="SpaghettiGuyNPC" type="CharacterBody2D" unique_id=1728671453]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1973238076]
+sprite_frames = SubResource("SpriteFrames_a0s04")
+autoplay = "default"
+
+[node name="Label" type="Label" parent="." unique_id=127532323]
+z_index = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30.0
+offset_top = -40.0
+offset_right = 30.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_73ix8")
+text = "(F) to Talk"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1861344339]
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_15syp")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=21261210]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1953609461]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_qnixx")

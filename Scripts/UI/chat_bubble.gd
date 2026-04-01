@@ -56,7 +56,7 @@ func _clamp_to_viewport():
 
 	# Default desired position: above the NPC, centered
 	var desired_x = npc_pos.x - bubble_size.x / 2.0
-	var desired_y = npc_pos.y - bubble_size.y - 20.0 / zoom.y  # 20px gap above NPC
+	var desired_y = npc_pos.y - bubble_size.y - 60.0 / zoom.y  # 60px gap above NPC
 
 	# Clamp X: keep bubble within left/right edges
 	desired_x = clampf(desired_x, cam_left + padding, cam_right - bubble_size.x - padding)

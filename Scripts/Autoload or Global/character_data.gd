@@ -9,6 +9,7 @@ var has_seen_tutorial: bool = false
 var ch1_teaching_done: bool = false
 var ch1_quiz_done: bool = false
 var ch1_post_quiz_dialogue_done: bool = false
+var ch1_convenience_store_cutscene_done: bool = false
 
 # Level unlock tracking (index 0 = level 1, etc.)
 const LEVEL_COUNT = 4
@@ -22,6 +23,7 @@ func reset_data():
 	ch1_teaching_done = false
 	ch1_quiz_done = false
 	ch1_post_quiz_dialogue_done = false
+	ch1_convenience_store_cutscene_done = false
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 
