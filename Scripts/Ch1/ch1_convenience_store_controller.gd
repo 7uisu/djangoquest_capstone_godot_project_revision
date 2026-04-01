@@ -363,7 +363,26 @@ func _play_cutscene():
 
 	await get_tree().create_timer(0.3).timeout
 
-	# 14. Fade to black, teleport to internet cafe door, fade in
+	# 14. Player walks down a bit, then walks right. Fade out starts while walking
+	var walk_right: Tween = null
+	if player:
+		# Player walks down to get out of BFs' way
+		player.current_dir = "down"
+		player.play_walk_animation("down")
+		var walk_down = create_tween()
+		walk_down.tween_property(player, "global_position:y", player.global_position.y + 40, 0.5)
+		await walk_down.finished
+
+		# Player walks right towards internet cafe
+		player.current_dir = "right"
+		player.play_walk_animation("right")
+		walk_right = create_tween()
+		walk_right.tween_property(player, "global_position:x", player.global_position.x + 150, 2.0)
+
+		# Give them a split second to start walking right before starting the fade
+		await get_tree().create_timer(0.4).timeout
+
+	# 15. Fade to black, teleport to internet cafe door, fade in
 	var scene_transition = get_node_or_null("/root/SceneTransition")
 	if scene_transition:
 		var cr = scene_transition.color_rect
@@ -380,6 +399,9 @@ func _play_cutscene():
 
 		# Teleport player to internet cafe door
 		if player:
+			# Kill the active walking tween so it doesn't override our teleport position
+			if walk_right and walk_right.is_valid():
+				walk_right.kill()
 			player.global_position = Vector2(6714, 1425)
 			player.current_dir = "up"
 			player.play_idle_animation("up")
