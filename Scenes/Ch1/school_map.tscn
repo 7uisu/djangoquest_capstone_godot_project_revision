@@ -24,11 +24,16 @@
 [ext_resource type="PackedScene" uid="uid://cq352l1pjhmdu" path="res://Scenes/Ch1/NPC's/Best Friend/male_best_friend.tscn" id="22_5nxug"]
 [ext_resource type="PackedScene" uid="uid://b5h8sc5fxkxec" path="res://Scenes/Ch1/NPC's/Best Friend/female_best_friend.tscn" id="23_12s4j"]
 [ext_resource type="Script" uid="uid://d2530bf874ieg" path="res://Scripts/Ch1/ch1_school_controller.gd" id="24_ch1ctrl"]
-[ext_resource type="PackedScene" path="res://Scenes/Interactables/challenge_npc.tscn" id="25_4lbgn"]
+[ext_resource type="PackedScene" uid="uid://bq5hq00uvm77t" path="res://Scenes/Interactables/challenge_npc.tscn" id="25_4lbgn"]
+[ext_resource type="Texture2D" uid="uid://badu265r7o5fc" path="res://Textures/NPC/College Profs/Female/NPCFemaleCollegeProf01.png" id="25_62k5o"]
+[ext_resource type="Texture2D" uid="uid://bsdjnsdvgrctm" path="res://Textures/NPC/College Profs/Female/NPCFemaleCollegeProf02.png" id="26_6ctce"]
 [ext_resource type="Texture2D" uid="uid://qtxybytnjjp6" path="res://Textures/School Textures/Items/Interactable/Rubber-Duck-32x32.png" id="26_h2wgi"]
 [ext_resource type="Texture2D" uid="uid://drhmk16aca3lh" path="res://Textures/School Textures/Items/Interactable/Wanster-Energy-32x32.png" id="27_62k5o"]
+[ext_resource type="Texture2D" uid="uid://bydamj5jhaxea" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf01.png" id="27_j66d0"]
 [ext_resource type="Texture2D" uid="uid://cfnaqn0i45gra" path="res://Textures/School Textures/Items/Interactable/Hacker-Eyeglasses-32x32.png" id="28_6ctce"]
+[ext_resource type="Texture2D" uid="uid://cusqtg770q062" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent02.png" id="28_6st8i"]
 [ext_resource type="Texture2D" uid="uid://c0l213o3m2bs1" path="res://Textures/School Textures/Items/Interactable/CreditCard-32x32.png" id="29_otfab"]
+[ext_resource type="Texture2D" uid="uid://dgc66mi4d6mms" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent04.png" id="29_ov5yb"]
 [ext_resource type="Texture2D" uid="uid://qiyo21cvgwx2" path="res://Textures/School Textures/Items/Interactable/Encrypted Drive-32x32.png" id="30_aerbk"]
 
 [node name="SchoolMap" type="Node2D" unique_id=1147700859]
@@ -322,29 +327,34 @@ script = ExtResource("24_ch1ctrl")
 
 [node name="ChallengeNPC" parent="." unique_id=1143809311 instance=ExtResource("25_4lbgn")]
 position = Vector2(2007, 504)
+npc_texture = ExtResource("25_62k5o")
 npc_name = "Bug Boy"
 intro_line_3 = "PYTHON!"
 challenge_id = "py_debug_01"
 
 [node name="ChallengeNPC2" parent="." unique_id=795328829 instance=ExtResource("25_4lbgn")]
 position = Vector2(1994, 397)
+npc_texture = ExtResource("26_6ctce")
 npc_name = "Step Sister"
 challenge_id = "html_steps_01"
 challenge_topic = "html"
 
 [node name="ChallengeNPC3" parent="." unique_id=1364991588 instance=ExtResource("25_4lbgn")]
 position = Vector2(1999, 297)
+npc_texture = ExtResource("27_j66d0")
 npc_name = "Professor Predict"
 challenge_id = "py_predict_01"
 
 [node name="ChallengeNPC4" parent="." unique_id=1661503793 instance=ExtResource("25_4lbgn")]
 position = Vector2(2001, 201)
+npc_texture = ExtResource("28_6st8i")
 npc_name = "Django Dan"
 challenge_id = "dj_free_01"
 challenge_topic = "django"
 
 [node name="ChallengeNPC5" parent="." unique_id=422677344 instance=ExtResource("25_4lbgn")]
 position = Vector2(2000, 110)
+npc_texture = ExtResource("29_ov5yb")
 npc_name = "Terminal Tina"
 challenge_id = "dj_term_01"
 challenge_topic = "django"
@@ -400,4 +410,4 @@ dialogue_line_2 = "Someone hastily scratched 'SOLUTIONS' on the casing. Better k
 
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 y_sort_enabled = false
-position = Vector2(481, 392)
+position = Vector2(1866, 284)

@@ -5,6 +5,9 @@ extends Area2D
 ## Which dialogue UI to use for this NPC.
 enum DialogueMode { VISUAL_NOVEL, CHAT_BUBBLE }
 
+## NPC skin — drag any NPC spritesheet here to change appearance per-instance
+@export var npc_texture: Texture2D
+
 @export var interaction_text: String = "(F) to Talk"
 @export var speaker_name: String = "???"
 @export var speaker_portrait: Texture2D = null
@@ -45,6 +48,9 @@ var _dialogue_queue: Array = []
 var _is_sequencing: bool = false
 
 func _ready():
+	if npc_texture:
+		$AnimatedSprite2D.sprite_frames = _build_sprite_frames(npc_texture)
+		$AnimatedSprite2D.play("idle_down")
 	if interaction_label:
 		interaction_label.text = interaction_text
 		interaction_label.visible = false
@@ -196,3 +202,41 @@ func _hide_label():
 func _kill_label_tween():
 	if _label_tween and _label_tween.is_valid():
 		_label_tween.kill()
+
+# ─── Sprite Helper ───────────────────────────────────────────────────────────
+
+func _build_sprite_frames(texture: Texture2D) -> SpriteFrames:
+	var frames = SpriteFrames.new()
+	# Remove the auto-created "default" animation
+	if frames.has_animation("default"):
+		frames.remove_animation("default")
+
+	# Animation definitions: [name, y, height, [x_offsets]]
+	var anims = [
+		["idle_down",     75, 63, [576, 608, 640, 672, 704, 736]],
+		["idle_left",     75, 63, [384, 416, 448, 480, 512]],
+		["idle_right",    75, 63, [0, 32, 64, 96, 128, 160]],
+		["idle_up",       75, 63, [192, 224, 256, 288, 320, 352]],
+		["walking_down", 146, 46, [576, 608, 640, 672, 704, 736]],
+		["walking_left", 146, 46, [384, 416, 448, 480, 512, 544]],
+		["walking_right",146, 46, [0, 32, 64, 96, 128, 160]],
+		["walking_up",   146, 46, [192, 224, 256, 288, 320, 352]],
+	]
+
+	for anim in anims:
+		var anim_name: String = anim[0]
+		var y: int = anim[1]
+		var h: int = anim[2]
+		var x_offsets: Array = anim[3]
+
+		frames.add_animation(anim_name)
+		frames.set_animation_loop(anim_name, true)
+		frames.set_animation_speed(anim_name, 5.0)
+
+		for x in x_offsets:
+			var atlas = AtlasTexture.new()
+			atlas.atlas = texture
+			atlas.region = Rect2(x, y, 32, h)
+			frames.add_frame(anim_name, atlas)
+
+	return frames

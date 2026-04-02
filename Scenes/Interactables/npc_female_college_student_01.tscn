@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/College Students/Female College Students/NPCFemaleCollegeStudent01.png" id="2_texture"]
+
+[node name="NPCFemaleCollegeStudent01" instance=ExtResource("1_base")]
+npc_texture = ExtResource("2_texture")
+speaker_name = "College Student"
