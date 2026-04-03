@@ -45,6 +45,7 @@ var female_slides: Array = [
 var current_slides: Array = []
 var current_slide_index: int = -1
 var is_active: bool = false
+var _bg_fader: TextureRect = null
 
 func _ready():
 	# Pick slides based on gender
@@ -52,6 +53,19 @@ func _ready():
 		current_slides = female_slides
 	else:
 		current_slides = male_slides
+
+	# Preload textures to prevent loading lag during gameplay
+	for slide in current_slides:
+		if slide.has("image"):
+			slide["loaded_texture"] = load(slide["image"])
+
+	# Create a fader node for smooth crossfades
+	if background_image:
+		_bg_fader = background_image.duplicate()
+		_bg_fader.name = "BackgroundFader"
+		_bg_fader.modulate.a = 0.0
+		background_image.get_parent().add_child(_bg_fader)
+		background_image.get_parent().move_child(_bg_fader, background_image.get_index() + 1)
 
 	continue_indicator.visible = false
 	_start_indicator_blink()
@@ -82,11 +96,25 @@ func _advance():
 	# Update slide indicator
 	slide_label.text = str(current_slide_index + 1) + " / " + str(current_slides.size())
 
-	# Update background image
+	# Update background image with crossfade
 	if background_image and slide.has("image"):
-		var tex = load(slide["image"])
-		if tex:
-			background_image.texture = tex
+		var tex = slide.get("loaded_texture", null)
+		if not tex: # Fallback just in case
+			tex = load(slide["image"])
+			slide["loaded_texture"] = tex
+			
+		if tex and background_image.texture != tex:
+			if background_image.texture != null and _bg_fader != null:
+				# Crossfade
+				_bg_fader.texture = background_image.texture
+				_bg_fader.modulate.a = 1.0
+				background_image.texture = tex
+				
+				var tw = create_tween()
+				tw.tween_property(_bg_fader, "modulate:a", 0.0, 0.4)
+			else:
+				# First image, just snap
+				background_image.texture = tex
 			
 	var color_rect = $BackgroundColor
 	if color_rect:

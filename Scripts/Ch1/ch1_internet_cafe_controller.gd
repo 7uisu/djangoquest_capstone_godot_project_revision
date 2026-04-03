@@ -98,9 +98,14 @@ func _start_cutscene():
 	# Freeze player
 	if player:
 		player.can_move = false
-		if "can_interact" in player:
-			player.can_interact = false
+		player.can_interact = false
 		player.set_physics_process(false)
+		if "current_dir" in player and player.has_method("play_idle_animation"):
+			player.play_idle_animation(player.current_dir)
+		elif player.has_node("AnimatedSprite2D"):
+			var sprite = player.get_node("AnimatedSprite2D")
+			if "current_dir" in player:
+				sprite.play("player_idle_" + player.current_dir)
 
 	# ─── PHASE 1: Initial Encounter ────────────────────────────────
 
@@ -171,6 +176,14 @@ func _start_cutscene():
 	if b5: await b5.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
 
+	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
+	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
+	var DEBUG_SKIP_IDE = true
+	if DEBUG_SKIP_IDE:
+		await _play_epilogue_sequence(pname)
+		return
+	# ─── END OF DEBUG SKIP IDE ────────────────────────────────────────────
+	
 	# ─── PHASE 4: Guided Coding Challenges ─────────────────────────
 	# The IDE opens and STAYS OPEN. Spaghetti Guy guides via dialogue
 	# box ON TOP of the IDE. Player types code. Rinse and repeat.
@@ -377,17 +390,74 @@ func _start_cutscene():
 
 	_hide_fullscreen_image()
 
-	# Mark done, unfreeze player
+	await _play_epilogue_sequence(pname)
+
+
+func _play_epilogue_sequence(pname: String):
+	# ─── PHASE 6: Epilogue — Graduation & College ───────────────────
+
+	# Top-down: player reflects on the experience
+	await get_tree().create_timer(0.4).timeout
+
+	var ref1 = _start_bubble_on(player, [
+		{ "name": pname, "text": "I may not have played the games I wanted to play today..." },
+		{ "name": pname, "text": "But I learned something new and honestly... it was worth it." },
+		{ "name": pname, "text": "Coming here was definitely not a waste of time." }
+	])
+	if ref1: await ref1.dialogue_finished
+
+	await get_tree().create_timer(0.5).timeout
+
+	# Cinematic centered text: "Then came graduation day..."
+	_show_centered_text("Then came graduation day...")
+	await get_tree().create_timer(3.0).timeout
+	await _fade_out_centered_text()
+
+	await get_tree().create_timer(0.3).timeout
+
+	# Placeholder graduation image + narration
+	_show_placeholder_image("🎓 GRADUATION DAY\n\nPlaceholder: Graduation ceremony scene")
+
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": pname, "text": "We actually did it... we graduated Senior High School." },
+			{ "name": pname, "text": "All those late nights studying, the quizzes, the friendships we built along the way..." },
+			{ "name": pname, "text": "It all led to this moment." },
+			{ "name": pname, "text": "But our journey doesn't end here." }
+		])
+		await dialogue_box.dialogue_finished
+
+	# Cinematic centered text: "And now... college."
+	_show_centered_text("And now... college.")
+	await get_tree().create_timer(3.0).timeout
+	await _fade_out_centered_text()
+
+	await get_tree().create_timer(0.3).timeout
+
+	# Placeholder college image + narration
+	_show_placeholder_image("🏫 COLLEGE\n\nPlaceholder: College campus first day")
+
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": pname, "text": "Here we are now... college." },
+			{ "name": pname, "text": "A brand new chapter, a bigger world, and so much more to learn." },
+			{ "name": pname, "text": "The journey continues..." }
+		])
+		await dialogue_box.dialogue_finished
+
+	# Mark done
 	character_data.ch1_spaghetti_guy_cutscene_done = true
 	_cutscene_running = false
 
-	if player:
-		player.set_physics_process(true)
-		player.can_move = true
-		if "can_interact" in player:
-			player.can_interact = true
+	# Transition to college_map.tscn with smooth crossfade
+	await get_tree().create_timer(0.5).timeout
+	var scene_trans = get_node_or_null("/root/SceneTransition")
+	if scene_trans:
+		scene_trans.transition_to_scene("res://Scenes/Ch2/College Indoor/college_map.tscn")
+	else:
+		get_tree().change_scene_to_file("res://Scenes/Ch2/College Indoor/college_map.tscn")
 
-	print("Ch1InternetCafeController: SpaghettiGuy cutscene completed!")
+	print("Ch1InternetCafeController: Epilogue completed — transitioning to college!")
 
 # ── Custom Challenge Builder (all free_type) ──────────────────────────
 
@@ -455,7 +525,56 @@ func _show_placeholder_image(text: String):
 
 func _hide_fullscreen_image():
 	if _teaching_canvas:
+		# Remove any centered text label before hiding
+		var ct = _teaching_canvas.get_node_or_null("CenteredTextLabel")
+		if ct:
+			ct.queue_free()
 		_teaching_canvas.visible = false
+
+func _fade_out_centered_text():
+	if _teaching_canvas:
+		var ct = _teaching_canvas.get_node_or_null("CenteredTextLabel")
+		if ct:
+			var tw = get_tree().create_tween()
+			tw.tween_property(ct, "modulate:a", 0.0, 1.0)
+			await tw.finished
+			ct.queue_free()
+
+func _show_centered_text(text: String):
+	_ensure_teaching_canvas()
+	# Hide image + placeholder, show just black bg with centered text
+	var img_rect = _teaching_canvas.get_node_or_null("TextureRect")
+	if img_rect:
+		img_rect.visible = false
+	var placeholder = _teaching_canvas.get_node_or_null("PlaceholderPanel")
+	if placeholder:
+		placeholder.visible = false
+
+	# Remove old centered text if any
+	var old_ct = _teaching_canvas.get_node_or_null("CenteredTextLabel")
+	if old_ct:
+		old_ct.queue_free()
+
+	var label = Label.new()
+	label.name = "CenteredTextLabel"
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.add_theme_font_size_override("font_size", 32)
+	label.add_theme_color_override("font_color", Color(0.95, 0.95, 0.98, 1.0))
+	
+	var custom_font = load("res://Textures/Fonts/Pixelify_Sans/static/PixelifySans-Regular.ttf")
+	if custom_font:
+		label.add_theme_font_override("font", custom_font)
+		
+	label.modulate.a = 0.0
+	_teaching_canvas.add_child(label)
+	_teaching_canvas.visible = true
+
+	# Subtle fade-in
+	var tw = get_tree().create_tween()
+	tw.tween_property(label, "modulate:a", 1.0, 1.0).set_ease(Tween.EASE_OUT)
 
 func _ensure_teaching_canvas():
 	if _teaching_canvas:
