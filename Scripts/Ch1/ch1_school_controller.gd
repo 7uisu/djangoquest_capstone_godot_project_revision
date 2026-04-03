@@ -241,7 +241,8 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Good morning, class! Today we'll be diving into the history of [color=yellow][b]Python[/b][/color]." },
+			{ "name": "Professor", "text": "Good morning, class! Since you are all graduating soon, this will be our very last lesson." },
+			{ "name": "Professor", "text": "And fittingly, today we'll be diving into the history of [color=yellow][b]Python[/b][/color]." },
 			{ "name": "Professor", "text": "Pay attention — there will be a quiz at the end!" }
 		])
 		await dialogue_box.dialogue_finished

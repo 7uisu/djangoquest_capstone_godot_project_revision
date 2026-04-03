@@ -253,7 +253,7 @@ func _play_cutscene():
 
 	# 10. Teacher brings up the topic about what course to choose — bubble chat
 	var teacher_bubble = _start_bubble_on(teacher, [
-		{ "name": "Professor", "text": "By the way... since we're all here..." },
+		{ "name": "Professor", "text": "By the way... since you are all graduating soon..." },
 		{ "name": "Professor", "text": "Have you guys thought about what course you're gonna take in college?" }
 	])
 	if teacher_bubble:
