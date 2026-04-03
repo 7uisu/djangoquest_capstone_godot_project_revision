@@ -56684,7 +56684,7 @@ texture_region_size = Vector2i(32, 32)
 tile_size = Vector2i(32, 32)
 sources/0 = SubResource("TileSetAtlasSource_nkq0x")
 
-[node name="OutdoorMap" type="Node2D" unique_id=2042648239]
+[node name="OutdoorMapConviCutscene" type="Node2D" unique_id=2042648239]
 y_sort_enabled = true
 
 [node name="grass-01" type="TileMapLayer" parent="." unique_id=593308614]
@@ -56893,13 +56893,13 @@ tile_set = SubResource("TileSet_m7bvw")
 [node name="InternetCafeFrontDoor" parent="City/InternetCafe" unique_id=1501416757 instance=ExtResource("26_4pen4")]
 position = Vector2(6714, 1374)
 script = ExtResource("6_h3fih")
-target_scene = "res://Scenes/Ch1/internet_cafe_map.tscn"
+target_scene = "res://Scenes/Ch1/internet_cafe_map_cutscene.tscn"
 spawn_position = Vector2(134, 440)
 
 [node name="InternetCafeFrontDoor2" parent="City/InternetCafe" unique_id=1101334705 instance=ExtResource("27_dlroy")]
 position = Vector2(6789, 1376)
 script = ExtResource("6_h3fih")
-target_scene = "res://Scenes/Ch1/internet_cafe_map.tscn"
+target_scene = "res://Scenes/Ch1/internet_cafe_map_cutscene.tscn"
 spawn_position = Vector2(449, 293)
 
 [node name="cars_design-01" type="TileMapLayer" parent="City" unique_id=1768156564]

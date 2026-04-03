@@ -15,6 +15,8 @@ var is_terminal: bool = false   # true for terminal command challenges
 var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 
+var _attempts: int = 0  # tracks incorrect submissions for progressive hints
+
 # ─── Node References ─────────────────────────────────────────────────────────
 @onready var title_label: Label = $TitleBar/TitleLabel
 @onready var timer_label: Label = $TitleBar/TimerLabel
@@ -188,6 +190,7 @@ func load_challenge(challenge: Dictionary) -> void:
 	current_challenge = challenge
 	is_completed = false
 	selected_option = -1
+	_attempts = 0
 	is_free_type = challenge.get("type", "") == "free_type"
 	is_terminal = challenge.get("type", "") == "terminal"
 
@@ -856,11 +859,32 @@ func _run_free_type():
 		await get_tree().create_timer(2.0).timeout
 		_show_results(true)
 	else:
-		# ── Wrong: show feedback but let them try again ──
+		# ── Wrong: show progressive hints ──
+		_attempts += 1
+		
+		# Get hints and answer
+		var hints = current_challenge.get("progressive_hints", [])
+		var expected_answers_list = current_challenge.get("expected_answers", [])
+		var answer_text = expected_answers_list[0] if expected_answers_list.size() > 0 else ""
+		
 		var error_output = current_challenge.get("error_output", "Error!")
-		output_display.text = "[color=#e06c75]" + error_output + "[/color]"
+		
+		if hints.size() > 0:
+			# Progressive hint logic
+			if _attempts <= hints.size():
+				# Show next hint
+				var hint = hints[_attempts - 1]
+				output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
+				feedback_label.text = "❌ Not quite — read the hint in the output panel!"
+			else:
+				# Show the answer
+				output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
+				feedback_label.text = "❌ Still stuck? I put the answer in the output panel!"
+		else:
+			# Normal error feedback
+			output_display.text = "[color=#e06c75]" + error_output + "[/color]"
+			feedback_label.text = "❌ Not quite — check your code and try again!"
 
-		feedback_label.text = "❌ Not quite — check your code and try again!"
 		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
 		feedback_label.visible = true
 		if wrong_sfx.stream:
@@ -1322,3 +1346,14 @@ func _buff_encrypted_drive():
 
 	await get_tree().create_timer(1.5).timeout
 	_show_results(true)
+
+# ─── Programmatic Locks ──────────────────────────────────────────────────────
+
+func lock_typing(_locked: bool):
+	if is_free_type or is_terminal:
+		free_type_edit.editable = not _locked
+		if _locked:
+			run_button.disabled = true
+		else:
+			# only enable run if there's text
+			run_button.disabled = free_type_edit.text.strip_edges() == ""
