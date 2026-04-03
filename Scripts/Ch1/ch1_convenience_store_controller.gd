@@ -13,6 +13,16 @@ const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
 
 @onready var character_data = get_node("/root/CharacterData")
 
+func _get_gendered_texture(full_path: String) -> Texture2D:
+	var prefix = "Female_" if character_data and character_data.selected_gender == "female" else "Male_"
+	var last_slash = full_path.rfind("/")
+	var folder = full_path.substr(0, last_slash + 1)
+	var file_name = full_path.substr(last_slash + 1)
+	var tex = load(folder + prefix + file_name)
+	if not tex:
+		tex = load(full_path) # Fallback
+	return tex
+
 # --- Internet Cafe area positions ---
 const INTERNET_CAFE_POS = Vector2(5809, 1389)       # Bus destination
 const PLAYER_START_POS = Vector2(5809, 1389)          # Where player appears
@@ -204,8 +214,8 @@ func _play_cutscene():
 
 	await get_tree().create_timer(0.3).timeout
 
-	# 6. Fullscreen placeholder image — teacher encounter
-	_show_placeholder_image("TEACHER ENCOUNTER\n\nThe Professor bumps into the group\noutside the convenience store!")
+	# 6. Fullscreen image — teacher encounter
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/Met_shs_prof_with_friends.png"))
 
 	# 7. Dialogue over the image — group is surprised, casual small talk
 	if dialogue_box:
@@ -226,7 +236,7 @@ func _play_cutscene():
 		await dialogue_box.dialogue_finished
 
 	# 8. Hide the fullscreen image — return to top-down view
-	_hide_placeholder_image()
+	_hide_fullscreen_image()
 
 	await get_tree().create_timer(0.3).timeout
 
@@ -440,9 +450,9 @@ func _start_bubble_on(npc: Node2D, lines: Array):
 	bubble.start(lines, null)
 	return bubble
 
-# ── Fullscreen Placeholder Image ──────────────────────────────────────
+# ── Fullscreen Image ──────────────────────────────────────
 
-func _show_placeholder_image(text: String):
+func _show_fullscreen_image(texture: Texture2D):
 	if not _teaching_canvas:
 		_teaching_canvas = CanvasLayer.new()
 		_teaching_canvas.name = "ConvStoreImageLayer"
@@ -452,63 +462,26 @@ func _show_placeholder_image(text: String):
 		# Dark background
 		var bg = ColorRect.new()
 		bg.name = "Background"
-		bg.color = Color(0.08, 0.08, 0.12, 1.0)
+		bg.color = Color(0, 0, 0, 1.0)
 		bg.anchors_preset = Control.PRESET_FULL_RECT
 		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 		_teaching_canvas.add_child(bg)
 
-		# Visual novel style centered panel
-		var center_panel = PanelContainer.new()
-		center_panel.name = "CenterPanel"
-		center_panel.anchors_preset = Control.PRESET_CENTER
-		center_panel.set_anchors_preset(Control.PRESET_CENTER)
-		center_panel.custom_minimum_size = Vector2(700, 400)
-		center_panel.position = Vector2(-350, -200)
+		var img_rect = TextureRect.new()
+		img_rect.name = "TextureRect"
+		img_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		img_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		img_rect.anchors_preset = Control.PRESET_FULL_RECT
+		img_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_teaching_canvas.add_child(img_rect)
 
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.15, 0.22, 1.0)
-		style.border_color = Color(0.5, 0.5, 0.7, 0.8)
-		style.set_border_width_all(3)
-		style.set_corner_radius_all(12)
-		style.set_content_margin_all(30)
-		center_panel.add_theme_stylebox_override("panel", style)
-		_teaching_canvas.add_child(center_panel)
-
-		# VBox for content
-		var vbox = VBoxContainer.new()
-		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-		vbox.add_theme_constant_override("separation", 20)
-		center_panel.add_child(vbox)
-
-		# Scene icon / visual indicator
-		var icon_label = Label.new()
-		icon_label.text = "📖"
-		icon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		icon_label.add_theme_font_size_override("font_size", 48)
-		vbox.add_child(icon_label)
-
-		# Placeholder label
-		_placeholder_label = Label.new()
-		_placeholder_label.name = "PlaceholderText"
-		_placeholder_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		_placeholder_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_placeholder_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		_placeholder_label.add_theme_font_size_override("font_size", 22)
-		_placeholder_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
-		vbox.add_child(_placeholder_label)
-
-		# Hint at bottom
-		var hint_label = Label.new()
-		hint_label.text = "— Visual Novel Scene —"
-		hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		hint_label.add_theme_font_size_override("font_size", 14)
-		hint_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
-		vbox.add_child(hint_label)
-
-	_placeholder_label.text = text
+	var rect = _teaching_canvas.get_node_or_null("TextureRect")
+	if rect:
+		rect.texture = texture
+		rect.visible = true
 	_teaching_canvas.visible = true
 
-func _hide_placeholder_image():
+func _hide_fullscreen_image():
 	if _teaching_canvas:
 		_teaching_canvas.visible = false
 

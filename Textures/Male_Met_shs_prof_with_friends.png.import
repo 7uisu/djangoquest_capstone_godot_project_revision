@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4bvbnwetona8"
-path="res://.godot/imported/Notices_Coding.png-4430b8dc970bf41a89d361cf8cd3c06b.ctex"
+uid="uid://chnthabe6rpi2"
+path="res://.godot/imported/Male_Met_shs_prof_with_friends.png-e556d50cda5f0171ac0680940805b3fb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Textures/Spag_guy_at_internet_cafe_scenes/Notices_Coding.png"
-dest_files=["res://.godot/imported/Notices_Coding.png-4430b8dc970bf41a89d361cf8cd3c06b.ctex"]
+source_file="res://Textures/Male_Met_shs_prof_with_friends.png"
+dest_files=["res://.godot/imported/Male_Met_shs_prof_with_friends.png-e556d50cda5f0171ac0680940805b3fb.ctex"]
 
 [params]
 

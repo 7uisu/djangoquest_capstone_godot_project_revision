@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://csgg85tpooggg"
-path="res://.godot/imported/Showing_Coding.png-468dd3cb163a91b0779e1a35ce930ca3.ctex"
+uid="uid://b7qpjsfwlpxcf"
+path="res://.godot/imported/Male_Spag_Praising_Player.png-5635fbf8ad87b72e5879fab96097bdc3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Textures/Spag_guy_at_internet_cafe_scenes/Showing_Coding.png"
-dest_files=["res://.godot/imported/Showing_Coding.png-468dd3cb163a91b0779e1a35ce930ca3.ctex"]
+source_file="res://Textures/Spag_guy_at_internet_cafe_scenes/Male_Spag_Praising_Player.png"
+dest_files=["res://.godot/imported/Male_Spag_Praising_Player.png-5635fbf8ad87b72e5879fab96097bdc3.ctex"]
 
 [params]
 

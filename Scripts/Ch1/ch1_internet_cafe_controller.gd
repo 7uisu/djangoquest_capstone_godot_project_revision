@@ -6,8 +6,15 @@ const CHAT_BUBBLE_SCENE = preload("res://Scenes/UI/chat_bubble.tscn")
 const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
 const CODING_UI_SCENE = preload("res://Scenes/Games/coding_challenge_ui.tscn")
 
-const NOTICES_CODING_IMG = preload("res://Textures/Spag_guy_at_internet_cafe_scenes/Notices_Coding.png")
-const SHOWING_CODING_IMG = preload("res://Textures/Spag_guy_at_internet_cafe_scenes/Showing_Coding.png")
+func _get_gendered_texture(full_path: String) -> Texture2D:
+	var prefix = "Female_" if character_data and character_data.selected_gender == "female" else "Male_"
+	var last_slash = full_path.rfind("/")
+	var folder = full_path.substr(0, last_slash + 1)
+	var file_name = full_path.substr(last_slash + 1)
+	var tex = load(folder + prefix + file_name)
+	if not tex:
+		tex = load(full_path) # Fallback
+	return tex
 
 @onready var character_data = get_node("/root/CharacterData")
 @onready var interaction_label: Label = $Label
@@ -130,7 +137,7 @@ func _start_cutscene():
 
 	# ─── PHASE 2: Visual Novel Scenes ──────────────────────────────
 
-	_show_fullscreen_image(NOTICES_CODING_IMG)
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/Spag_guy_at_internet_cafe_scenes/Notices_Coding.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -141,7 +148,7 @@ func _start_cutscene():
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
 
-	_show_fullscreen_image(SHOWING_CODING_IMG)
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/Spag_guy_at_internet_cafe_scenes/Showing_Coding.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -175,12 +182,12 @@ func _start_cutscene():
 	])
 	if b5: await b5.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
-
+	
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
 	var DEBUG_SKIP_IDE = true
 	if DEBUG_SKIP_IDE:
-		await _play_epilogue_sequence(pname)
+		await _play_completion_sequence(pname)
 		return
 	# ─── END OF DEBUG SKIP IDE ────────────────────────────────────────────
 	
@@ -363,9 +370,13 @@ func _start_cutscene():
 
 	await get_tree().create_timer(0.3).timeout
 
+	await _play_completion_sequence(pname)
+
+
+func _play_completion_sequence(pname: String):
 	# ─── PHASE 5: Completion ───────────────────────────────────────
 
-	_show_black_screen()  # seamless black bg, no placeholder panel
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/Spag_guy_at_internet_cafe_scenes/Spag_Praising_Player.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -376,6 +387,8 @@ func _start_cutscene():
 		await dialogue_box.dialogue_finished
 
 	await get_tree().create_timer(0.3).timeout
+
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/Spag_guy_at_internet_cafe_scenes/Internet_Cafe_Owner_Comes_Back.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -415,8 +428,8 @@ func _play_epilogue_sequence(pname: String):
 
 	await get_tree().create_timer(0.3).timeout
 
-	# Placeholder graduation image + narration
-	_show_placeholder_image("🎓 GRADUATION DAY\n\nPlaceholder: Graduation ceremony scene")
+	# Graduation image + narration
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/SHS_Graduation_Picture.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
