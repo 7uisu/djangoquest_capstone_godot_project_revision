@@ -1,0 +1,61 @@
+[gd_scene load_steps=6 format=3 uid="uid://dil0eftpjyy17"]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/map_stairs.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="1_gnfm4"]
+[ext_resource type="Texture2D" uid="uid://l7j3u5ax3vv2" path="res://Textures/School Textures/College Stairs/21_Beach_32x32_Stage_Stairs_Right.png" id="2_qg1fw"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hjjhb"]
+size = Vector2(58, 67)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_0gcvm"]
+a = Vector2(-15, -30)
+b = Vector2(14, -13)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_0vub2"]
+b = Vector2(0, 47)
+
+[node name="CollegeStairsLeft" type="Area2D" unique_id=1851952216]
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1887347227]
+position = Vector2(0, -2.5)
+shape = SubResource("RectangleShape2D_hjjhb")
+
+[node name="Label" type="Label" parent="." unique_id=829699562]
+z_index = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -21.0
+offset_right = 15.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(47.5, 10.5)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("1_gnfm4")
+text = "Text"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=758656531]
+texture = ExtResource("2_qg1fw")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=261630308]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1232321502]
+shape = SubResource("SegmentShape2D_0gcvm")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=139923949]
+position = Vector2(0, -22)
+shape = SubResource("SegmentShape2D_0vub2")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D" unique_id=1669984695]
+position = Vector2(1.4305115e-06, 17.500002)
+scale = Vector2(1.6000001, 1.35)
+polygon = PackedVector2Array(-10, 9.259257, 9.999998, 9.259257, -10, -4.8148165)
