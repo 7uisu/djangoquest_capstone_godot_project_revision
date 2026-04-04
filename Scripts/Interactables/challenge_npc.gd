@@ -219,14 +219,18 @@ func _build_sprite_frames(texture: Texture2D) -> SpriteFrames:
 
 	# Animation definitions: [name, y, height, [x_offsets]]
 	var anims = [
-		["idle_down",     75, 63, [576, 608, 640, 672, 704, 736]],
-		["idle_left",     75, 63, [384, 416, 448, 480, 512]],
-		["idle_right",    75, 63, [0, 32, 64, 96, 128, 160]],
-		["idle_up",       75, 63, [192, 224, 256, 288, 320, 352]],
-		["walking_down", 146, 46, [576, 608, 640, 672, 704, 736]],
-		["walking_left", 146, 46, [384, 416, 448, 480, 512, 544]],
-		["walking_right",146, 46, [0, 32, 64, 96, 128, 160]],
-		["walking_up",   146, 46, [192, 224, 256, 288, 320, 352]],
+		["idle_down",                64, 64, [576, 608, 640, 672, 704, 736]],
+		["idle_left",                64, 64, [384, 416, 448, 480, 512, 544]],
+		["idle_right",               64, 64, [0, 32, 64, 96, 128, 160]],
+		["idle_up",                  64, 64, [192, 224, 256, 288, 320, 352]],
+		["walking_down",            128, 64, [576, 608, 640, 672, 704, 736]],
+		["walking_left",            128, 64, [384, 416, 448, 480, 512, 544]],
+		["walking_right",           128, 64, [0, 32, 64, 96, 128, 160]],
+		["walking_up",              128, 64, [192, 224, 256, 288, 320, 352]],
+		["phone_in_animation_down", 384, 64, [192, 224, 256, 288, 320, 352]],
+		["phone_out_animation_down",384, 64, [0, 32, 64, 96, 128, 160]],
+		["phone_out_idle_down",     384, 64, [160]],
+		["reading_down",            448, 64, [0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352]],
 	]
 
 	for anim in anims:
@@ -246,3 +250,23 @@ func _build_sprite_frames(texture: Texture2D) -> SpriteFrames:
 			frames.add_frame(anim_name, atlas)
 
 	return frames
+
+# --- TEST ANIMATIONS BLOCK (REMOVE LATER) ---
+var test_anims = [
+	"idle_down", "idle_left", "idle_right", "idle_up",
+	"walking_down", "walking_left", "walking_right", "walking_up",
+	"phone_in_animation_down", "phone_out_animation_down", 
+	"phone_out_idle_down", "reading_down"
+]
+var test_idx = 0
+var test_timer = 0.0
+
+func _process(delta: float) -> void:
+	if not has_node("AnimatedSprite2D"):
+		return
+	test_timer += delta
+	if test_timer >= 1.5:  # Switch every 1.5 seconds
+		test_timer = 0.0
+		$AnimatedSprite2D.play(test_anims[test_idx])
+		test_idx = (test_idx + 1) % test_anims.size()
+# --------------------------------------------

@@ -814,6 +814,7 @@ position = Vector2(400, 1064)
 position = Vector2(528, 1064)
 
 [node name="Professors" type="Node2D" parent="." unique_id=1977205896]
+y_sort_enabled = true
 
 [node name="NPCMaleCollegeProf04" parent="Professors" unique_id=370354356 instance=ExtResource("14_8ayuh")]
 position = Vector2(128, 7)
@@ -828,6 +829,7 @@ position = Vector2(734, 560)
 npc_texture = ExtResource("19_66o5b")
 
 [node name="Students" type="Node2D" parent="." unique_id=1929166147]
+y_sort_enabled = true
 
 [node name="NPCFemaleCollegeStudent09" parent="Students" unique_id=2113900145 instance=ExtResource("1_fbase")]
 position = Vector2(-18, 234)

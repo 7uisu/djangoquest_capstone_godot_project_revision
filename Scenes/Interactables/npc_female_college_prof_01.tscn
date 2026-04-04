@@ -7,6 +7,3 @@
 y_sort_enabled = true
 npc_texture = ExtResource("2_texture")
 speaker_name = "Professor"
-
-[node name="AnimatedSprite2D" parent="." index="0" unique_id=265595737]
-animation = &"idle_down"

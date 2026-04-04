@@ -27,15 +27,12 @@
 [ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="14_2vj1n"]
 [ext_resource type="Texture2D" uid="uid://dgc66mi4d6mms" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent04.png" id="14_tex"]
 [ext_resource type="PackedScene" uid="uid://c2phyujri4b77" path="res://Scenes/Interactables/npc_male_college_prof_01.tscn" id="14_vricr"]
-[ext_resource type="Texture2D" uid="uid://b3ltbg4738crv" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf04.png" id="15_i0fcv"]
 [ext_resource type="PackedScene" uid="uid://kihocgh7d50e" path="res://Scenes/Interactables/npc_female_college_prof_01.tscn" id="15_pxwwl"]
 [ext_resource type="Texture2D" uid="uid://cjad2l31eefd3" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent05.png" id="15_tex"]
 [ext_resource type="Texture2D" uid="uid://4kr2ghct1ji5" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent06.png" id="16_tex"]
 [ext_resource type="Texture2D" uid="uid://cnlh64i44uixr" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf02.png" id="16_vxg7p"]
-[ext_resource type="Texture2D" uid="uid://bsdjnsdvgrctm" path="res://Textures/NPC/College Profs/Female/NPCFemaleCollegeProf02.png" id="17_3qgk0"]
 [ext_resource type="Texture2D" uid="uid://bbjtqll7fys00" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf03.png" id="17_84w6h"]
 [ext_resource type="Texture2D" uid="uid://fw4uyrn4d124" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent07.png" id="17_tex"]
-[ext_resource type="Texture2D" uid="uid://daoai01rt7wo1" path="res://Textures/NPC/College Profs/Female/NPCFemaleCollegeProf03.png" id="18_rlf5w"]
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="19_c6n5g"]
 [ext_resource type="PackedScene" uid="uid://dtlui10prrlxp" path="res://Scenes/Ch1/Interactive Objects/Door/front_door_1.tscn" id="20_yi0jh"]
 
@@ -807,18 +804,6 @@ is_locked = true
 position = Vector2(528, -164)
 is_locked = true
 
-[node name="NPCMaleCollegeProf04" parent="." unique_id=370354356 instance=ExtResource("14_vricr")]
-position = Vector2(128, 7)
-npc_texture = ExtResource("15_i0fcv")
-
-[node name="NPCFemaleCollegeProf02" parent="." unique_id=676214972 instance=ExtResource("15_pxwwl")]
-position = Vector2(129, 551)
-npc_texture = ExtResource("17_3qgk0")
-
-[node name="NPCFemaleCollegeProf03" parent="." unique_id=1125475962 instance=ExtResource("15_pxwwl")]
-position = Vector2(734, 560)
-npc_texture = ExtResource("18_rlf5w")
-
 [node name="SidewayRightDoor1" parent="." unique_id=772612451 instance=ExtResource("19_c6n5g")]
 position = Vector2(358, 16)
 
@@ -850,12 +835,13 @@ position = Vector2(400, 1064)
 position = Vector2(528, 1064)
 
 [node name="Professors" type="Node2D" parent="." unique_id=1716431611]
+y_sort_enabled = true
 
 [node name="NPCMaleCollegeProf01" parent="Professors" unique_id=2028986288 instance=ExtResource("14_vricr")]
 position = Vector2(128, 4)
 
 [node name="NPCFemaleCollegeProf01" parent="Professors" unique_id=95522374 instance=ExtResource("15_pxwwl")]
-position = Vector2(128, 552)
+position = Vector2(127, 553)
 
 [node name="NPCMaleCollegeProf02" parent="Professors" unique_id=1990407421 instance=ExtResource("14_vricr")]
 position = Vector2(796, 38)
@@ -866,6 +852,7 @@ position = Vector2(704, 286)
 npc_texture = ExtResource("17_84w6h")
 
 [node name="Students" type="Node2D" parent="." unique_id=639848932]
+y_sort_enabled = true
 
 [node name="NPCFemaleCollegeStudent01" parent="Students" unique_id=1409608149 instance=ExtResource("1_fbase")]
 position = Vector2(168, 363)
@@ -911,7 +898,7 @@ position = Vector2(158, 767)
 speaker_name = "Male Student 01"
 
 [node name="NPCMaleCollegeStudent02" parent="Students" unique_id=608338348 instance=ExtResource("2_mbase")]
-position = Vector2(71, 761)
+position = Vector2(69, 767)
 npc_texture = ExtResource("12_tex")
 speaker_name = "Male Student 02"
 
@@ -941,4 +928,4 @@ npc_texture = ExtResource("17_tex")
 speaker_name = "Male Student 07"
 
 [node name="Player" parent="." unique_id=833241429 instance=ExtResource("11_0ykgn")]
-position = Vector2(399, -113)
+position = Vector2(126, 678)
