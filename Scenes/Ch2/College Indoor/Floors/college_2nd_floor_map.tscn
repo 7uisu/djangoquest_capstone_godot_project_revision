@@ -32,6 +32,7 @@
 [ext_resource type="PackedScene" uid="uid://kihocgh7d50e" path="res://Scenes/Interactables/npc_female_college_prof_01.tscn" id="15_rrl1p"]
 [ext_resource type="Texture2D" uid="uid://d38f0tbmwcfhe" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent13.png" id="15_tex"]
 [ext_resource type="Texture2D" uid="uid://b3ltbg4738crv" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf04.png" id="16_gut1o"]
+[ext_resource type="PackedScene" uid="uid://bgwjauga0lr0w" path="res://Scenes/Ch1/Interactive Objects/school_chair_facing_up.tscn" id="16_qbxbd"]
 [ext_resource type="Texture2D" uid="uid://cu17syrm1d1af" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent14.png" id="16_tex"]
 [ext_resource type="Texture2D" uid="uid://bikkapcav35js" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent15.png" id="17_tex"]
 [ext_resource type="Texture2D" uid="uid://bsdjnsdvgrctm" path="res://Textures/NPC/College Profs/Female/NPCFemaleCollegeProf02.png" id="18_leb3k"]
@@ -812,6 +813,263 @@ position = Vector2(400, 1064)
 
 [node name="FrontDoor2" parent="." unique_id=350678643 instance=ExtResource("21_k147o")]
 position = Vector2(528, 1064)
+
+[node name="SchoolChairs" type="Node2D" parent="." unique_id=711288925]
+
+[node name="SchoolChairFacingUp" parent="SchoolChairs" unique_id=1970534602 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(15, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp2" parent="SchoolChairs" unique_id=514958386 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(-49, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp3" parent="SchoolChairs" unique_id=472057972 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(79, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp4" parent="SchoolChairs" unique_id=275823238 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(175, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp5" parent="SchoolChairs" unique_id=1139038120 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(239, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp6" parent="SchoolChairs" unique_id=79785364 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(303, 127)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp7" parent="SchoolChairs" unique_id=461530921 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(-49, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp8" parent="SchoolChairs" unique_id=902672217 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(15, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp9" parent="SchoolChairs" unique_id=1743254736 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(79, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp10" parent="SchoolChairs" unique_id=456346850 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(175, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp11" parent="SchoolChairs" unique_id=31196661 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(239, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp12" parent="SchoolChairs" unique_id=2032823506 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(303, 223)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp13" parent="SchoolChairs" unique_id=1495118327 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(-49, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp14" parent="SchoolChairs" unique_id=1750516205 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(15, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp15" parent="SchoolChairs" unique_id=1689503794 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(79, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp16" parent="SchoolChairs" unique_id=856842813 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(175, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp17" parent="SchoolChairs" unique_id=982793594 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(239, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp18" parent="SchoolChairs" unique_id=1959615329 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(303, 319)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp19" parent="SchoolChairs" unique_id=942975184 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(-49, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp20" parent="SchoolChairs" unique_id=733440767 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(15, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp21" parent="SchoolChairs" unique_id=1746275624 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(79, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp22" parent="SchoolChairs" unique_id=1116198567 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(175, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp23" parent="SchoolChairs" unique_id=610250486 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(239, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp24" parent="SchoolChairs" unique_id=1485341837 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(303, 669)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp25" parent="SchoolChairs" unique_id=1825813284 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(-49, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp26" parent="SchoolChairs" unique_id=305115417 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(15, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp27" parent="SchoolChairs" unique_id=895273422 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(79, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp28" parent="SchoolChairs" unique_id=74925103 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(175, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp29" parent="SchoolChairs" unique_id=946355733 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(239, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp30" parent="SchoolChairs" unique_id=1751192871 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(303, 765)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp31" parent="SchoolChairs" unique_id=1261133434 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(-49, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp32" parent="SchoolChairs" unique_id=1722438035 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(15, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp33" parent="SchoolChairs" unique_id=491170217 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(79, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp34" parent="SchoolChairs" unique_id=1733210693 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(175, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp35" parent="SchoolChairs" unique_id=469362949 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(239, 861)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp36" parent="SchoolChairs" unique_id=452694232 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(687, 101)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp37" parent="SchoolChairs" unique_id=598755263 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(815, 101)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp38" parent="SchoolChairs" unique_id=871483430 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(943, 101)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp39" parent="SchoolChairs" unique_id=759432248 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(687, 197)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp40" parent="SchoolChairs" unique_id=1393235782 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(815, 197)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp41" parent="SchoolChairs" unique_id=817634459 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(943, 197)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp42" parent="SchoolChairs" unique_id=587301418 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(815, 389)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp43" parent="SchoolChairs" unique_id=803017506 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(943, 389)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp44" parent="SchoolChairs" unique_id=2065632069 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(686, 645)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp45" parent="SchoolChairs" unique_id=116305807 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(814, 645)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp46" parent="SchoolChairs" unique_id=288151830 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(942, 645)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp47" parent="SchoolChairs" unique_id=1737580885 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(686, 741)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp48" parent="SchoolChairs" unique_id=1288549665 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(814, 741)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp49" parent="SchoolChairs" unique_id=2044831287 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(942, 741)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp50" parent="SchoolChairs" unique_id=1637743683 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(814, 933)
+seat_offset = Vector2(0, -10)
+
+[node name="SchoolChairFacingUp51" parent="SchoolChairs" unique_id=1379555016 instance=ExtResource("16_qbxbd")]
+z_index = -1
+position = Vector2(942, 933)
+seat_offset = Vector2(0, -10)
 
 [node name="Professors" type="Node2D" parent="." unique_id=1977205896]
 y_sort_enabled = true
