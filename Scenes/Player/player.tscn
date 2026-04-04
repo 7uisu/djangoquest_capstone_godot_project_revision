@@ -294,18 +294,9 @@ wall_min_slide_angle = 0.174533
 script = ExtResource("1_1kbk7")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1582260408]
+visible = false
 position = Vector2(0, 3)
 shape = SubResource("CircleShape2D_wt17y")
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=875735497]
-position = Vector2(0, -5)
-sprite_frames = ExtResource("2_gqjuk")
-animation = &"female_idle_down"
-
-[node name="Shadow" type="Sprite2D" parent="." unique_id=87168035]
-position = Vector2(-0.999998, 2)
-scale = Vector2(2.02083, 1.09375)
-texture = ExtResource("2_c4h5g")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=451861113]
 libraries/ = SubResource("AnimationLibrary_te8jg")
@@ -313,7 +304,18 @@ libraries/ = SubResource("AnimationLibrary_te8jg")
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1394358797]
 zoom = Vector2(1.5, 1.5)
 
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=875735497]
+position = Vector2(0, -5)
+sprite_frames = ExtResource("2_gqjuk")
+animation = &"female_idle_down"
+
+[node name="Shadow" type="Sprite2D" parent="." unique_id=87168035]
+position = Vector2(-0.999998, 5.9999995)
+scale = Vector2(2.02083, 1.09375)
+texture = ExtResource("2_c4h5g")
+
 [node name="InteractionArea" type="Area2D" parent="." unique_id=289560493]
+visible = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1384475441]
 position = Vector2(0, -4)

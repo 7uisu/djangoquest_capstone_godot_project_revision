@@ -1,8 +1,12 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://cl0vg5hcwxh6o"]
 
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
-[ext_resource type="Texture2D" path="res://Textures/NPC/Office NPCs/Female Office Workers/NPCFemaleOfficeWorker01.png" id="2_texture"]
+[ext_resource type="Texture2D" uid="uid://obvq4023n2xf" path="res://Textures/NPC/Office NPCs/Female Office Workers/NPCFemaleOfficeWorker01.png" id="2_texture"]
 
-[node name="NPCFemaleOfficeWorker01" instance=ExtResource("1_base")]
+[node name="NPCFemaleOfficeWorker01" unique_id=2129330999 instance=ExtResource("1_base")]
+y_sort_enabled = true
 npc_texture = ExtResource("2_texture")
 speaker_name = "Office Worker"
+
+[node name="AnimatedSprite2D" parent="." index="0" unique_id=265595737]
+animation = &"idle_down"

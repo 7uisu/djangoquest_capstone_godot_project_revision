@@ -886,4 +886,5 @@ physics_layer_0/collision_mask = 0
 sources/0 = SubResource("TileSetAtlasSource_5pifi")
 
 [node name="SchoolClassroomObjects" type="TileMapLayer" unique_id=446303849]
+y_sort_enabled = true
 tile_set = SubResource("TileSet_ydo8f")
