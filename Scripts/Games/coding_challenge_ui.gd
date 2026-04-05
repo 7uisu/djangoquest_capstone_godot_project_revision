@@ -736,8 +736,98 @@ func _on_time_up():
 func _on_hint_pressed():
 	# Play mouse click
 	_play_click()
-	# Open the Overflow Stack popup instead of toggling a label
-	_show_overflow_stack()
+	
+	# Create a guilt trip overlay dynamically
+	var overlay = ColorRect.new()
+	overlay.name = "GuiltTripOverlay"
+	overlay.color = Color(0, 0, 0, 0.8) # Dark translucent backdrop
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.z_index = 100 # Put on top of everything
+	
+	var center = CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+	
+	var panel = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color("1e1e2e")
+	style.border_color = Color("e06c75") # Red border
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(24)
+	panel.add_theme_stylebox_override("panel", style)
+	center.add_child(panel)
+	
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 20)
+	panel.add_child(vbox)
+	
+	var title = Label.new()
+	title.text = "✨ OVERFLOW STACK PREMIUM ✨"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override("font_color", Color("e0c675")) # Gold/Yellow
+	title.add_theme_font_size_override("font_size", 18)
+	vbox.add_child(title)
+	
+	var text_label = Label.new()
+	text_label.text = "Tired of staring at bugs?\nUnlock the exact answer instantly with Overflow Stack Premium!\n\n(Warning: Relying on copy-paste removes critical thinking skills.\nAre you sure you want to give up and skip the learning process?)"
+	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text_label.custom_minimum_size = Vector2(450, 0)
+	text_label.add_theme_color_override("font_color", Color("abb2bf"))
+	text_label.add_theme_font_size_override("font_size", 14)
+	vbox.add_child(text_label)
+	
+	var hbox = HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 20)
+	vbox.add_child(hbox)
+	
+	var yes_btn = Button.new()
+	yes_btn.text = "View Answer (Free Trial)"
+	var yes_style = StyleBoxFlat.new()
+	yes_style.bg_color = Color("3a2a1a") # Gold-ish dark
+	yes_style.border_color = Color("e0c675")
+	yes_style.set_border_width_all(1)
+	yes_style.set_corner_radius_all(4)
+	yes_style.set_content_margin_all(10)
+	yes_btn.add_theme_stylebox_override("normal", yes_style)
+	
+	var yes_hover = yes_style.duplicate()
+	yes_hover.bg_color = Color("5a4a2a")
+	yes_btn.add_theme_stylebox_override("hover", yes_hover)
+	yes_btn.add_theme_color_override("font_color", Color("e0c675"))
+	
+	var no_btn = Button.new()
+	no_btn.text = "Close Ad  [x]"
+	var no_style = StyleBoxFlat.new()
+	no_style.bg_color = Color("2a2a3a")
+	no_style.border_color = Color("5c6370")
+	no_style.set_border_width_all(1)
+	no_style.set_corner_radius_all(4)
+	no_style.set_content_margin_all(10)
+	no_btn.add_theme_stylebox_override("normal", no_style)
+	
+	var no_hover = no_style.duplicate()
+	no_hover.bg_color = Color("3a3a4a")
+	no_btn.add_theme_stylebox_override("hover", no_hover)
+	no_btn.add_theme_color_override("font_color", Color("abb2bf"))
+	
+	hbox.add_child(yes_btn)
+	hbox.add_child(no_btn)
+	
+	add_child(overlay)
+	
+	yes_btn.pressed.connect(func():
+		_play_click()
+		overlay.queue_free()
+		_show_overflow_stack()
+	)
+	
+	no_btn.pressed.connect(func():
+		_play_click()
+		overlay.queue_free()
+	)
 
 func _on_reload_pressed():
 	# Re-show the initial output state

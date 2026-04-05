@@ -12,6 +12,16 @@ var ch1_post_quiz_dialogue_done: bool = false
 var ch1_convenience_store_cutscene_done: bool = false
 var ch1_spaghetti_guy_cutscene_done: bool = false
 
+# Chapter 2 (College) progress
+var ch2_y1s1_teaching_done: bool = false       # Year 1 Sem 1 all modules complete
+var ch2_y1s1_current_module: int = 0           # 0-4 (which module player is on)
+var ch2_y1s2_teaching_done: bool = false       # Year 1 Sem 2 all modules complete
+var ch2_y1s2_current_module: int = 0           # 0-2 (which module player is on)
+var ch2_y2s1_teaching_done: bool = false       # Year 2 Sem 1 all modules complete
+var ch2_y2s1_current_module: int = 0           # 0-3 (which module player is on)
+var ch2_y2s2_teaching_done: bool = false       # Year 2 Sem 2 all modules complete
+var ch2_y2s2_current_module: int = 0           # 0-3 (which module player is on)
+
 # Level unlock tracking (index 0 = level 1, etc.)
 const LEVEL_COUNT = 4
 var unlocked_levels: Array[bool] = [true, false, false, false]
@@ -26,6 +36,14 @@ func reset_data():
 	ch1_post_quiz_dialogue_done = false
 	ch1_convenience_store_cutscene_done = false
 	ch1_spaghetti_guy_cutscene_done = false
+	ch2_y1s1_teaching_done = false
+	ch2_y1s1_current_module = 0
+	ch2_y1s2_teaching_done = false
+	ch2_y1s2_current_module = 0
+	ch2_y2s1_teaching_done = false
+	ch2_y2s1_current_module = 0
+	ch2_y2s2_teaching_done = false
+	ch2_y2s2_current_module = 0
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 

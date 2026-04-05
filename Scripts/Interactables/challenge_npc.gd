@@ -39,7 +39,7 @@ var _label_tween: Tween = null
 const ChallengeData = preload("res://Scripts/Games/coding_challenge_data.gd")
 
 func _ready():
-	if npc_texture:
+	if npc_texture and has_node("AnimatedSprite2D"):
 		$AnimatedSprite2D.sprite_frames = _build_sprite_frames(npc_texture)
 		$AnimatedSprite2D.play("idle_down")
 		

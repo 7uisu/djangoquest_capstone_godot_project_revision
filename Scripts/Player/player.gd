@@ -24,6 +24,7 @@ var current_dir: String = "down"
 var can_interact: bool = false
 var can_move: bool = true
 var is_sitting: bool = false
+var block_ui_input: bool = false  # Set true during IDE/teaching to block E (inventory) and X (laptop)
 
 func _ready():
 	add_to_group("player")
@@ -45,6 +46,13 @@ func _ready():
 	if laptop_ui_scene:
 		laptop_ui = laptop_ui_scene.instantiate()
 		get_tree().current_scene.add_child.call_deferred(laptop_ui)
+		
+	# --- TEMP: Give 50 Encrypted Drives for testing ---
+	var inv = get_node_or_null("/root/InventoryManager")
+	if inv:
+		var icon = load("res://Textures/School Textures/Items/Interactable/Encrypted Drive-32x32.png")
+		inv.add_item("encrypted_drive", "Encrypted Drive", "Automatically solves the challenge.", icon, 50)
+	# --------------------------------------------------
 
 func _physics_process(delta):
 	# When sitting, freeze completely — no movement, no animation changes
@@ -137,6 +145,10 @@ func play_sitting_animation(direction: String) -> void:
 		animated_sprite.play("female_sitting_" + anim_dir)
 
 func _input(event):
+	# Block UI toggles during cutscenes / teaching sequences
+	if not can_move or block_ui_input:
+		return
+
 	# Toggle inventory (E key)
 	if event.is_action_pressed("toggle_inventory"):
 		if laptop_ui and laptop_ui.is_open:

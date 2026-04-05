@@ -1,4 +1,4 @@
-# ch1_school_controller.gd — Manages the Chapter 1 school classroom flow
+#  — Manages the Chapter 1 school classroom flow
 # Add as a child Node of SchoolMap in school_map.tscn
 #
 # Flow:
@@ -242,8 +242,8 @@ func _play_teaching_sequence():
 	if dialogue_box:
 		dialogue_box.start([
 			{ "name": "Professor", "text": "Good morning, class! Since you are all graduating soon, this will be our very last lesson." },
-			{ "name": "Professor", "text": "And fittingly, today we'll be diving into the history of [color=yellow][b]Python[/b][/color]." },
-			{ "name": "Professor", "text": "Pay attention — there will be a quiz at the end!" }
+			{ "name": "Professor", "text": "And fittingly, today we'll be diving into the history of [color=#f0c674]Python[/color]." },
+			{ "name": "Professor", "text": "Pay attention — there will be a [color=#f0c674]quiz[/color] at the end!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -252,9 +252,9 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Python was created by a Dutch programmer named [color=yellow][b]Guido van Rossum[/b][/color]." },
-			{ "name": "Professor", "text": "He began working on it back in [color=yellow][b]1989[/b][/color] — that's over 30 years ago!" },
-			{ "name": "Professor", "text": "He wanted to create a language that was easy to read and fun to use." }
+			{ "name": "Professor", "text": "[color=#f0c674]Python[/color] was created by a Dutch programmer named [color=#f0c674]Guido van Rossum[/color]." },
+			{ "name": "Professor", "text": "He began working on it back in [color=#f0c674]1989[/color] — that's over 30 years ago!" },
+			{ "name": "Professor", "text": "He wanted to create a language that was [color=#f0c674]easy to read[/color] and fun to use." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -283,7 +283,7 @@ func _play_teaching_sequence():
 	if dialogue_box:
 		dialogue_box.start([
 			{ "name": "Professor", "text": "The name actually comes from a British comedy show..." },
-			{ "name": "Professor", "text": "[color=yellow][b]\"Monty Python's Flying Circus!\"[/b][/color] Guido was a huge fan." },
+			{ "name": "Professor", "text": "[color=#f0c674]\"Monty Python's Flying Circus!\"[/color] Guido was a huge fan." },
 			{ "name": "Professor", "text": "He wanted his programming language to be just as fun and approachable." }
 		])
 		await dialogue_box.dialogue_finished
@@ -311,9 +311,9 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Now, one of Python's core design goals is [color=yellow][b]readability and simplicity[/b][/color]." },
+			{ "name": "Professor", "text": "Now, one of Python's core design goals is [color=#f0c674]readability and simplicity[/color]." },
 			{ "name": "Professor", "text": "Unlike other languages with lots of brackets and semicolons..." },
-			{ "name": "Professor", "text": "Python uses clean indentation. It almost reads like plain English!" }
+			{ "name": "Professor", "text": "Python uses clean [color=#f0c674]indentation[/color]. It almost reads like plain English!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -330,8 +330,8 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Exactly! That's one of the reasons Python is so popular with beginners." },
-			{ "name": "Professor", "text": "It lets you focus on solving problems instead of fighting with syntax." }
+			{ "name": "Professor", "text": "Exactly! That's one of the reasons [color=#f0c674]Python[/color] is so popular with beginners." },
+			{ "name": "Professor", "text": "It lets you focus on [color=#f0c674]solving problems[/color] instead of fighting with syntax." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -340,9 +340,9 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Today, Python is used everywhere — from web apps to science!" },
-			{ "name": "Professor", "text": "Even [color=yellow][b]NASA[/b][/color] uses Python for space-related tasks and data analysis." },
-			{ "name": "Professor", "text": "Companies like Google, Netflix, and Instagram also rely on it." }
+			{ "name": "Professor", "text": "Today, [color=#f0c674]Python[/color] is used everywhere — from [color=#f0c674]web apps[/color] to [color=#f0c674]science[/color]!" },
+			{ "name": "Professor", "text": "Even [color=#f0c674]NASA[/color] uses Python for space-related tasks and [color=#f0c674]data analysis[/color]." },
+			{ "name": "Professor", "text": "Companies like [color=#f0c674]Google[/color], [color=#f0c674]Netflix[/color], and [color=#f0c674]Instagram[/color] also rely on it." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -368,9 +368,9 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Alright class, that wraps up our lesson on Python's history!" },
+			{ "name": "Professor", "text": "Alright class, that wraps up our lesson on [color=#f0c674]Python's history[/color]!" },
 			{ "name": "Professor", "text": "Now, let's see how well you were paying attention..." },
-			{ "name": "Professor", "text": "Time for a quick quiz! Good luck!" }
+			{ "name": "Professor", "text": "Time for a quick [color=#f0c674]quiz[/color]! Good luck!" }
 		])
 		await dialogue_box.dialogue_finished
 	

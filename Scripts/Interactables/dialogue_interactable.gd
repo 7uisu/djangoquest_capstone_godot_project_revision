@@ -68,11 +68,25 @@ func _on_body_exited(body: Node2D) -> void:
 
 ## Called by the player's _input() when pressing interact
 func interact():
+	print("dialogue_interactable: interact() called on ", name)
 	if _is_sequencing:
+		print("dialogue_interactable: blocked by _is_sequencing")
 		return  # Already playing dialogue
+
+	# External controller override (e.g. professor lesson controllers)
+	if has_meta("lesson_controller"):
+		print("dialogue_interactable: has lesson_controller meta!")
+		var ctrl = get_meta("lesson_controller")
+		if ctrl and ctrl.has_method("_on_professor_interacted"):
+			print("dialogue_interactable: calling controller._on_professor_interacted()")
+			ctrl._on_professor_interacted()
+			return
+		else:
+			print("dialogue_interactable: ctrl invalid or missing method. ctrl=", ctrl)
 
 	var all_lines = _build_dialogue_lines()
 	if all_lines.is_empty():
+		print("dialogue_interactable: no dialogue lines, returning")
 		return
 
 	# Group consecutive lines that share the same mode
@@ -244,23 +258,3 @@ func _build_sprite_frames(texture: Texture2D) -> SpriteFrames:
 			frames.add_frame(anim_name, atlas)
 
 	return frames
-
-# --- TEST ANIMATIONS BLOCK (REMOVE LATER) ---
-var test_anims = [
-	"idle_down", "idle_left", "idle_right", "idle_up",
-	"walking_down", "walking_left", "walking_right", "walking_up",
-	"phone_in_animation_down", "phone_out_animation_down", 
-	"phone_out_idle_down", "reading_down"
-]
-var test_idx = 0
-var test_timer = 0.0
-
-func _process(delta: float) -> void:
-	if not has_node("AnimatedSprite2D"):
-		return
-	test_timer += delta
-	if test_timer >= 1.5:  # Switch every 1.5 seconds
-		test_timer = 0.0
-		$AnimatedSprite2D.play(test_anims[test_idx])
-		test_idx = (test_idx + 1) % test_anims.size()
-# --------------------------------------------

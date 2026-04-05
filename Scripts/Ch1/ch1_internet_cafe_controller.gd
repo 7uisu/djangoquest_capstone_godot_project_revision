@@ -152,13 +152,13 @@ func _start_cutscene():
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Spaghetti Guy", "text": "I'm actually a college student. IT major!" },
-			{ "name": "Spaghetti Guy", "text": "Right now I'm coding the backend for my personal website." },
-			{ "name": "Spaghetti Guy", "text": "It's all in Python — using a framework called Django." },
+			{ "name": "Spaghetti Guy", "text": "I'm actually a college student. [color=#f0c674]IT major[/color]!" },
+			{ "name": "Spaghetti Guy", "text": "Right now I'm coding the [color=#f0c674]backend[/color] for my personal website." },
+			{ "name": "Spaghetti Guy", "text": "It's all in [color=#f0c674]Python[/color] — using a framework called [color=#f0c674]Django[/color]." },
 			{ "name": pname, "text": "Whoa, that's awesome! That looks so complicated though..." },
 			{ "name": "Spaghetti Guy", "text": "Haha, it looks scary at first, but it's actually pretty fun once you get the hang of it!" },
-			{ "name": pname, "text": "I've always wanted to learn how to code... I just never knew where to start." },
-			{ "name": "Spaghetti Guy", "text": "Well, you're in luck! Python is actually the best language to start with." }
+			{ "name": pname, "text": "I've always wanted to learn how to [color=#f0c674]code[/color]... I just never knew where to start." },
+			{ "name": "Spaghetti Guy", "text": "Well, you're in luck! [color=#f0c674]Python[/color] is actually the best language to start with." }
 		])
 		await dialogue_box.dialogue_finished
 
@@ -170,7 +170,7 @@ func _start_cutscene():
 	var b4 = _start_bubble_on(spaghetti_guy, [
 		{ "name": "Spaghetti Guy", "text": "Hey, tell you what..." },
 		{ "name": "Spaghetti Guy", "text": "Since we're both waiting for the owner anyway..." },
-		{ "name": "Spaghetti Guy", "text": "Want me to teach you some Python basics? It won't take long!" }
+		{ "name": "Spaghetti Guy", "text": "Want me to teach you some [color=#f0c674]Python basics[/color]? It won't take long!" }
 	])
 	if b4: await b4.dialogue_finished
 	await get_tree().create_timer(0.2).timeout
@@ -246,10 +246,10 @@ func _start_cutscene():
 	# Guidance dialogue ON TOP of the IDE (layer is already raised)
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Spaghetti Guy", "text": "Alright! The very first thing you learn in any language is how to print something to the screen." },
-			{ "name": "Spaghetti Guy", "text": "In Python, you use the print() function." },
-			{ "name": "Spaghetti Guy", "text": "Type exactly: print('Hello, World!')" },
-			{ "name": "Spaghetti Guy", "text": "Don't forget the parentheses and the quotes! Then hit ▶ Run!" }
+			{ "name": "Spaghetti Guy", "text": "Alright! The very first thing you learn in any language is how to [color=#f0c674]print[/color] something to the screen." },
+			{ "name": "Spaghetti Guy", "text": "In Python, you use the [color=#f0c674]print()[/color] function." },
+			{ "name": "Spaghetti Guy", "text": "Type exactly: [color=#f0c674]print('Hello, World!')[/color]" },
+			{ "name": "Spaghetti Guy", "text": "Don't forget the [color=#f0c674]parentheses[/color] and the [color=#f0c674]quotes[/color]! Then hit ▶ Run!" }
 		])
 		await dialogue_box.dialogue_finished
 
@@ -267,7 +267,7 @@ func _start_cutscene():
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Spaghetti Guy", "text": "Nice! You got it! See, that wasn't so hard!" },
-			{ "name": "Spaghetti Guy", "text": "You just wrote your very first line of Python code!" },
+			{ "name": "Spaghetti Guy", "text": "You just wrote your very first line of [color=#f0c674]Python code[/color]!" },
 			{ "name": "Spaghetti Guy", "text": "Now let's try something a bit different..." }
 		])
 		await dialogue_box.dialogue_finished
@@ -292,10 +292,10 @@ func _start_cutscene():
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Spaghetti Guy", "text": "Now let's learn about variables." },
-			{ "name": "Spaghetti Guy", "text": "Variables are like containers that hold data." },
-			{ "name": "Spaghetti Guy", "text": "In Python, you just write the name, an equals sign, and the value." },
-			{ "name": "Spaghetti Guy", "text": "Type: name = 'DjangoQuest'" },
+			{ "name": "Spaghetti Guy", "text": "Now let's learn about [color=#f0c674]variables[/color]." },
+			{ "name": "Spaghetti Guy", "text": "[color=#f0c674]Variables[/color] are like containers that hold data." },
+			{ "name": "Spaghetti Guy", "text": "In Python, you just write the [color=#f0c674]name[/color], an [color=#f0c674]equals sign[/color], and the [color=#f0c674]value[/color]." },
+			{ "name": "Spaghetti Guy", "text": "Type: [color=#f0c674]name = 'DjangoQuest'[/color]" },
 			{ "name": "Spaghetti Guy", "text": "No special keyword needed! Then hit ▶ Run." }
 		])
 		await dialogue_box.dialogue_finished
@@ -312,7 +312,7 @@ func _start_cutscene():
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Spaghetti Guy", "text": "You're getting the hang of this!" },
-			{ "name": "Spaghetti Guy", "text": "Variables are super important — you'll use them everywhere in programming." },
+			{ "name": "Spaghetti Guy", "text": "[color=#f0c674]Variables[/color] are super important — you'll use them everywhere in programming." },
 			{ "name": "Spaghetti Guy", "text": "One more challenge. Let's combine both things we learned!" }
 		])
 		await dialogue_box.dialogue_finished
@@ -338,10 +338,10 @@ func _start_cutscene():
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Spaghetti Guy", "text": "Now let's combine both things we learned!" },
-			{ "name": "Spaghetti Guy", "text": "You already have a variable called 'name' set to 'DjangoQuest'." },
-			{ "name": "Spaghetti Guy", "text": "Use print() but put the variable name INSIDE — no quotes this time!" },
-			{ "name": "Spaghetti Guy", "text": "Type: print(name)" },
-			{ "name": "Spaghetti Guy", "text": "Notice: no quotes around 'name' — because it's a variable, not text!" }
+			{ "name": "Spaghetti Guy", "text": "You already have a [color=#f0c674]variable[/color] called [color=#f0c674]'name'[/color] set to 'DjangoQuest'." },
+			{ "name": "Spaghetti Guy", "text": "Use [color=#f0c674]print()[/color] but put the variable name INSIDE — [color=#f0c674]no quotes[/color] this time!" },
+			{ "name": "Spaghetti Guy", "text": "Type: [color=#f0c674]print(name)[/color]" },
+			{ "name": "Spaghetti Guy", "text": "Notice: no quotes around 'name' — because it's a [color=#f0c674]variable[/color], not text!" }
 		])
 		await dialogue_box.dialogue_finished
 
@@ -356,7 +356,7 @@ func _start_cutscene():
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Spaghetti Guy", "text": "You nailed it! You're a natural!" },
-			{ "name": "Spaghetti Guy", "text": "You just learned print statements, variables, AND how to use them together!" }
+			{ "name": "Spaghetti Guy", "text": "You just learned [color=#f0c674]print statements[/color], [color=#f0c674]variables[/color], AND how to use them together!" }
 		])
 		await dialogue_box.dialogue_finished
 
@@ -396,7 +396,7 @@ func _play_completion_sequence(pname: String):
 			{ "name": "Spaghetti Guy", "text": "Oh, welcome back! Perfect timing, we were just wrapping up." },
 			{ "name": pname, "text": "Well, I was originally here to play some games since my laptop can't handle them..." },
 			{ "name": pname, "text": "But at the very least, I came here and learned something new!" },
-			{ "name": "Spaghetti Guy", "text": "Haha, that's the spirit! Gaming is fun, but coding is a superpower!" },
+			{ "name": "Spaghetti Guy", "text": "Haha, that's the spirit! Gaming is fun, but [color=#f0c674]coding[/color] is a superpower!" },
 			{ "name": "Internet Cafe Owner", "text": "Sounds like you had a productive time! The PCs are all yours now." }
 		])
 		await dialogue_box.dialogue_finished
@@ -719,14 +719,14 @@ func _show_dialogue_with_log(dbox, lines: Array):
 # ── Dialogue Log Overlay UI ──────────────────────────────────────────
 
 func _create_log_button(parent_canvas: CanvasLayer):
-	# Create a small "📜 Log" button in the top-right of the IDE
+	# Create a small "📜 Log" button in the top-left of the IDE
 	var btn = Button.new()
 	btn.name = "LogButton"
 	btn.text = "📜 Log"
 	btn.custom_minimum_size = Vector2(70, 30)
-	btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	btn.offset_left = -80
-	btn.offset_right = -10
+	btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	btn.offset_left = 10
+	btn.offset_right = 80
 	btn.offset_top = 6
 	btn.offset_bottom = 36
 
