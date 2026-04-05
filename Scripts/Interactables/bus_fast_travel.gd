@@ -65,6 +65,9 @@ func _open_destination_menu():
 
 func _on_destination_selected(target_position: Vector2):
 	_cleanup_ui()
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.hide_quest()
 	# Determine bus direction: if destination is to the right of player, bus goes left-to-right
 	var goes_right: bool = true
 	var players = get_tree().get_nodes_in_group("player")

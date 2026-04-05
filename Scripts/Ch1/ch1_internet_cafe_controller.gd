@@ -64,6 +64,10 @@ func _create_interaction_area():
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)
 
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.has_method("refresh_ch1_internet_cafe_quest"):
+		qm.refresh_ch1_internet_cafe_quest()
+
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		player_is_inside = true
@@ -96,6 +100,10 @@ func _start_cutscene():
 		if players.size() > 0:
 			player = players[0]
 
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.hide_quest()
+
 	dialogue_box = _get_dialogue_box()
 
 	var pname = "You"
@@ -106,6 +114,7 @@ func _start_cutscene():
 	if player:
 		player.can_move = false
 		player.can_interact = false
+		player.block_ui_input = true  # Block inventory/laptop during cutscene
 		player.set_physics_process(false)
 		if "current_dir" in player and player.has_method("play_idle_animation"):
 			player.play_idle_animation(player.current_dir)
@@ -185,7 +194,7 @@ func _start_cutscene():
 	
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_IDE = true
+	var DEBUG_SKIP_IDE = false
 	if DEBUG_SKIP_IDE:
 		await _play_completion_sequence(pname)
 		return
@@ -461,6 +470,17 @@ func _play_epilogue_sequence(pname: String):
 	# Mark done
 	character_data.ch1_spaghetti_guy_cutscene_done = true
 	_cutscene_running = false
+
+	# Restore player controls
+	if player:
+		player.block_ui_input = false
+		player.can_move = true
+		player.can_interact = true
+		player.set_physics_process(true)
+
+	var quest_mgr = get_node_or_null("/root/QuestManager")
+	if quest_mgr:
+		quest_mgr.clear_quest()
 
 	# Transition to college_map.tscn with smooth crossfade
 	await get_tree().create_timer(0.5).timeout

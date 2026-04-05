@@ -145,41 +145,58 @@ func play_sitting_animation(direction: String) -> void:
 		animated_sprite.play("female_sitting_" + anim_dir)
 
 func _input(event):
-	# Block UI toggles during cutscenes / teaching sequences
+	# Closing must run even when can_move is false (open() freezes the player) and even if
+	# block_ui_input is true, so overlays never get stuck. Opening still gated below.
+	if event.is_action_pressed("toggle_inventory"):
+		if inventory_ui and inventory_ui.is_open and inventory_ui.has_method("close"):
+			inventory_ui.close()
+			return
+
+	if event.is_action_pressed("toggle_laptop"):
+		if laptop_ui and laptop_ui.is_open and laptop_ui.has_method("close"):
+			var qm_close = get_node_or_null("/root/QuestManager")
+			laptop_ui.close()
+			if qm_close:
+				qm_close.show_quest()
+			return
+
+	# Interact (F) while frozen — e.g. Ch1 convenience cutscene leaves can_move false at the café door
+	if event.is_action_pressed("interact") and can_interact and not block_ui_input:
+		if not ((inventory_ui and inventory_ui.is_open) or (laptop_ui and laptop_ui.is_open)):
+			for area in interaction_area.get_overlapping_areas():
+				if area.has_method("interact"):
+					area.interact()
+					break
+		return
+
+	# Block opening new UI during cutscenes / teaching / coding IDE
 	if not can_move or block_ui_input:
 		return
 
-	# Toggle inventory (E key)
+	# Toggle inventory (E key) — open only (close handled above)
 	if event.is_action_pressed("toggle_inventory"):
 		if laptop_ui and laptop_ui.is_open:
 			return  # Don't open inventory while laptop is open
 		if inventory_ui and inventory_ui.has_method("open") and inventory_ui.has_method("close"):
-			if inventory_ui.is_open:
-				inventory_ui.close()
-			else:
+			if not inventory_ui.is_open:
 				inventory_ui.open()
 		return
 
-	# Toggle laptop (X key)
+	# Toggle laptop (X key) — open only
 	if event.is_action_pressed("toggle_laptop"):
 		if inventory_ui and inventory_ui.is_open:
 			return  # Don't open laptop while inventory is open
 		if laptop_ui and laptop_ui.has_method("open") and laptop_ui.has_method("close"):
-			if laptop_ui.is_open:
-				laptop_ui.close()
-			else:
+			if not laptop_ui.is_open:
+				var qm = get_node_or_null("/root/QuestManager")
+				if qm:
+					qm.hide_quest()
 				laptop_ui.open()
 		return
 
-	# Don't allow interactions while inventory or laptop is open
+	# Don't allow other input while inventory or laptop is open
 	if (inventory_ui and inventory_ui.is_open) or (laptop_ui and laptop_ui.is_open):
 		return
-
-	if event.is_action_pressed("interact") and can_interact:
-		for area in interaction_area.get_overlapping_areas():
-			if area.has_method("interact"):
-				area.interact()
-				break
 
 # Use area detection for interactables (doors, NPCs, items are Area2D)
 func _on_interaction_area_entered(area: Area2D) -> void:

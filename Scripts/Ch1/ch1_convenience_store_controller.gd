@@ -1,4 +1,4 @@
-# ch1_convenience_store_controller.gd — Internet cafe cutscene after bus fast travel
+	# ch1_convenience_store_controller.gd — Internet cafe cutscene after bus fast travel
 # Attach to a Node child of OutdoorMap in outdoor_map_convenience_store_cutscene2.tscn
 #
 # Flow:
@@ -57,6 +57,10 @@ func _ready():
 	var scene_transition = get_node_or_null("/root/SceneTransition")
 	if scene_transition:
 		scene_transition.fast_travel_completed.connect(_on_fast_travel_completed)
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.has_method("refresh_ch1_outdoor_quest"):
+		qm.refresh_ch1_outdoor_quest()
 
 # -----------------------------------------------------------------------
 #  SETUP
@@ -434,8 +438,15 @@ func _play_cutscene():
 		player.set_physics_process(true)
 		player.can_move = false
 		player.can_interact = true
+		# Don't block UI input here - we want interaction to work with the door
 
 	print("Ch1ConvenienceStoreController: Cutscene completed! Player at internet cafe door.")
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.show_quest()
+		if qm.has_method("refresh_ch1_outdoor_quest"):
+			qm.refresh_ch1_outdoor_quest()
 
 # ── Chat Bubble Helper ────────────────────────────────────────────────
 

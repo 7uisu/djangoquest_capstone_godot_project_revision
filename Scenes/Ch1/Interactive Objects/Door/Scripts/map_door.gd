@@ -34,6 +34,11 @@ func interact():
 		var p = player[0]
 		p.current_dir = entry_direction
 		p.play_walk_animation(entry_direction)
+		
+		# Restore player movement when entering internet cafe
+		if target_scene.contains("internet_cafe_map_cutscene.tscn"):
+			p.can_move = true
+			p.can_interact = true
 
 	# Trigger the scene transition
 	if target_scene != "":

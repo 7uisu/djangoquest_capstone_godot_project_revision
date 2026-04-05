@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://bvxqy8j8xkqr"]
+
+[ext_resource type="Script" path="res://Scripts/UI/learning_professor_select_controller.gd" id="1_0k8yr"]
+
+[node name="LearningProfessorSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_0k8yr")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.12, 0.18, 0.95)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Choose Your Professor"
+horizontal_alignment = 1
+
+[node name="ProfessorGrid" type="GridContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+
+[node name="MarkupButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(350, 150)
+theme_override_font_sizes/font_size = 18
+text = "Professor Markup
+HTML & CSS Basics"
+
+[node name="SyntaxButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(350, 150)
+theme_override_font_sizes/font_size = 18
+text = "Professor Syntax
+Python & OOP"
+
+[node name="ViewButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(350, 150)
+theme_override_font_sizes/font_size = 18
+text = "Professor View
+Django Setup"
+
+[node name="QueryButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(350, 150)
+theme_override_font_sizes/font_size = 18
+text = "Professor Query
+Databases"
+
+[node name="ButtonContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="BackButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 40)
+theme_override_font_sizes/font_size = 16
+text = "Back to Menu"

@@ -24,6 +24,10 @@ func _ready() -> void:
 	_setup_professor_view()
 	_setup_professor_query()
 
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.has_method("refresh_college_quest"):
+		qm.refresh_college_quest()
+
 func _setup_professor_markup():
 	# Find the 1st male professor NPC
 	var prof_npc = _find_node_recursive("NPCMaleCollegeProf01")

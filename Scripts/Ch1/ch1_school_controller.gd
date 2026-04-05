@@ -110,6 +110,8 @@ func _setup_initial_state():
 		# Phase 1 — pre-teaching
 		_enter_phase_1()
 
+	_sync_school_quest()
+
 # -----------------------------------------------------------------------
 #  PHASE 1 — Pre-teaching (walk around freely, talk to prof to start)
 # -----------------------------------------------------------------------
@@ -194,6 +196,10 @@ func _on_lecture_choice(choice_index: int):
 # -----------------------------------------------------------------------
 
 func _enter_phase_2():
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.hide_quest()
+
 	# 1. Freeze the player
 	if player:
 		player.can_move = false
@@ -444,12 +450,16 @@ func _start_bubble_on(npc: Node2D, bubble_scene: PackedScene, lines: Array):
 func _show_quiz():
 	# ─── DEBUG SKIP QUIZ ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_QUIZ = true
+	var DEBUG_SKIP_QUIZ = false
 	if DEBUG_SKIP_QUIZ:
 		_on_quiz_completed(3)
 		return
 	# ─── END OF DEBUG SKIP QUIZ ────────────────────────────────────────────
-	
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.hide_quest()
+
 	# Instantiate the quiz as a CanvasLayer overlay
 	var quiz_canvas = CanvasLayer.new()
 	quiz_canvas.name = "QuizOverlay"
@@ -478,6 +488,9 @@ func _on_quiz_completed(score: int):
 
 func _enter_remedial_phase():
 	_did_remedial_class = true
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.hide_quest()
 	# Freeze the player so they can't move during the long fade
 	if player: player.can_move = false
 
@@ -546,6 +559,11 @@ func _enter_phase_3():
 
 	# Set up interaction on BFs so player can talk to them in the hallway
 	_setup_hallway_bf_interactions()
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.has_method("reset_suppression"):
+		qm.reset_suppression()
+	_sync_school_quest()
 
 func _place_bfs_in_hallway():
 	if male_bf:
@@ -700,6 +718,11 @@ func _on_hallway_dialogue_finished():
 	if player:
 		player.can_move = true
 
+	var qm2 = get_node_or_null("/root/QuestManager")
+	if qm2 and qm2.has_method("reset_suppression"):
+		qm2.reset_suppression()
+	_sync_school_quest()
+
 func _bfs_walk_away():
 	# Both BFs turn to face up and walk upward out of view
 	var walk_duration = 2.0
@@ -753,3 +776,9 @@ func _get_dialogue_box():
 		if child.has_method("start") and child is CanvasLayer:
 			return child
 	return null
+
+
+func _sync_school_quest():
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.has_method("refresh_ch1_school_quest"):
+		qm.refresh_ch1_school_quest()

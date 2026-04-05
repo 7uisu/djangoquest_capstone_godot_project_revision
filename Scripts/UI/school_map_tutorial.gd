@@ -39,6 +39,10 @@ func _start_tutorial():
 func _on_tutorial_finished():
 	character_data.has_seen_tutorial = true
 
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.has_method("refresh_ch1_school_quest"):
+		qm.refresh_ch1_school_quest()
+
 	# Unfreeze the player
 	var players = get_tree().get_nodes_in_group("player")
 	for p in players:

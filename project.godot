@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 CharacterData="*res://Scripts/Autoload or Global/character_data.gd"
+QuestManager="*res://Scripts/Autoload or Global/quest_manager.gd"
 SaveManager="*res://Scripts/Autoload or Global/save_manager.gd"
 SceneTransition="*res://Scripts/Autoload or Global/scene_transition.tscn"
 InventoryManager="*res://Scripts/Autoload or Global/inventory_manager.gd"

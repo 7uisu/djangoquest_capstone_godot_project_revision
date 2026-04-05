@@ -85,6 +85,10 @@ func _on_lecture_choice(choice_index: int):
 # ── LESSON SEQUENCE ───────────────────────────────────────────────────
 
 func _start_lesson_sequence():
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.hide_quest()
+
 	dialogue_box = _get_dialogue_box()
 	
 	# Freeze player
@@ -102,7 +106,7 @@ func _start_lesson_sequence():
 	
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_IDE = true
+	var DEBUG_SKIP_IDE = false
 	# ─── END OF DEBUG SKIP IDE ────────────────────────────────────
 	
 	# IDE is created lazily on first challenge (after teaching placeholders).
@@ -173,6 +177,11 @@ func _start_lesson_sequence():
 		player.block_ui_input = false
 	
 	_cutscene_running = false
+
+	if qm:
+		qm.show_quest()
+		if qm.has_method("refresh_college_quest"):
+			qm.refresh_college_quest()
 
 # ── Teaching slides (Ch1-style) + lazy IDE ────────────────────────────
 
