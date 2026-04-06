@@ -27,6 +27,7 @@ SaveManager="*res://Scripts/Autoload or Global/save_manager.gd"
 SceneTransition="*res://Scripts/Autoload or Global/scene_transition.tscn"
 InventoryManager="*res://Scripts/Autoload or Global/inventory_manager.gd"
 UIClickSFX="*res://Scripts/Autoload or Global/ui_click_sfx.gd"
+GlobalPauseMenu="*res://Scenes/UI/pause_menu.tscn"
 
 [display]
 

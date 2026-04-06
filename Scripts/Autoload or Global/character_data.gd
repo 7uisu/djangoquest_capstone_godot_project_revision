@@ -4,6 +4,7 @@ extends Node
 var selected_gender: String = ""  # "male" or "female"
 var player_name: String = ""
 var has_seen_tutorial: bool = false
+var has_seen_learning_mode_intro: bool = false
 
 # Chapter 1 progress
 var ch1_teaching_done: bool = false
@@ -31,6 +32,7 @@ func reset_data():
 	selected_gender = ""
 	player_name = ""
 	has_seen_tutorial = false
+	has_seen_learning_mode_intro = false
 	ch1_teaching_done = false
 	ch1_quiz_done = false
 	ch1_post_quiz_dialogue_done = false

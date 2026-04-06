@@ -17,6 +17,7 @@ var player: Node2D = null
 var professor_npc: Area2D = null
 var dialogue_box = null
 
+var is_learning_mode: bool = false
 var _cutscene_running: bool = false
 var _teaching_canvas: CanvasLayer = null
 var _dialogue_log: Array = []
@@ -46,6 +47,11 @@ func _on_professor_interacted():
 	dialogue_box = _get_dialogue_box()
 	print("ProfMarkupController: dialogue_box = ", dialogue_box)
 	print("ProfMarkupController: character_data = ", character_data)
+	
+	if is_learning_mode:
+		_cutscene_running = true
+		_start_lesson_sequence()
+		return
 	
 	if character_data and character_data.ch2_y1s1_teaching_done:
 		# Post-completion dialogue
@@ -104,6 +110,9 @@ func _start_lesson_sequence():
 	if character_data:
 		current_module = character_data.ch2_y1s1_current_module
 	
+	if is_learning_mode:
+		current_module = 0
+		
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
 	var DEBUG_SKIP_IDE = false
@@ -166,7 +175,7 @@ func _start_lesson_sequence():
 		await dialogue_box.dialogue_finished
 	
 	# Mark complete
-	if character_data:
+	if character_data and not is_learning_mode:
 		character_data.ch2_y1s1_teaching_done = true
 	
 	# Unfreeze player

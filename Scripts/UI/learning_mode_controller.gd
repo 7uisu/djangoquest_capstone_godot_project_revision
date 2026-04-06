@@ -15,6 +15,13 @@ func _ready():
 	_show_learning_intro()
 
 func _show_learning_intro():
+	if character_data and character_data.has_seen_learning_mode_intro:
+		_show_professor_selection()
+		return
+		
+	if character_data:
+		character_data.has_seen_learning_mode_intro = true
+
 	dialogue_box = _get_dialogue_box()
 	
 	var intro_lines = [
@@ -76,6 +83,7 @@ func _launch_markup_lessons():
 	# Create and configure Professor Markup controller
 	const ProfMarkupController = preload("res://Scripts/Ch2/ch2_professor_markup_controller.gd")
 	var controller = ProfMarkupController.new()
+	controller.is_learning_mode = true
 	add_child(controller)
 	
 	# Simulate professor interaction to start lessons
@@ -85,6 +93,7 @@ func _launch_syntax_lessons():
 	# Create and configure Professor Syntax controller
 	const ProfSyntaxController = preload("res://Scripts/Ch2/ch2_professor_syntax_controller.gd")
 	var controller = ProfSyntaxController.new()
+	controller.is_learning_mode = true
 	add_child(controller)
 	
 	# Simulate professor interaction to start lessons
@@ -94,6 +103,7 @@ func _launch_view_lessons():
 	# Create and configure Professor View controller
 	const ProfViewController = preload("res://Scripts/Ch2/ch2_professor_view_controller.gd")
 	var controller = ProfViewController.new()
+	controller.is_learning_mode = true
 	add_child(controller)
 	
 	# Simulate professor interaction to start lessons
@@ -103,6 +113,7 @@ func _launch_query_lessons():
 	# Create and configure Professor Query controller
 	const ProfQueryController = preload("res://Scripts/Ch2/ch2_professor_query_controller.gd")
 	var controller = ProfQueryController.new()
+	controller.is_learning_mode = true
 	add_child(controller)
 	
 	# Simulate professor interaction to start lessons

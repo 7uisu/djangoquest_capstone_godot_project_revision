@@ -25,22 +25,8 @@ func _ready():
 	_update_button_states()
 
 func _update_button_states():
-	# Disable buttons for professors that haven't unlocked prerequisites
-	if character_data:
-	# Professor Syntax requires Professor Markup completion
-		if not character_data.ch2_y1s1_teaching_done:
-			syntax_button.disabled = true
-			syntax_button.text = "Professor Syntax\nPython & OOP\n\n(Complete Professor Markup first)"
-		
-		# Professor View requires both Year 1 completion
-		if not (character_data.ch2_y1s1_teaching_done and character_data.ch2_y1s2_teaching_done):
-			view_button.disabled = true
-			view_button.text = "Professor View\nDjango Setup\n\n(Complete Year 1 first)"
-		
-		# Professor Query requires Year 1 + Year 2 Semester 1
-		if not (character_data.ch2_y1s1_teaching_done and character_data.ch2_y1s2_teaching_done and character_data.ch2_y2s1_teaching_done):
-			query_button.disabled = true
-			query_button.text = "Professor Query\nDatabases\n\n(Complete previous semesters first)"
+	# For now, make all buttons unlocked already as requested by the user
+	pass
 
 func _on_markup_pressed():
 	professor_selected.emit("markup")

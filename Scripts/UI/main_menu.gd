@@ -6,11 +6,13 @@ var ChallengePickerUI = preload("res://Scenes/Games/challenge_picker_ui.tscn")
 @onready var story_button: Button = $VBoxContainer/StoryButton
 @onready var learning_button: Button = $VBoxContainer/LearningButton
 @onready var challenge_button: Button = $VBoxContainer/ChallengeButton
+@onready var quit_button: Button = $VBoxContainer/QuitButton
 
 func _ready():
 	story_button.pressed.connect(_on_story_pressed)
 	learning_button.pressed.connect(_on_learning_pressed)
 	challenge_button.pressed.connect(_on_challenge_pressed)
+	quit_button.pressed.connect(_on_quit_pressed)
 
 	# Enable learning mode now that it's implemented
 	learning_button.disabled = false
@@ -27,3 +29,6 @@ func _on_challenge_pressed():
 	# Open challenge picker UI
 	var challenge_picker = ChallengePickerUI.instantiate()
 	add_child(challenge_picker)
+
+func _on_quit_pressed():
+	get_tree().quit()

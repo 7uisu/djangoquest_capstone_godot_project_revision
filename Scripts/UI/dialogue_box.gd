@@ -143,6 +143,9 @@ func _show_choices(choices: Array):
 		var btn = Button.new()
 		btn.text = choices[i]
 		btn.add_theme_font_size_override("font_size", 16)
+		# Add font to choice buttons
+		var font_resource = preload("res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf")
+		btn.add_theme_font_override("font", font_resource)
 		btn.pressed.connect(func(): _on_choice_pressed(i))
 		choice_container.add_child(btn)
 		

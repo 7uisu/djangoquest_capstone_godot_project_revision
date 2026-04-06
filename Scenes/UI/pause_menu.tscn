@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://dy28deyk0jp6v"]
+[gd_scene load_steps=8 format=3 uid="uid://cx_pause_menu_001"]
 
-[ext_resource type="Script" uid="uid://05fjohwh2vg1" path="res://Scripts/UI/main_menu.gd" id="1_script"]
+[ext_resource type="Script" path="res://Scripts/UI/pause_menu.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://d2st8v7vx3p07" path="res://Textures/Fonts/CyberpunkCraftpixPixel.otf" id="2_title_font"]
 [ext_resource type="FontFile" uid="uid://dywjttgy6mph5" path="res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="3_button_font"]
 
@@ -52,112 +52,83 @@ corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
-[node name="MainMenu" type="Control" unique_id=1453623620]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 100
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="." unique_id=1282211965]
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.04, 0.1, 0.95)
+
+[node name="CenterContainer" type="CenterContainer" parent="Overlay"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.04, 0.1, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2021450488]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -160.0
-offset_top = -120.0
-offset_right = 160.0
-offset_bottom = 120.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/CenterContainer"]
+layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer" unique_id=1638191437]
+[node name="Label" type="Label" parent="Overlay/CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.82, 1, 1)
 theme_override_colors/font_shadow_color = Color(0.15, 0.2, 0.5, 0.8)
 theme_override_fonts/font = ExtResource("2_title_font")
-theme_override_font_sizes/font_size = 32
-text = "DjangoQuest"
+theme_override_font_sizes/font_size = 48
+text = "Paused"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="VBoxContainer" unique_id=347256663]
+[node name="Spacer" type="Control" parent="Overlay/CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 
-[node name="StoryButton" type="Button" parent="VBoxContainer" unique_id=2058921989]
-custom_minimum_size = Vector2(280, 40)
+[node name="ResumeButton" type="Button" parent="Overlay/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 40)
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Story Mode"
+text = "Go Back to Game"
 
-[node name="LearningButton" type="Button" parent="VBoxContainer" unique_id=1357752970]
-custom_minimum_size = Vector2(280, 40)
+[node name="SettingsButton" type="Button" parent="Overlay/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 40)
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Learning Mode"
+text = "Settings"
 
-[node name="ChallengeButton" type="Button" parent="VBoxContainer" unique_id=570618632]
-custom_minimum_size = Vector2(280, 40)
+[node name="MainMenuButton" type="Button" parent="Overlay/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(300, 40)
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Challenge Mode"
+text = "Go Back to Main Menu"
 
-[node name="Spacer2" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 16)
-layout_mode = 2
-
-[node name="QuitButton" type="Button" parent="VBoxContainer"]
-custom_minimum_size = Vector2(280, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Close / Exit Game"
