@@ -587,7 +587,7 @@ radius = 12.0
 [node name="ChallengeNPC" type="Area2D" unique_id=466383016]
 script = ExtResource("2_script")
 
-[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=1503963856]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1503963856]
 y_sort_enabled = true
 position = Vector2(0, -14)
 sprite_frames = SubResource("SpriteFrames_x23lb")
