@@ -2,8 +2,7 @@ extends Control
 
 signal quiz_completed(score: int)
 
-# Quiz data
-var questions = [
+var all_questions = [
 	{
 		"question": "Who created Python?",
 		"options": ["A) Dennis Ritchie", "B) Guido van Rossum", "C) Bjarne Stroustrup", "D) James Gosling"],
@@ -21,15 +20,41 @@ var questions = [
 	},
 	{
 		"question": "What is one of Python's core design goals?",
-		"options": ["A) Use of lots of punctuation", "B) Machine-only readability", "C) Complex syntax", "D) Readability and simplicity"],
+		"options": ["A) Complex syntax", "B) Machine-only\n    readability", "C) Manual formatting", "D) Readability and\n    simplicity"],
 		"correct": 3  # D) Readability and simplicity
 	},
 	{
 		"question": "Which organization uses Python for space-related tasks?",
 		"options": ["A) Apple", "B) NASA", "C) Meta", "D) IBM"],
 		"correct": 1  # B) NASA
+	},
+	{
+		"question": "What language heavily influenced Python's clean structure?",
+		"options": ["A) Java", "B) C++", "C) ABC", "D) Perl"],
+		"correct": 2  # C) ABC
+	},
+	{
+		"question": "What is the 19-principle guide for Python code called?",
+		"options": ["A) Python Rulebook", "B) The Zen of\n    Python", "C) Python Manifesto", "D) Guido's Guide"],
+		"correct": 1  # B) The Zen of Python
+	},
+	{
+		"question": "Which non-profit organization manages Python today?",
+		"options": ["A) Python Software\n    Foundation", "B) Python Org", "C) Open Source Inc", "D) Python Global"],
+		"correct": 0  # A) Python Software Foundation
+	},
+	{
+		"question": "In what year was Python 3.0, a major rewrite, released?",
+		"options": ["A) 2000", "B) 2008", "C) 2012", "D) 2020"],
+		"correct": 1  # B) 2008
+	},
+	{
+		"question": "Which Python framework is heavily used for web apps?",
+		"options": ["A) React", "B) Laravel", "C) Django", "D) Spring"],
+		"correct": 2  # C) Django
 	}
 ]
+var questions = []
 
 # Game state
 var current_question = 0
@@ -39,6 +64,7 @@ var is_drawing = false
 var drawing_points = []
 var is_quiz_completed = false
 var answer_locked = false  # NEW: prevent re-drawing after selection
+var is_in_tutorial = true  # NEW: show tutorial first
 
 # UI nodes
 @onready var question_label = $QuestionLabel
@@ -55,9 +81,30 @@ var answer_locked = false  # NEW: prevent re-drawing after selection
 func _ready():
 	setup_ui()
 	shuffle_questions()  # NEW: randomize order
-	load_question()
+	show_tutorial()
 	next_button.pressed.connect(_on_next_button_pressed)
 	restart_button.pressed.connect(_on_restart_button_pressed)
+
+func show_tutorial():
+	is_in_tutorial = true
+	
+	# Temporarily expand the label to fit all the tutorial text
+	question_label.size.x = 800
+	question_label.size.y = 400
+	
+	question_label.text = "HISTORY OF PYTHON FINAL EXAM\n\nInstructions:\nTo select an answer, DRAW A CIRCLE around the letter corresponding to your choice.\n\nGood Luck!!"
+	
+	# Hide options for tutorial
+	for label in option_labels:
+		label.visible = false
+		
+	score_label.visible = false
+	progress_label.visible = false
+	feedback_label.visible = false
+	
+	next_button.text = "Start"
+	next_button.disabled = false
+	next_button.visible = true
 
 func setup_ui():
 	# Set up drawing area functionality
@@ -76,15 +123,20 @@ func setup_ui():
 	progress_label.visible = true
 	feedback_label.visible = false
 
-# NEW: Shuffle questions for variety on each play
+# NEW: Shuffle questions for variety on each play, picking 5 from 10
 func shuffle_questions():
 	var rng = RandomNumberGenerator.new()
 	rng.randomize()
-	for i in range(questions.size() - 1, 0, -1):
+	
+	var temp_questions = all_questions.duplicate()
+	for i in range(temp_questions.size() - 1, 0, -1):
 		var j = rng.randi_range(0, i)
-		var tmp = questions[i]
-		questions[i] = questions[j]
-		questions[j] = tmp
+		var tmp = temp_questions[i]
+		temp_questions[i] = temp_questions[j]
+		temp_questions[j] = tmp
+		
+	# Slice the first 5 questions for this run
+	questions = temp_questions.slice(0, 5)
 
 func load_question():
 	if current_question >= questions.size():
@@ -117,7 +169,7 @@ func load_question():
 	tween.tween_property(question_label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 func _on_drawing_area_gui_input(event):
-	if is_quiz_completed:
+	if is_quiz_completed or is_in_tutorial:
 		return
 		
 	if event is InputEventMouseButton:
@@ -135,10 +187,9 @@ func _on_drawing_area_gui_input(event):
 
 func _on_drawing_area_draw():
 	if drawing_points.size() > 1:
-		var color = Color.BLUE
-		color.a = 0.7
+		var color = Color(0.85, 0.1, 0.1, 0.85) # Prettier red pen color
 		for i in range(1, drawing_points.size()):
-			drawing_area.draw_line(drawing_points[i-1], drawing_points[i], color, 3.0)
+			drawing_area.draw_line(drawing_points[i-1], drawing_points[i], color, 4.0)
 
 func check_circle_selection():
 	if drawing_points.size() < 10:  # Need enough points to form a circle
@@ -212,6 +263,20 @@ func highlight_selection(option_index):
 	option_labels[option_index].modulate = Color.YELLOW
 
 func _on_next_button_pressed():
+	if is_in_tutorial:
+		is_in_tutorial = false
+		# Reset label size back to default for the questions
+		question_label.size.x = 502
+		question_label.size.y = 110
+		
+		next_button.text = "Next"
+		for label in option_labels:
+			label.visible = true
+		score_label.visible = true
+		progress_label.visible = true
+		load_question()
+		return
+		
 	if selected_answer == -1:
 		return
 	
@@ -304,6 +369,8 @@ func show_final_score():
 
 func _on_restart_button_pressed():
 	# Reset game state
+	is_in_tutorial = false
+	next_button.text = "Next"
 	current_question = 0
 	score = 0
 	selected_answer = -1

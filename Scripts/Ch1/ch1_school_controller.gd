@@ -253,14 +253,14 @@ func _play_teaching_sequence():
 		])
 		await dialogue_box.dialogue_finished
 	
-	# ─── Part 2: Creator & Origins (Quiz Q1 & Q3) ─────────────────────
+	# ─── Part 2: Creator & Origins (Quiz Q1, Q3, Q6) ─────────────────────
 	_change_teaching_image(SLIDES + "TeacherFacingStudentPointingAtBoard.png")
 	
 	if dialogue_box:
 		dialogue_box.start([
 			{ "name": "Professor", "text": "[color=#f0c674]Python[/color] was created by a Dutch programmer named [color=#f0c674]Guido van Rossum[/color]." },
 			{ "name": "Professor", "text": "He began working on it back in [color=#f0c674]1989[/color] — that's over 30 years ago!" },
-			{ "name": "Professor", "text": "He wanted to create a language that was [color=#f0c674]easy to read[/color] and fun to use." }
+			{ "name": "Professor", "text": "Before Python, he worked on a language called [color=#f0c674]ABC[/color], which heavily influenced Python's clean structure." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -312,14 +312,14 @@ func _play_teaching_sequence():
 		])
 		await dialogue_box.dialogue_finished
 	
-	# ─── Part 4: Design Goals (Quiz Q4) ───────────────────────────────
+	# ─── Part 4: Design Goals, Zen, and Foundation (Quiz Q4, Q7, Q8, Q9) ───────────────────────────────
 	_change_teaching_image(SLIDES + "TeacherFacingWWhiteboardLookingAtStudents2.png")
 	
 	if dialogue_box:
 		dialogue_box.start([
 			{ "name": "Professor", "text": "Now, one of Python's core design goals is [color=#f0c674]readability and simplicity[/color]." },
-			{ "name": "Professor", "text": "Unlike other languages with lots of brackets and semicolons..." },
-			{ "name": "Professor", "text": "Python uses clean [color=#f0c674]indentation[/color]. It almost reads like plain English!" }
+			{ "name": "Professor", "text": "It even has a 19-principle guide for writing good code, called [color=#f0c674]The Zen of Python[/color]." },
+			{ "name": "Professor", "text": "To protect and promote the language, the [color=#f0c674]Python Software Foundation[/color] was created!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -328,7 +328,7 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Student", "text": "So that's why the code looks like English? That's neat!" }
+			{ "name": "Student", "text": "So that's why the code almost looks like plain English? That's neat!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -337,18 +337,18 @@ func _play_teaching_sequence():
 	if dialogue_box:
 		dialogue_box.start([
 			{ "name": "Professor", "text": "Exactly! That's one of the reasons [color=#f0c674]Python[/color] is so popular with beginners." },
-			{ "name": "Professor", "text": "It lets you focus on [color=#f0c674]solving problems[/color] instead of fighting with syntax." }
+			{ "name": "Professor", "text": "Another major milestone was [color=#f0c674]Python 3.0[/color] released in [color=#f0c674]2008[/color], designed to fix old language flaws." }
 		])
 		await dialogue_box.dialogue_finished
 	
-	# ─── Part 5: Python Today (Quiz Q5) ───────────────────────────────
+	# ─── Part 5: Python Today (Quiz Q5, Q10) ───────────────────────────────
 	_change_teaching_image(SLIDES + "TeacherFacingWWhiteboardLookingAtStudents3.png")
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Professor", "text": "Today, [color=#f0c674]Python[/color] is used everywhere — from [color=#f0c674]web apps[/color] to [color=#f0c674]science[/color]!" },
-			{ "name": "Professor", "text": "Even [color=#f0c674]NASA[/color] uses Python for space-related tasks and [color=#f0c674]data analysis[/color]." },
-			{ "name": "Professor", "text": "Companies like [color=#f0c674]Google[/color], [color=#f0c674]Netflix[/color], and [color=#f0c674]Instagram[/color] also rely on it." }
+			{ "name": "Professor", "text": "Today, [color=#f0c674]Python[/color] is used everywhere. Even [color=#f0c674]NASA[/color] uses it for space-related tasks." },
+			{ "name": "Professor", "text": "Companies like Google and Netflix also rely heavily on it." },
+			{ "name": "Professor", "text": "It's also famous for its powerful web development framework, [color=#f0c674]Django[/color], which is what we will learn!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -365,7 +365,7 @@ func _play_teaching_sequence():
 	
 	if dialogue_box:
 		dialogue_box.start([
-			{ "name": "Student", "text": "I bet we could build something cool with Python too!" }
+			{ "name": "Student", "text": "I can't wait to build a web app with Django!" }
 		])
 		await dialogue_box.dialogue_finished
 	

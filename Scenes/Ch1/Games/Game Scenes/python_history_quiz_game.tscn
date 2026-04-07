@@ -140,7 +140,7 @@ theme_override_font_sizes/font_size = 32
 
 [node name="WrongSFX" type="AudioStreamPlayer" parent="." unique_id=1468299763]
 
-[node name="ContinueButton" type="Button" parent="."]
+[node name="ContinueButton" type="Button" parent="." unique_id=1467330248]
 visible = false
 layout_mode = 0
 offset_left = 350.0
