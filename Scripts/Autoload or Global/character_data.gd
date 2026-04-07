@@ -22,6 +22,8 @@ var ch2_y2s1_teaching_done: bool = false       # Year 2 Sem 1 all modules comple
 var ch2_y2s1_current_module: int = 0           # 0-3 (which module player is on)
 var ch2_y2s2_teaching_done: bool = false       # Year 2 Sem 2 all modules complete
 var ch2_y2s2_current_module: int = 0           # 0-3 (which module player is on)
+var ch2_y3s1_teaching_done: bool = false       # Year 3 Sem 1 all modules complete
+var ch2_y3s1_current_module: int = 0           # 0-2 (which module player is on)
 
 # Level unlock tracking (index 0 = level 1, etc.)
 const LEVEL_COUNT = 4
@@ -46,6 +48,8 @@ func reset_data():
 	ch2_y2s1_current_module = 0
 	ch2_y2s2_teaching_done = false
 	ch2_y2s2_current_module = 0
+	ch2_y3s1_teaching_done = false
+	ch2_y3s1_current_module = 0
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 

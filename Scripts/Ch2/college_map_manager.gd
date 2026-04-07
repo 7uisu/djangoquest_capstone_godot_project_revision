@@ -8,11 +8,13 @@ const ProfMarkupController = preload("res://Scripts/Ch2/ch2_professor_markup_con
 const ProfSyntaxController = preload("res://Scripts/Ch2/ch2_professor_syntax_controller.gd")
 const ProfViewController = preload("res://Scripts/Ch2/ch2_professor_view_controller.gd")
 const ProfQueryController = preload("res://Scripts/Ch2/ch2_professor_query_controller.gd")
+const ProfTokenController = preload("res://Scripts/Ch2/ch2_professor_token_controller.gd")
 
 var _professor_markup_controller: Node = null
 var _professor_syntax_controller: Node = null
 var _professor_view_controller: Node = null
 var _professor_query_controller: Node = null
+var _professor_token_controller: Node = null
 
 func _ready() -> void:
 	print("CollegeMapManager: _ready() called")
@@ -23,6 +25,7 @@ func _ready() -> void:
 	_setup_professor_syntax()
 	_setup_professor_view()
 	_setup_professor_query()
+	_setup_professor_token()
 
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm and qm.has_method("refresh_college_quest"):
@@ -145,6 +148,31 @@ func _setup_professor_query():
 	prof_npc.set_meta("lesson_controller", _professor_query_controller)
 	
 	print("CollegeMapManager: Professor Query wired to NPCMaleCollegeProf03 successfully!")
+
+func _setup_professor_token():
+	# Find the 4th male professor NPC (2nd floor)
+	var prof_npc = _find_node_recursive("NPCMaleCollegeProf04")
+	if not prof_npc:
+		push_warning("CollegeMapManager: NPCMaleCollegeProf04 not found!")
+		print("CollegeMapManager: ERROR — NPCMaleCollegeProf04 NOT FOUND")
+		return
+	
+	print("CollegeMapManager: Found NPC: ", prof_npc.name, " at ", prof_npc.position)
+	
+	# Create the controller as a child of this manager
+	_professor_token_controller = Node.new()
+	_professor_token_controller.name = "ProfTokenController"
+	_professor_token_controller.set_script(ProfTokenController)
+	add_child(_professor_token_controller)
+	
+	# Update the NPC speaker name
+	if "speaker_name" in prof_npc:
+		prof_npc.speaker_name = "Professor Otek"
+	
+	# Set the controller on the NPC via meta
+	prof_npc.set_meta("lesson_controller", _professor_token_controller)
+	
+	print("CollegeMapManager: Professor Otek wired to NPCMaleCollegeProf04 successfully!")
 
 func _find_node_recursive(node_name: String) -> Node:
 	# Check Professors group first
