@@ -30,7 +30,7 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 
 	# --- Step 1: Walk player toward the door briefly ---
 	var player = _find_player()
-	if player:
+	if player and entry_dir != "none":
 		# Set the player's facing direction so it looks like they're walking into the door
 		player.current_dir = entry_dir
 		player.play_walk_animation(entry_dir)
@@ -49,6 +49,10 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 			_:
 				walk_tween.tween_property(player, "global_position:y", player.global_position.y - 12.0, 0.25).set_ease(Tween.EASE_IN)
 		await walk_tween.finished
+	elif player and entry_dir == "none":
+		# Just set them to idle if we aren't walking them to prevent walking in place
+		if player.has_method("play_idle_animation"):
+			player.play_idle_animation(player.current_dir)
 
 	# --- Step 2: Fade to black with smooth ease ---
 	var fade_out = create_tween()
@@ -71,8 +75,9 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 		if new_player:
 			new_player.global_position = _spawn_position
 			# Set the player's facing direction in the new scene
-			new_player.current_dir = _spawn_direction
-			new_player.play_idle_animation(_spawn_direction)
+			if _spawn_direction != "none":
+				new_player.current_dir = _spawn_direction
+				new_player.play_idle_animation(_spawn_direction)
 			# Make camera snap immediately so there's no camera lerp visible
 			var cam = new_player.get_node_or_null("Camera2D")
 			if cam:

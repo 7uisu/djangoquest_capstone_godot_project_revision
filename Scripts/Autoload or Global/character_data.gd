@@ -26,6 +26,8 @@ var ch2_y3s1_teaching_done: bool = false       # Year 3 Sem 1 all modules comple
 var ch2_y3s1_current_module: int = 0           # 0-2 (which module player is on)
 var ch2_y3s2_teaching_done: bool = false       # Year 3 Sem 2 all modules complete
 var ch2_y3s2_current_module: int = 0           # 0-1 (which module player is on)
+var ch2_y3mid_teaching_done: bool = false      # Year 3 Midyear all modules complete
+var ch2_y3mid_current_module: int = 0          # 0-1 (which module player is on)
 
 # Level unlock tracking (index 0 = level 1, etc.)
 const LEVEL_COUNT = 4
@@ -54,6 +56,8 @@ func reset_data():
 	ch2_y3s1_current_module = 0
 	ch2_y3s2_teaching_done = false
 	ch2_y3s2_current_module = 0
+	ch2_y3mid_teaching_done = false
+	ch2_y3mid_current_module = 0
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 
@@ -125,13 +129,14 @@ func unlock_book(level_number: int):
 
 # --- Debug skip functionality ---
 # --- Make it false after testing ---
-@export var DEBUG_SKIP_TO_AUTH_PROFESSOR: bool = true
+@export var DEBUG_SKIP_TO_REST_PROFESSOR: bool = true
 
 func _ready():
-	if DEBUG_SKIP_TO_AUTH_PROFESSOR:
+	if DEBUG_SKIP_TO_REST_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s2_teaching_done = true
 		ch2_y2s1_teaching_done = true
 		ch2_y2s2_teaching_done = true
 		ch2_y3s1_teaching_done = true
-		print("DEBUG: All professors prior to Auth skipped (Y1S1 -> Y3S1 done).")
+		ch2_y3s2_teaching_done = true
+		print("DEBUG: All professors prior to REST skipped (Y1S1 -> Y3S2 done).")

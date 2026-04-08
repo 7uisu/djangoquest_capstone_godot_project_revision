@@ -1,11 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://dil0eftpjyy17"]
+[gd_scene format=3 uid="uid://dil0eftpjyy17"]
 
-[ext_resource type="Script" path="res://Scripts/Interactables/map_stairs.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="1_gnfm4"]
+[ext_resource type="Script" uid="uid://dtn7dim7yr8qp" path="res://Scripts/Interactables/map_stairs.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://l7j3u5ax3vv2" path="res://Textures/School Textures/College Stairs/21_Beach_32x32_Stage_Stairs_Right.png" id="2_qg1fw"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hjjhb"]
-size = Vector2(58, 67)
+size = Vector2(48, 48)
 
 [sub_resource type="SegmentShape2D" id="SegmentShape2D_0gcvm"]
 a = Vector2(-15, -30)
@@ -15,10 +15,11 @@ b = Vector2(14, -13)
 b = Vector2(0, 47)
 
 [node name="CollegeStairsLeft" type="Area2D" unique_id=1851952216]
+y_sort_enabled = true
 script = ExtResource("1_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1887347227]
-position = Vector2(0, -2.5)
+position = Vector2(0, 7)
 shape = SubResource("RectangleShape2D_hjjhb")
 
 [node name="Label" type="Label" parent="." unique_id=829699562]
@@ -52,7 +53,7 @@ collision_mask = 0
 shape = SubResource("SegmentShape2D_0gcvm")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=139923949]
-position = Vector2(0, -22)
+position = Vector2(14, -17)
 shape = SubResource("SegmentShape2D_0vub2")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="StaticBody2D" unique_id=1669984695]

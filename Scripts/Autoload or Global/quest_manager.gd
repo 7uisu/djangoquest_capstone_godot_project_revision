@@ -171,6 +171,8 @@ func refresh_college_quest() -> void:
 		set_quest("ch2_go_2f_otek", "Go to the 2nd Floor — Talk to Professor Otek", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s2_teaching_done:
 		set_quest("ch2_go_2f_auth", "Go to the 2nd Floor — Talk to Professor Auth", ["CollegeStairsLeft", "CollegeStairsRight"])
+	elif not cd.ch2_y3mid_teaching_done:
+		set_quest("ch2_go_2f_rest", "Go to the 2nd Floor — Talk to Professor REST", ["CollegeStairsLeft", "CollegeStairsRight"])
 	else:
 		clear_quest()
 
@@ -192,6 +194,8 @@ func refresh_college_2nd_floor_quest() -> void:
 		set_quest("ch2_talk_otek", "Talk to Professor Otek", "NPCMaleCollegeProf04")
 	elif not cd.ch2_y3s2_teaching_done:
 		set_quest("ch2_talk_auth", "Talk to Professor Auth", "NPCFemaleCollegeProf02")
+	elif not cd.ch2_y3mid_teaching_done:
+		set_quest("ch2_talk_rest", "Talk to Professor REST", "NPCFemaleCollegeProf03")
 	else:
 		clear_quest()
 

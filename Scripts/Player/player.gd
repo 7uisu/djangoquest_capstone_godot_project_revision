@@ -165,6 +165,7 @@ func _input(event):
 		if not ((inventory_ui and inventory_ui.is_open) or (laptop_ui and laptop_ui.is_open)):
 			for area in interaction_area.get_overlapping_areas():
 				if area.has_method("interact"):
+					print("Player: F pressed, interacting with: ", area.name)
 					area.interact()
 					break
 		return

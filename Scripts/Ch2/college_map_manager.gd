@@ -10,6 +10,7 @@ const ProfViewController = preload("res://Scripts/Ch2/ch2_professor_view_control
 const ProfQueryController = preload("res://Scripts/Ch2/ch2_professor_query_controller.gd")
 const ProfTokenController = preload("res://Scripts/Ch2/ch2_professor_token_controller.gd")
 const ProfAuthController = preload("res://Scripts/Ch2/ch2_professor_auth_controller.gd")
+const ProfRESTController = preload("res://Scripts/Ch2/ch2_professor_rest_controller.gd")
 
 var _professor_markup_controller: Node = null
 var _professor_syntax_controller: Node = null
@@ -17,6 +18,7 @@ var _professor_view_controller: Node = null
 var _professor_query_controller: Node = null
 var _professor_token_controller: Node = null
 var _professor_auth_controller: Node = null
+var _professor_rest_controller: Node = null
 
 func _ready() -> void:
 	print("CollegeMapManager: _ready() called")
@@ -29,6 +31,7 @@ func _ready() -> void:
 	_setup_professor_query()
 	_setup_professor_token()
 	_setup_professor_auth()
+	_setup_professor_rest()
 
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm and qm.has_method("refresh_college_quest"):
@@ -203,6 +206,31 @@ func _setup_professor_auth():
 	prof_npc.set_meta("lesson_controller", _professor_auth_controller)
 	
 	print("CollegeMapManager: Professor Auth wired to NPCFemaleCollegeProf02 successfully!")
+
+func _setup_professor_rest():
+	# Find the 3rd female professor NPC (2nd floor)
+	var prof_npc = _find_node_recursive("NPCFemaleCollegeProf03")
+	if not prof_npc:
+		push_warning("CollegeMapManager: NPCFemaleCollegeProf03 not found!")
+		print("CollegeMapManager: ERROR — NPCFemaleCollegeProf03 NOT FOUND")
+		return
+	
+	print("CollegeMapManager: Found NPC: ", prof_npc.name, " at ", prof_npc.position)
+	
+	# Create the controller as a child of this manager
+	_professor_rest_controller = Node.new()
+	_professor_rest_controller.name = "ProfRESTController"
+	_professor_rest_controller.set_script(ProfRESTController)
+	add_child(_professor_rest_controller)
+	
+	# Update the NPC speaker name
+	if "speaker_name" in prof_npc:
+		prof_npc.speaker_name = "Professor REST"
+	
+	# Set the controller on the NPC via meta
+	prof_npc.set_meta("lesson_controller", _professor_rest_controller)
+	
+	print("CollegeMapManager: Professor REST wired to NPCFemaleCollegeProf03 successfully!")
 
 func _find_node_recursive(node_name: String) -> Node:
 	# Check Professors group first

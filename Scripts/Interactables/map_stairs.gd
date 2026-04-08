@@ -30,11 +30,14 @@ func _on_body_entered(body: Node2D) -> void:
 func _on_body_exited(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		player_is_inside = false
+		has_interacted = false # RESET interaction so it works again if re-entered
 		_hide_label()
 
 # Called by the player's _input()
 func interact():
+	print("map_stairs: interact() called! has_interacted=", has_interacted, ", target_scene=", target_scene)
 	if has_interacted:
+		print("map_stairs: ignored because has_interacted is true")
 		return
 		
 	has_interacted = true
@@ -43,8 +46,10 @@ func interact():
 	var player = get_tree().get_nodes_in_group("player")
 	if player.size() > 0:
 		var p = player[0]
-		p.current_dir = entry_direction
-		p.play_walk_animation(entry_direction)
+		if entry_direction != "none":
+			p.current_dir = entry_direction
+			if p.has_method("play_idle_animation"):
+				p.play_idle_animation(entry_direction)
 		
 	# Trigger the scene transition
 	if target_scene != "":
