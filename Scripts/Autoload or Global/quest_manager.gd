@@ -167,6 +167,31 @@ func refresh_college_quest() -> void:
 		set_quest("ch2_talk_view", "Talk to Professor View", "NPCMaleCollegeProf02")
 	elif not cd.ch2_y2s2_teaching_done:
 		set_quest("ch2_talk_query", "Talk to Professor Query", "NPCMaleCollegeProf03")
+	elif not cd.ch2_y3s1_teaching_done:
+		set_quest("ch2_go_2f_otek", "Go to the 2nd Floor — Talk to Professor Otek", ["CollegeStairsLeft", "CollegeStairsRight"])
+	elif not cd.ch2_y3s2_teaching_done:
+		set_quest("ch2_go_2f_auth", "Go to the 2nd Floor — Talk to Professor Auth", ["CollegeStairsLeft", "CollegeStairsRight"])
+	else:
+		clear_quest()
+
+
+func refresh_college_2nd_floor_quest() -> void:
+	if _character_data == null:
+		return
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var path: String = String(scene.scene_file_path)
+	if not path.ends_with("college_2nd_floor_map.tscn"):
+		return
+	var cd = _character_data
+	# Only show 2nd floor quests if all 1st floor profs are done
+	if not (cd.ch2_y1s1_teaching_done and cd.ch2_y1s2_teaching_done and cd.ch2_y2s1_teaching_done and cd.ch2_y2s2_teaching_done):
+		set_quest("ch2_go_1f", "Go back to the 1st Floor to complete previous professors", ["CollegeStairsLeft", "CollegeStairsRight"])
+	elif not cd.ch2_y3s1_teaching_done:
+		set_quest("ch2_talk_otek", "Talk to Professor Otek", "NPCMaleCollegeProf04")
+	elif not cd.ch2_y3s2_teaching_done:
+		set_quest("ch2_talk_auth", "Talk to Professor Auth", "NPCFemaleCollegeProf02")
 	else:
 		clear_quest()
 

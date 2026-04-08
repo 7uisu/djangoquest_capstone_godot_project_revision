@@ -336,7 +336,76 @@ venv\\Scripts\\activate  # Windows",
 		
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Good. Your environment is isolated." },
+				{ "name": "Professor View", "text": "Good. Your environment is created." },
+				{ "name": "Professor View", "text": "But it's not active yet. You have to [color=#f0c674]activate[/color] it first." }
+			])
+			await dialogue_box.dialogue_finished
+
+	_before_teaching_slides()
+
+	# ─── Teaching Slide 0.3: Activating the Virtual Environment ──
+	_show_teaching_slide({
+		"icon": "⚡",
+		"title": "Activating the venv",
+		"subtitle": "Entering the isolated space",
+		"bullets": [
+			"Creating a venv is not enough — you must [b]activate[/b] it.",
+			"On macOS/Linux: [b]source venv/bin/activate[/b]",
+			"On Windows: [b]venv\\Scripts\\activate[/b]",
+			"Your terminal prompt will change to show [b](venv)[/b] when active."
+		],
+		"code": "source venv/bin/activate    # macOS/Linux\nvenv\\Scripts\\activate       # Windows\n\n(venv) $   ← You'll see this prefix",
+		"header": "MODULE 1 — PROJECT SETUP",
+		"header_icon": "🐍",
+		"slide_num": "2 / 15"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor View", "text": "The virtual environment exists, but your terminal isn't using it yet." },
+			{ "name": "Professor View", "text": "You need to [color=#f0c674]activate[/color] it. This tells your terminal to use the isolated packages." },
+			{ "name": "Student", "text": "How do we know it's active?" },
+			{ "name": "Professor View", "text": "Your terminal prompt will show [color=#f0c674](venv)[/color] at the beginning. That's your indicator." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	# ─── Coding Challenge 0.3: Activate venv ─────────────────────
+	if not skip_ide:
+		var ui_act = await _ensure_challenge_ui()
+		var ch_data_act = _make_challenge(
+			"view_activate_venv", "Activate the Virtual Environment", "python", "terminal.py",
+			["# Your virtual environment 'venv' has been created", "# Now activate it (macOS/Linux command)"],
+			["Type the command to activate the venv"],
+			"Type your command here...",
+			[
+				"source venv/bin/activate",
+				"source ./venv/bin/activate"
+			],
+			"✅ Virtual environment activated!\n  (venv) $ _\n  All pip installs will now go into venv/",
+			"CommandError: invalid activation command — use source venv/bin/activate",
+			[
+				"Use the source command to run the activate script",
+				"The path is: venv/bin/activate",
+				"Type: source venv/bin/activate"
+			]
+		)
+		ui_act.load_challenge(ch_data_act)
+		_show_challenge_canvas()
+		ui_act.lock_typing(true)
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Activate the virtual environment." },
+				{ "name": "Professor View", "text": "Type: [color=#f0c674]source venv/bin/activate[/color]" }
+			])
+			await dialogue_box.dialogue_finished
+		ui_act.lock_typing(false)
+		await _await_challenge_done(ui_act)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Good. Your environment is active." },
 				{ "name": "Professor View", "text": "Now we need to install [color=#f0c674]Django[/color] inside this environment." }
 			])
 			await dialogue_box.dialogue_finished
