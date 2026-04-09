@@ -620,6 +620,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"error_output": error_output,
 		"progressive_hints": progressive_hints,
 		"show_output": true,
+		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
 		"hint": final_hint,
 		"timed": false
 	}

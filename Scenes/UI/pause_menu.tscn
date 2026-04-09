@@ -118,6 +118,8 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Settings"
 
+
+
 [node name="MainMenuButton" type="Button" parent="Overlay/CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(300, 40)
 layout_mode = 2
@@ -131,4 +133,5 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Go Back to Main Menu"
+
 

@@ -37,11 +37,13 @@ var _attempts: int = 0  # tracks incorrect submissions for progressive hints
 @onready var free_type_edit: TextEdit = $MainContent/CodePanel/CodeVBox/FreeTypeEdit
 @onready var linter_label: RichTextLabel = $MainContent/CodePanel/CodeVBox/LinterLabel
 
-# Output Panel
 @onready var output_panel: PanelContainer = $MainContent/OutputPanel
 @onready var output_title: Label = $MainContent/OutputPanel/OutputVBox/OutputTitleBar/OutputTitle
 @onready var output_display: RichTextLabel = $MainContent/OutputPanel/OutputVBox/OutputScroll/OutputDisplay
 @onready var reload_button: Button = $MainContent/OutputPanel/OutputVBox/OutputTitleBar/ReloadButton
+@onready var output_bg: ColorRect = $MainContent/OutputPanel/OutputVBox/OutputBG
+@onready var output_scroll: ScrollContainer = $MainContent/OutputPanel/OutputVBox/OutputScroll
+@onready var browser_preview: RichTextLabel = $MainContent/OutputPanel/OutputVBox/OutputBG/BrowserMargin/BrowserPreview
 @onready var toggle_output_button: Button = $BottomBar/ToggleOutputButton
 
 # Bottom Bar
@@ -372,22 +374,68 @@ func _setup_code_panel():
 		btn.pressed.connect(_on_option_selected.bind(i))
 		options_container.add_child(btn)
 
+# Helper to detect output_type — auto-detects from topic if not explicitly set
+func _get_output_type() -> String:
+	var output_type = current_challenge.get("output_type", "")
+	if output_type == "":
+		var topic = current_challenge.get("topic", "python")
+		if topic in ["html", "css", "django"]:
+			output_type = "browser"
+		else:
+			output_type = "terminal"
+	return output_type
+
 func _setup_output_panel():
-	var output_type = current_challenge.get("output_type", "terminal")
+	var output_type = _get_output_type()
+
 	if output_type == "browser":
 		output_title.text = " 🌐 Preview — http://localhost:8000"
+		# Show browser preview area, hide terminal
+		output_bg.visible = true
+		output_scroll.visible = false
+		# Show initial browser state
+		browser_preview.add_theme_color_override("default_color", Color(0.2, 0.2, 0.2))
+		var error_out = current_challenge.get("error_output", "")
+		if error_out != "":
+			browser_preview.text = "[color=#cc3333][font_size=14]" + error_out + "[/font_size][/color]"
+		else:
+			browser_preview.text = "[color=#888888][i]Waiting for code...[/i][/color]"
 	else:
 		output_title.text = " 💻 Terminal"
+		# Show terminal, hide browser preview area
+		output_bg.visible = false
+		output_scroll.visible = true
+		# Show initial terminal state
+		output_display.bbcode_enabled = true
+		var ctype = current_challenge.get("type", "debug")
+		if ctype == "predict_output":
+			output_display.text = "[color=#5c6370][i]Run the code to see the output...[/i][/color]"
+		elif current_challenge.get("error_output", "") != "":
+			output_display.text = "[color=#e06c75]" + current_challenge["error_output"] + "[/color]"
+		else:
+			output_display.text = "[color=#5c6370][i]Click ▶ Run to execute...[/i][/color]"
 
-	# Show initial state (error or blank)
-	var ctype = current_challenge.get("type", "debug")
-	output_display.bbcode_enabled = true
-	if ctype == "predict_output":
-		output_display.text = "[color=#5c6370][i]Run the code to see the output...[/i][/color]"
-	elif current_challenge.get("error_output", "") != "":
-		output_display.text = "[color=#e06c75]" + current_challenge["error_output"] + "[/color]"
-	else:
-		output_display.text = "[color=#5c6370][i]Click ▶ Run to execute...[/i][/color]"
+# Generate fake rendered website content for the browser preview
+func _get_browser_preview_content(challenge_id: String, correct_output: String) -> String:
+	# Map challenge IDs to fake website previews
+	match challenge_id:
+		# ── Professor Markup (HTML/CSS) ────────────────
+		"markup_web_basics":
+			return "[font_size=16][b]200 OK[/b][/font_size]\n\n[font_size=13][color=#555555]HTTP/1.1 200 OK\nContent-Type: text/html\nServer: Django/4.2[/color][/font_size]\n\n[font_size=14]Request successful — page loaded.[/font_size]"
+		"markup_html":
+			return "[font_size=24][b]Hello[/b][/font_size]\n\n[font_size=14]World[/font_size]\n\n[font_size=11][color=#888888]Page rendered with proper body, heading, and paragraph tags.[/color][/font_size]"
+		"markup_css":
+			return "[font_size=18][b]Styled Box[/b][/font_size]\n\n[font_size=14]  ┌─────────────────────┐\n  │                     │\n  │   margin: 20px      │\n  │   padding: 10px     │\n  │                     │\n  └─────────────────────┘[/font_size]\n\n[font_size=11][color=#888888]Box model applied correctly.[/color][/font_size]"
+		"markup_flexbox":
+			return "[font_size=18][b]Centered Layout[/b][/font_size]\n\n[font_size=14]      ┌───┐  ┌───┐  ┌───┐\n      │ A │  │ B │  │ C │\n      └───┘  └───┘  └───┘[/font_size]\n\n[font_size=11][color=#888888]Items centered with flexbox.[/color][/font_size]"
+		"markup_responsive":
+			return "[font_size=18][b]Responsive Preview[/b][/font_size]\n\n[font_size=13][color=#2266cc]Desktop (> 600px):[/color]  ║ A ║ B ║ C ║\n[color=#cc6622]Mobile  (≤ 600px):[/color]  ║ A ║\n                       ║ B ║\n                       ║ C ║[/font_size]\n\n[font_size=11][color=#888888]Media query active at 600px.[/color][/font_size]"
+		# ── Professor Token (CSRF form)  ────────────────
+		"token_csrf":
+			return "[font_size=18][b]Student Form[/b][/font_size]\n[color=#aaaaaa]──────────────────────────[/color]\n\nName: [color=#cccccc][███████████][/color]\nGrade: [color=#cccccc][███████████][/color]\n\n[color=#3a8f3a][█ Save █][/color]\n\n[font_size=11][color=#4a9e4a]🔒 CSRF token verified — form is protected[/color][/font_size]"
+		_:
+			# Fallback: render the correct_output as fake page content
+			return "[font_size=14]" + correct_output + "[/font_size]"
 
 func _setup_timer():
 	if current_challenge.get("timed", false):
@@ -660,8 +708,9 @@ func _on_run_pressed():
 	output_display.bbcode_enabled = true
 	if is_correct:
 		var correct_output = current_challenge.get("correct_output", "Success!")
-		if current_challenge.get("output_type", "terminal") == "browser":
-			output_display.text = correct_output
+		var challenge_id = current_challenge.get("id", "")
+		if _get_output_type() == "browser":
+			browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
 		else:
 			output_display.text = "[color=#98c379]" + correct_output + "[/color]"
 
@@ -671,7 +720,10 @@ func _on_run_pressed():
 			correct_sfx.play()
 	else:
 		var error_output = current_challenge.get("error_output", "Error!")
-		output_display.text = "[color=#e06c75]" + error_output + "[/color]"
+		if _get_output_type() == "browser":
+			browser_preview.text = "[color=#cc3333]" + error_output + "[/color]"
+		else:
+			output_display.text = "[color=#e06c75]" + error_output + "[/color]"
 
 		feedback_label.text = "❌ Incorrect — try to learn from this!"
 		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
@@ -934,8 +986,9 @@ func _run_free_type():
 		free_type_edit.editable = false
 
 		var correct_output = current_challenge.get("correct_output", "Success!")
-		if current_challenge.get("output_type", "terminal") == "browser":
-			output_display.text = correct_output
+		var challenge_id = current_challenge.get("id", "")
+		if _get_output_type() == "browser":
+			browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
 		else:
 			output_display.text = "[color=#98c379]" + correct_output + "[/color]"
 
@@ -959,21 +1012,32 @@ func _run_free_type():
 		
 		var error_output = current_challenge.get("error_output", "Error!")
 		
-		if hints.size() > 0:
-			# Progressive hint logic
-			if _attempts <= hints.size():
-				# Show next hint
-				var hint = hints[_attempts - 1]
-				output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
-				feedback_label.text = "❌ Not quite — read the hint in the output panel!"
+		if _get_output_type() == "browser":
+			# Browser mode: show errors and hints in browser_preview
+			if hints.size() > 0:
+				if _attempts <= hints.size():
+					var hint = hints[_attempts - 1]
+					browser_preview.text = "[color=#cc3333]" + error_output + "[/color]\n\n[color=#cc8833]HINT " + str(_attempts) + ": " + hint + "[/color]"
+					feedback_label.text = "❌ Not quite — read the hint in the preview panel!"
+				else:
+					browser_preview.text = "[color=#cc3333]" + error_output + "[/color]\n\n[color=#4a9e4a]ANSWER: Just type exactly: " + answer_text + "[/color]"
+					feedback_label.text = "❌ Still stuck? I put the answer in the preview panel!"
 			else:
-				# Show the answer
-				output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
-				feedback_label.text = "❌ Still stuck? I put the answer in the output panel!"
+				browser_preview.text = "[color=#cc3333]" + error_output + "[/color]"
+				feedback_label.text = "❌ Not quite — check your code and try again!"
 		else:
-			# Normal error feedback
-			output_display.text = "[color=#e06c75]" + error_output + "[/color]"
-			feedback_label.text = "❌ Not quite — check your code and try again!"
+			# Terminal mode: show errors and hints in output_display
+			if hints.size() > 0:
+				if _attempts <= hints.size():
+					var hint = hints[_attempts - 1]
+					output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
+					feedback_label.text = "❌ Not quite — read the hint in the output panel!"
+				else:
+					output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
+					feedback_label.text = "❌ Still stuck? I put the answer in the output panel!"
+			else:
+				output_display.text = "[color=#e06c75]" + error_output + "[/color]"
+				feedback_label.text = "❌ Not quite — check your code and try again!"
 
 		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
 		feedback_label.visible = true
@@ -1422,7 +1486,11 @@ func _buff_encrypted_drive():
 
 	# Show correct output
 	var correct_output = current_challenge.get("correct_output", "✓ Correct!")
-	output_display.text = correct_output
+	var challenge_id = current_challenge.get("id", "")
+	if _get_output_type() == "browser":
+		browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
+	else:
+		output_display.text = correct_output
 
 	# Play correct SFX
 	if correct_sfx and correct_sfx.stream:

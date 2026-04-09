@@ -3,6 +3,7 @@ extends Node
 
 var selected_gender: String = ""  # "male" or "female"
 var player_name: String = ""
+var api_username: String = ""  # Username from Django API login (empty if guest)
 var has_seen_tutorial: bool = false
 var has_seen_learning_mode_intro: bool = false
 
@@ -37,6 +38,7 @@ var unlocked_books_and_minigames: Array[bool] = [true, false, false, false]
 func reset_data():
 	selected_gender = ""
 	player_name = ""
+	api_username = ""
 	has_seen_tutorial = false
 	has_seen_learning_mode_intro = false
 	ch1_teaching_done = false
@@ -133,7 +135,7 @@ func unlock_book(level_number: int):
 
 func _ready():
 	if DEBUG_SKIP_TO_REST_PROFESSOR:
-		ch2_y1s1_teaching_done = true
+		ch2_y1s1_teaching_done = false
 		ch2_y1s2_teaching_done = true
 		ch2_y2s1_teaching_done = true
 		ch2_y2s2_teaching_done = true

@@ -1,0 +1,102 @@
+[gd_scene load_steps=5 format=3 uid="uid://enroll_popup_001"]
+
+[ext_resource type="Script" path="res://Scripts/UI/enroll_popup.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://d2st8v7vx3p07" path="res://Textures/Fonts/CyberpunkCraftpixPixel.otf" id="2_title_font"]
+[ext_resource type="FontFile" uid="uid://dywjttgy6mph5" path="res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="3_button_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.08, 0.08, 0.15, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.5, 0.8, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+
+[node name="EnrollPopup" type="CanvasLayer"]
+layer = 110
+script = ExtResource("1_script")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0, 0.0, 0.0, 0.7)
+
+[node name="CenterContainer" type="CenterContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="Overlay/CenterContainer"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.82, 1, 1)
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 22
+text = "Enroll in Class"
+horizontal_alignment = 1
+
+[node name="HelpLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.8, 0.8)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 12
+text = "Enter the code provided by your teacher"
+horizontal_alignment = 1
+
+[node name="CodeInput" type="LineEdit" parent="Overlay/CenterContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/caret_color = Color(0.65, 0.82, 1, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 16
+placeholder_text = "e.g. ABC12345"
+alignment = 1
+
+[node name="EnrollButton" type="Button" parent="Overlay/CenterContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.04, 0.04, 0.1, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 15
+text = "Enroll"
+
+[node name="CancelButton" type="Button" parent="Overlay/CenterContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.65, 0.8, 0.8)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 13
+text = "Cancel"
+
+[node name="StatusLabel" type="Label" parent="Overlay/CenterContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.8, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 12
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2

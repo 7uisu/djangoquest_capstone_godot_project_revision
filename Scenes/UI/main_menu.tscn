@@ -143,9 +143,54 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Challenge Mode"
 
+[node name="EnrollButton" type="Button" parent="VBoxContainer" unique_id=777888999]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.4, 1.0, 0.4, 1)
+theme_override_colors/font_hover_color = Color(0.5, 1.0, 0.5, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Enroll in Class"
+
+[node name="UnenrollButton" type="Button" parent="VBoxContainer" unique_id=777888123]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
+theme_override_colors/font_hover_color = Color(1, 0.8, 0.4, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Unenroll from Class"
+
 [node name="Spacer2" type="Control" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
+
+[node name="LogoutButton" type="Button" parent="VBoxContainer" unique_id=888999000]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_hover_color = Color(1, 0.5, 0.5, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Logout"
 
 [node name="QuitButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(280, 40)

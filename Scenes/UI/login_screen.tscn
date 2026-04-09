@@ -1,0 +1,145 @@
+[gd_scene format=3 uid="uid://c0a4hhc4fuapf"]
+
+[ext_resource type="Script" uid="uid://ct5dwie3y77tj" path="res://Scripts/UI/login_screen.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://d2st8v7vx3p07" path="res://Textures/Fonts/CyberpunkCraftpixPixel.otf" id="2_title_font"]
+[ext_resource type="FontFile" uid="uid://dywjttgy6mph5" path="res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="3_button_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.12, 0.14, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.5, 0.8, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="LoginScreen" type="Control" unique_id=1640935205]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=398733791]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.04, 0.1, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1215324145]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1582702980]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1732369865]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.82, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.15, 0.2, 0.5, 0.8)
+theme_override_fonts/font = ExtResource("2_title_font")
+theme_override_font_sizes/font_size = 32
+text = "DjangoQuest"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=417379636]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.8, 0.8)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+text = "Log in with your student account"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer" unique_id=683973080]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+
+[node name="EmailLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=333467880]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.9, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 13
+text = "Email"
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer" unique_id=433802275]
+custom_minimum_size = Vector2(300, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/caret_color = Color(0.65, 0.82, 1, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+placeholder_text = "you@example.com"
+
+[node name="PasswordLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1439828855]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.9, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 13
+text = "Password"
+
+[node name="PasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer" unique_id=780864216]
+custom_minimum_size = Vector2(300, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/caret_color = Color(0.65, 0.82, 1, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+placeholder_text = "••••••••"
+secret = true
+
+[node name="Spacer2" type="Control" parent="CenterContainer/VBoxContainer" unique_id=624879610]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+
+[node name="LoginButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=2029808086]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.4710827, 0.47864908, 0.73387706, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 16
+text = "Log In"
+
+[node name="GuestButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=371989900]
+custom_minimum_size = Vector2(300, 36)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.6, 0.65, 0.8, 0.9)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+text = "Play as Guest"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=849957169]
+custom_minimum_size = Vector2(300, 36)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 0.9)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+text = "Close Game"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=634924626]
+custom_minimum_size = Vector2(300, 24)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.8, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+autowrap_mode = 2

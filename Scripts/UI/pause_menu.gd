@@ -15,11 +15,9 @@ func _ready():
 func _process(_delta):
 	if Input.is_action_just_pressed("ui_cancel"):
 		var current_scene = get_tree().current_scene
-		if current_scene and (current_scene.name == "MainMenu" or current_scene.name == "IntroSlides"):
+		if current_scene and (current_scene.name == "MainMenu" or current_scene.name == "IntroSlides" or current_scene.name == "LoginScreen"):
 			return
 		
-		# If paused, wait to see if the pause menu wasn't already handling it
-		# (But in _process, just simpler)
 		if not get_tree().paused:
 			_pause_game()
 		else:
@@ -27,6 +25,7 @@ func _process(_delta):
 				_unpause_game()
 
 func _pause_game():
+	# Show/hide enroll button based on login status
 	get_tree().paused = true
 	overlay.show()
 
@@ -43,3 +42,4 @@ func _on_settings_pressed():
 func _on_main_menu_pressed():
 	_unpause_game()
 	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+

@@ -181,6 +181,26 @@ layout_mode = 2
 size_flags_vertical = 3
 color = Color(0.95, 0.95, 0.95, 1)
 
+[node name="BrowserMargin" type="MarginContainer" parent="MainContent/OutputPanel/OutputVBox/OutputBG"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="BrowserPreview" type="RichTextLabel" parent="MainContent/OutputPanel/OutputVBox/OutputBG/BrowserMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+text = ""
+scroll_active = true
+
 [node name="OutputScroll" type="ScrollContainer" parent="MainContent/OutputPanel/OutputVBox" unique_id=1255466862]
 layout_mode = 2
 size_flags_vertical = 3
