@@ -280,6 +280,9 @@ func _on_next_button_pressed():
 	if selected_answer == -1:
 		return
 	
+	# Prevent spam-clicking by disabling the button immediately while the question is being processed
+	next_button.disabled = true
+	
 	var correct_answer = questions[current_question].correct
 	print("Selected answer: ", selected_answer, " (", questions[current_question].options[selected_answer], ")")
 	print("Correct answer: ", correct_answer, " (", questions[current_question].options[correct_answer], ")")

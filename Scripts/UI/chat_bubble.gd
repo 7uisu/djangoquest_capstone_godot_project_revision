@@ -107,7 +107,13 @@ func _advance():
 
 	# Update name
 	if speaker_name != "":
-		name_label.text = speaker_name
+		var display_name = speaker_name
+		if display_name in ["Player", "Mateo", "Solmi", "You"]:
+			if ApiManager.is_logged_in():
+				display_name = ApiManager.get_username() + " (You)"
+			else:
+				display_name = "You"
+		name_label.text = display_name
 		name_label.visible = true
 	else:
 		name_label.visible = false

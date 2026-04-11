@@ -12,6 +12,7 @@ var EnrollPopupScene = preload("res://Scenes/UI/enroll_popup.tscn")
 @onready var enroll_button: Button = $VBoxContainer/EnrollButton
 @onready var unenroll_button: Button = $VBoxContainer/UnenrollButton
 @onready var logout_button: Button = $VBoxContainer/LogoutButton
+@onready var login_button: Button = $VBoxContainer/LoginButton
 
 func _ready():
 	story_button.pressed.connect(_on_story_pressed)
@@ -22,6 +23,7 @@ func _ready():
 	enroll_button.pressed.connect(_on_enroll_pressed)
 	unenroll_button.pressed.connect(_on_unenroll_pressed)
 	logout_button.pressed.connect(_on_logout_pressed)
+	login_button.pressed.connect(_on_login_pressed)
 	
 	ApiManager.unenroll_completed.connect(_on_unenroll_completed)
 
@@ -30,6 +32,9 @@ func _ready():
 	enroll_button.visible = is_logged_in
 	unenroll_button.visible = is_logged_in
 	logout_button.visible = is_logged_in
+	
+	# Show login button only if NOT logged in
+	login_button.visible = not is_logged_in
 
 	# Enable learning mode now that it's implemented
 	learning_button.disabled = false
@@ -76,3 +81,5 @@ func _on_logout_pressed():
 	ApiManager.logout()
 	get_tree().change_scene_to_file("res://Scenes/UI/login_screen.tscn")
 
+func _on_login_pressed():
+	get_tree().change_scene_to_file("res://Scenes/UI/login_screen.tscn")

@@ -128,8 +128,17 @@ func _ready():
 
 	# RichTextLabels need the font enforced explicitly sometimes
 	hint_label.add_theme_font_override("normal_font", custom_font)
-	code_display.add_theme_font_override("normal_font", custom_font)
-	output_display.add_theme_font_override("normal_font", custom_font)
+	
+	# IDE Code Monospace Fonts
+	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
+	code_display.add_theme_font_override("normal_font", code_font)
+	code_display.add_theme_font_size_override("normal_font_size", 14)
+	output_display.add_theme_font_override("normal_font", code_font)
+	output_display.add_theme_font_size_override("normal_font_size", 14)
+	free_type_edit.add_theme_font_override("font", code_font)
+	free_type_edit.add_theme_font_size_override("font_size", 14)
+	stack_answer.add_theme_font_override("normal_font", code_font)
+	stack_answer.add_theme_font_size_override("normal_font_size", 13)
 
 	# Ensure SFX streams are loaded
 	keypad_sfx.stream = preload("res://Sounds/UI SFX/UIClick_BLEEOOP_Keypad_Click.wav")
@@ -246,13 +255,15 @@ func _setup_mission_panel():
 		child.queue_free()
 
 	# Add mission steps
+	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
 	var steps = current_challenge.get("mission_steps", [])
 	for i in range(steps.size()):
 		var step_label = Label.new()
 		step_label.text = str(i + 1) + ". " + steps[i]
 		step_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		step_label.add_theme_color_override("font_color", Color("abb2bf"))
-		step_label.add_theme_font_size_override("font_size", 13)
+		step_label.add_theme_font_override("font", code_font)
+		step_label.add_theme_font_size_override("font_size", 12)
 		steps_container.add_child(step_label)
 
 	# Hint — now opens Overflow Stack popup instead

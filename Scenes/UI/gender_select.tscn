@@ -123,14 +123,6 @@ expand_mode = 1
 stretch_mode = 5
 texture_filter = 1
 
-[node name="MaleLabel" type="Label" parent="CenterContainer/HBoxContainer/MalePanel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.85, 1, 1)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 14
-text = "Mateo"
-horizontal_alignment = 1
-
 [node name="MaleButton" type="Button" parent="CenterContainer/HBoxContainer/MalePanel"]
 custom_minimum_size = Vector2(140, 36)
 layout_mode = 2
@@ -156,14 +148,6 @@ texture = SubResource("AtlasTexture_female_preview")
 expand_mode = 1
 stretch_mode = 5
 texture_filter = 1
-
-[node name="FemaleLabel" type="Label" parent="CenterContainer/HBoxContainer/FemalePanel"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.85, 1, 1)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 14
-text = "Solmi"
-horizontal_alignment = 1
 
 [node name="FemaleButton" type="Button" parent="CenterContainer/HBoxContainer/FemalePanel"]
 custom_minimum_size = Vector2(140, 36)
