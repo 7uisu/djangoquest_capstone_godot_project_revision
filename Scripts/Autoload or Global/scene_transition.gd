@@ -92,8 +92,8 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 	fade_in.tween_property(color_rect, "color:a", 0.0, FADE_IN_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 	await fade_in.finished
 
-	# Re-enable player movement
-	_set_player_movement(true)
+	# Re-enable player movement (safe wrapper to protect tutorials/dialogues)
+	_safe_enable_player_movement()
 
 func _find_player() -> Node2D:
 	var players = get_tree().get_nodes_in_group("player")
@@ -108,6 +108,14 @@ func _set_player_movement(enabled: bool) -> void:
 			player.can_move = enabled
 		if "can_interact" in player:
 			player.can_interact = enabled
+
+func _safe_enable_player_movement() -> void:
+	# Only unfreeze the player if no cutscene or dialogue box is actively taking over the screen
+	var dboxes = get_tree().get_nodes_in_group("dialogue_box")
+	for db in dboxes:
+		if "is_active" in db and db.is_active:
+			return # Cutscene or tutorial intercepted us! Do not unfreeze.
+	_set_player_movement(true)
 
 ## Fast travel: teleport the player on the SAME map with a bus transition overlay.
 ## No scene change — just teleport + animation.
@@ -140,8 +148,8 @@ func fast_travel(target_position: Vector2, goes_right: bool = true) -> void:
 	await get_tree().create_timer(0.1).timeout
 	bus_transition.queue_free()
 
-	# Re-enable player movement
-	_set_player_movement(true)
+	# Re-enable player movement (safe wrapper to protect tutorials/dialogues)
+	_safe_enable_player_movement()
 
 	# Notify listeners that fast travel is complete
 	fast_travel_completed.emit(target_position)
@@ -188,5 +196,5 @@ func transition_to_scene_with_bus(scene_path: String, goes_right: bool = true, s
 	await get_tree().create_timer(0.1).timeout
 	bus_transition.queue_free()
 
-	# Re-enable player movement
-	_set_player_movement(true)
+	# Re-enable player movement (safe wrapper to protect tutorials/dialogues)
+	_safe_enable_player_movement()

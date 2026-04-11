@@ -149,11 +149,19 @@ func _input(event):
 	# Interact (F) while frozen — e.g. Ch1 convenience cutscene leaves can_move false at the café door
 	if event.is_action_pressed("interact") and can_interact and not block_ui_input:
 		if not ((inventory_ui and inventory_ui.is_open) or (GlobalLaptopUI and GlobalLaptopUI.is_open)):
-			for area in interaction_area.get_overlapping_areas():
-				if area.has_method("interact"):
-					print("Player: F pressed, interacting with: ", area.name)
-					area.interact()
+			# Prevent interact spam when a dialogue box is actively on screen
+			var is_dialogue_active = false
+			var dboxes = get_tree().get_nodes_in_group("dialogue_box")
+			for db in dboxes:
+				if "is_active" in db and db.is_active:
+					is_dialogue_active = true
 					break
+			if not is_dialogue_active:
+				for area in interaction_area.get_overlapping_areas():
+					if area.has_method("interact"):
+						print("Player: F pressed, interacting with: ", area.name)
+						area.interact()
+						break
 		return
 
 	# Block opening new UI during cutscenes / teaching / coding IDE

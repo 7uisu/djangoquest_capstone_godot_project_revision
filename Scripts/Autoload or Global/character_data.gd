@@ -135,7 +135,7 @@ func unlock_book(level_number: int):
 
 func _ready():
 	if DEBUG_SKIP_TO_REST_PROFESSOR:
-		ch2_y1s1_teaching_done = false
+		ch2_y1s1_teaching_done = true
 		ch2_y1s2_teaching_done = true
 		ch2_y2s1_teaching_done = true
 		ch2_y2s2_teaching_done = true
