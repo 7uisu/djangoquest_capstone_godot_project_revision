@@ -7,8 +7,6 @@ const ACCELERATION = 12.0
 
 var inventory_ui_scene = preload("res://Scenes/UI/inventory_ui.tscn")
 var inventory_ui = null
-var laptop_ui_scene = preload("res://Scenes/UI/laptop_ui.tscn")
-var laptop_ui = null
 const DECELERATION = 18.0
 
 @onready var pages_label = $Camera2D/Guide1Label
@@ -42,10 +40,6 @@ func _ready():
 	if inventory_ui_scene:
 		inventory_ui = inventory_ui_scene.instantiate()
 		get_tree().current_scene.add_child.call_deferred(inventory_ui)
-	# Instance laptop UI (available on every map)
-	if laptop_ui_scene:
-		laptop_ui = laptop_ui_scene.instantiate()
-		get_tree().current_scene.add_child.call_deferred(laptop_ui)
 		
 	# --- TEMP: Give 50 Encrypted Drives for testing ---
 	var inv = get_node_or_null("/root/InventoryManager")
@@ -152,17 +146,9 @@ func _input(event):
 			inventory_ui.close()
 			return
 
-	if event.is_action_pressed("toggle_laptop"):
-		if laptop_ui and laptop_ui.is_open and laptop_ui.has_method("close"):
-			var qm_close = get_node_or_null("/root/QuestManager")
-			laptop_ui.close()
-			if qm_close:
-				qm_close.show_quest()
-			return
-
 	# Interact (F) while frozen — e.g. Ch1 convenience cutscene leaves can_move false at the café door
 	if event.is_action_pressed("interact") and can_interact and not block_ui_input:
-		if not ((inventory_ui and inventory_ui.is_open) or (laptop_ui and laptop_ui.is_open)):
+		if not ((inventory_ui and inventory_ui.is_open) or (GlobalLaptopUI and GlobalLaptopUI.is_open)):
 			for area in interaction_area.get_overlapping_areas():
 				if area.has_method("interact"):
 					print("Player: F pressed, interacting with: ", area.name)
@@ -176,27 +162,17 @@ func _input(event):
 
 	# Toggle inventory (E key) — open only (close handled above)
 	if event.is_action_pressed("toggle_inventory"):
-		if laptop_ui and laptop_ui.is_open:
+		if GlobalLaptopUI and GlobalLaptopUI.is_open:
 			return  # Don't open inventory while laptop is open
 		if inventory_ui and inventory_ui.has_method("open") and inventory_ui.has_method("close"):
 			if not inventory_ui.is_open:
 				inventory_ui.open()
 		return
 
-	# Toggle laptop (X key) — open only
-	if event.is_action_pressed("toggle_laptop"):
-		if inventory_ui and inventory_ui.is_open:
-			return  # Don't open laptop while inventory is open
-		if laptop_ui and laptop_ui.has_method("open") and laptop_ui.has_method("close"):
-			if not laptop_ui.is_open:
-				var qm = get_node_or_null("/root/QuestManager")
-				if qm:
-					qm.hide_quest()
-				laptop_ui.open()
 		return
 
 	# Don't allow other input while inventory or laptop is open
-	if (inventory_ui and inventory_ui.is_open) or (laptop_ui and laptop_ui.is_open):
+	if (inventory_ui and inventory_ui.is_open) or (GlobalLaptopUI and GlobalLaptopUI.is_open):
 		return
 
 # Use area detection for interactables (doors, NPCs, items are Area2D)

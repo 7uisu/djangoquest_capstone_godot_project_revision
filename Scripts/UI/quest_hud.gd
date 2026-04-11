@@ -13,6 +13,8 @@ func _ready() -> void:
 		qm.quest_changed.connect(_on_quest_changed)
 	if qm and not qm.quest_visibility_changed.is_connected(_on_quest_visibility_changed):
 		qm.quest_visibility_changed.connect(_on_quest_visibility_changed)
+	if qm and not qm.tracked_quest_changed.is_connected(_on_tracked_quest_changed):
+		qm.tracked_quest_changed.connect(_on_tracked_quest_changed)
 
 
 func _on_quest_changed(_id: String, _text: String) -> void:
@@ -20,6 +22,10 @@ func _on_quest_changed(_id: String, _text: String) -> void:
 
 
 func _on_quest_visibility_changed(_v: bool) -> void:
+	sync_from_manager()
+
+
+func _on_tracked_quest_changed(_id: String) -> void:
 	sync_from_manager()
 
 
@@ -43,7 +49,11 @@ func sync_from_manager() -> void:
 	visible = show_ui
 	if not show_ui:
 		return
-	_body.text = "[center]" + qm.current_quest_text + "[/center]"
+	# Use tracked quest text — falls back to current quest if tracked matches it
+	var display_text: String = qm.get_tracked_quest_text()
+	if display_text.is_empty():
+		display_text = qm.current_quest_text
+	_body.text = "[center]" + display_text + "[/center]"
 	_distance.visible = not qm.target_node_names.is_empty()
 	if _distance.visible and qm.target_node_names.size() > 0:
 		_process(0.0)

@@ -18,6 +18,14 @@ func _process(_delta):
 		if current_scene and (current_scene.name == "MainMenu" or current_scene.name == "IntroSlides" or current_scene.name == "LoginScreen"):
 			return
 		
+		var is_story_mode = false
+		if current_scene and (current_scene.name.contains("School") or current_scene.name.contains("Dorm") or current_scene.name.contains("Chapter") or get_tree().get_nodes_in_group("player").size() > 0):
+			is_story_mode = true
+
+		if is_story_mode:
+			return # Let the Laptop UI handle pauses for story mode
+		
+		# Else, it's learning or challenge mode
 		if not get_tree().paused:
 			_pause_game()
 		else:
@@ -25,7 +33,6 @@ func _process(_delta):
 				_unpause_game()
 
 func _pause_game():
-	# Show/hide enroll button based on login status
 	get_tree().paused = true
 	overlay.show()
 
@@ -40,6 +47,11 @@ func _on_settings_pressed():
 	print("Settings not implemented yet")
 
 func _on_main_menu_pressed():
-	_unpause_game()
-	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
-
+	if CustomConfirm:
+		CustomConfirm.prompt("Exit Game", "Are you sure you want to go back to Main Menu?", func():
+			_unpause_game()
+			get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+		)
+	else:
+		_unpause_game()
+		get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")

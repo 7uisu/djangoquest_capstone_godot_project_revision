@@ -3,7 +3,7 @@
 extends CanvasLayer
 
 var is_open: bool = false
-var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "messages", "settings"
+var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "quest_log", "settings"
 
 # ─── Root Nodes ──────────────────────────────────────────────────────────────
 var screen_panel: PanelContainer
@@ -18,26 +18,34 @@ var taskbar: PanelContainer
 # App content containers
 var retro_browser_content: Control
 var notes_content: Control
-var messages_content: Control
+var quest_log_content: Control
 var settings_content: Control
 
+# Quest log card references (for updating the tracked indicator)
+var _quest_cards: Dictionary = {}  # quest_id -> { card, indicator }
+
 func _ready():
-	layer = 90
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	layer = 100
 	visible = false
 	_build_ui()
 
 func open():
 	is_open = true
 	visible = true
+	get_tree().paused = true
 	current_app = ""
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm: qm.hide_quest()
 	_show_desktop()
-	_set_player_can_move(false)
 
 func close():
 	is_open = false
 	visible = false
+	get_tree().paused = false
 	current_app = ""
-	_set_player_can_move(true)
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm: qm.show_quest()
 
 # ─── Build Full UI ───────────────────────────────────────────────────────────
 
@@ -176,7 +184,7 @@ func _create_desktop() -> Control:
 	var apps = [
 		{"id": "retro_browser", "name": "RetroBrowser", "icon": "🌐", "color": Color(0.2, 0.5, 0.9), "desc": "Replay unlocked challenges"},
 		{"id": "notes", "name": "Notes", "icon": "📝", "color": Color(0.85, 0.75, 0.2), "desc": "Your knowledge base"},
-		{"id": "messages", "name": "Messages", "icon": "📨", "color": Color(0.3, 0.75, 0.4), "desc": "Quest messages"},
+		{"id": "quest_log", "name": "Quest Log", "icon": "📋", "color": Color(0.3, 0.75, 0.4), "desc": "Track your quests"},
 		{"id": "settings", "name": "Settings", "icon": "⚙️", "color": Color(0.6, 0.35, 0.8), "desc": "Customize your IDE"},
 	]
 
@@ -300,12 +308,12 @@ func _create_app_view() -> Control:
 	# Build each app's content
 	retro_browser_content = _build_retro_browser()
 	notes_content = _build_notes()
-	messages_content = _build_messages()
+	quest_log_content = _build_quest_log()
 	settings_content = _build_settings()
 
 	app_content.add_child(retro_browser_content)
 	app_content.add_child(notes_content)
-	app_content.add_child(messages_content)
+	app_content.add_child(quest_log_content)
 	app_content.add_child(settings_content)
 
 	return container
@@ -422,104 +430,188 @@ func _create_note_card(title_text: String, preview: String) -> PanelContainer:
 
 	return card
 
-# ─── Messages App ────────────────────────────────────────────────────────────
+# ─── Quest Log App ───────────────────────────────────────────────────────────
 
-func _build_messages() -> ScrollContainer:
+func _build_quest_log() -> ScrollContainer:
 	var scroll = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
 	scroll.visible = false
 
 	var vbox = VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 10)
+	vbox.add_theme_constant_override("separation", 14)
 	scroll.add_child(vbox)
 
 	# Header
 	var header = Label.new()
-	header.text = "📨 Messages — Quest Log"
+	header.text = "📋 Quest Log"
 	header.add_theme_font_size_override("font_size", 16)
 	header.add_theme_color_override("font_color", Color(0.3, 0.75, 0.4))
 	vbox.add_child(header)
 
-	# Sample messages (placeholder)
-	var messages = [
-		{
-			"sender": "👨‍🏫 Professor",
-			"subject": "Welcome to DjangoQuest!",
-			"preview": "Your coding journey begins now. Talk to NPCs around campus to start learning!",
-			"time": "Just now",
-			"unread": true,
-		},
-		{
-			"sender": "📦 System",
-			"subject": "Laptop Setup Complete",
-			"preview": "Your DjangoQuest laptop is ready. Press X anytime to open it.",
-			"time": "Earlier",
-			"unread": false,
-		},
-	]
+	var sep = HSeparator.new()
+	vbox.add_child(sep)
 
-	for msg in messages:
-		var msg_card = _create_message_card(msg)
-		vbox.add_child(msg_card)
+	# ── Main Quest section ──────────────────────────────────────
+	var main_header = Label.new()
+	main_header.text = "📌 Main Quest"
+	main_header.add_theme_font_size_override("font_size", 13)
+	main_header.add_theme_color_override("font_color", Color(0.7, 0.8, 1.0))
+	vbox.add_child(main_header)
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.current_quest_text != "":
+		var card = _create_quest_card(qm.current_quest_id, qm.current_quest_text, qm)
+		vbox.add_child(card)
+	else:
+		var empty = Label.new()
+		empty.text = "No active main quest."
+		empty.add_theme_font_size_override("font_size", 11)
+		empty.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
+		vbox.add_child(empty)
+
+	var sep2 = HSeparator.new()
+	vbox.add_child(sep2)
+
+	# ── Side Quests section ─────────────────────────────────────
+	var side_header = Label.new()
+	side_header.text = "📝 Side Quests"
+	side_header.add_theme_font_size_override("font_size", 13)
+	side_header.add_theme_color_override("font_color", Color(0.7, 0.8, 1.0))
+	vbox.add_child(side_header)
+
+	var side_empty = Label.new()
+	side_empty.text = "📭 No side quests available yet.\nCheck back as you progress through the story!"
+	side_empty.add_theme_font_size_override("font_size", 11)
+	side_empty.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
+	side_empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(side_empty)
+
+	# Re-build when quest changes (so the card is live)
+	if qm and not qm.quest_changed.is_connected(_on_quest_changed_refresh):
+		qm.quest_changed.connect(_on_quest_changed_refresh)
 
 	return scroll
 
-func _create_message_card(msg: Dictionary) -> PanelContainer:
+func _on_quest_changed_refresh(_id: String, _text: String) -> void:
+	# Rebuild the quest log app contents live
+	if quest_log_content == null:
+		return
+	# Find the ScrollContainer's vbox and update the main quest card
+	var scroll = quest_log_content as ScrollContainer
+	if scroll == null:
+		return
+	var vbox = scroll.get_child(0) as VBoxContainer
+	if vbox == null:
+		return
+
+	# Remove old cards (everything between header+sep and second separator)
+	# Easiest approach: remove all children and rebuild
+	for c in vbox.get_children():
+		c.queue_free()
+	await get_tree().process_frame
+
+	var header = Label.new()
+	header.text = "📋 Quest Log"
+	header.add_theme_font_size_override("font_size", 16)
+	header.add_theme_color_override("font_color", Color(0.3, 0.75, 0.4))
+	vbox.add_child(header)
+	vbox.add_child(HSeparator.new())
+
+	var main_header = Label.new()
+	main_header.text = "📌 Main Quest"
+	main_header.add_theme_font_size_override("font_size", 13)
+	main_header.add_theme_color_override("font_color", Color(0.7, 0.8, 1.0))
+	vbox.add_child(main_header)
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm and qm.current_quest_text != "":
+		var card = _create_quest_card(qm.current_quest_id, qm.current_quest_text, qm)
+		vbox.add_child(card)
+	else:
+		var empty = Label.new()
+		empty.text = "No active main quest."
+		empty.add_theme_font_size_override("font_size", 11)
+		empty.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
+		vbox.add_child(empty)
+
+	vbox.add_child(HSeparator.new())
+
+	var side_header = Label.new()
+	side_header.text = "📝 Side Quests"
+	side_header.add_theme_font_size_override("font_size", 13)
+	side_header.add_theme_color_override("font_color", Color(0.7, 0.8, 1.0))
+	vbox.add_child(side_header)
+
+	var side_empty = Label.new()
+	side_empty.text = "📭 No side quests available yet.\nCheck back as you progress through the story!"
+	side_empty.add_theme_font_size_override("font_size", 11)
+	side_empty.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
+	side_empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(side_empty)
+
+func _create_quest_card(quest_id: String, quest_text: String, qm) -> PanelContainer:
 	var card = PanelContainer.new()
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.1, 0.16) if not msg.get("unread", false) else Color(0.1, 0.14, 0.22)
-	style.border_color = Color(0.2, 0.3, 0.45) if msg.get("unread", false) else Color(0.15, 0.18, 0.25)
+	style.bg_color = Color(0.1, 0.14, 0.22)
+	style.border_color = Color(0.2, 0.5, 0.3)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(10)
 	card.add_theme_stylebox_override("panel", style)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 4)
+	vbox.add_theme_constant_override("separation", 6)
 	card.add_child(vbox)
 
-	# Top row: sender + time
+	# Top row: title + tracking indicator
 	var top = HBoxContainer.new()
 	vbox.add_child(top)
 
-	var sender = Label.new()
-	sender.text = msg.get("sender", "Unknown")
-	sender.add_theme_font_size_override("font_size", 12)
-	sender.add_theme_color_override("font_color", Color(0.5, 0.8, 0.5) if msg.get("unread") else Color(0.6, 0.65, 0.7))
-	sender.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(sender)
+	var title = Label.new()
+	title.text = "📌 " + quest_id.to_upper().replace("_", " ")
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", Color(0.55, 0.75, 0.55))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(title)
 
-	var time_label = Label.new()
-	time_label.text = msg.get("time", "")
-	time_label.add_theme_font_size_override("font_size", 9)
-	time_label.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
-	top.add_child(time_label)
+	var indicator = Label.new()
+	indicator.text = "✅ Tracking" if qm.tracked_quest_id == quest_id else ""
+	indicator.add_theme_font_size_override("font_size", 10)
+	indicator.add_theme_color_override("font_color", Color(0.4, 0.9, 0.5))
+	top.add_child(indicator)
 
-	# Subject
-	var subject = Label.new()
-	subject.text = msg.get("subject", "")
-	subject.add_theme_font_size_override("font_size", 13)
-	subject.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
-	vbox.add_child(subject)
+	# Quest text
+	var body = Label.new()
+	body.text = quest_text
+	body.add_theme_font_size_override("font_size", 13)
+	body.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(body)
 
-	# Preview
-	var preview = Label.new()
-	preview.text = msg.get("preview", "")
-	preview.add_theme_font_size_override("font_size", 10)
-	preview.add_theme_color_override("font_color", Color(0.45, 0.5, 0.6))
-	preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(preview)
+	# Track button
+	var track_btn = Button.new()
+	track_btn.text = "Track This Quest"
+	track_btn.add_theme_font_size_override("font_size", 11)
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.1, 0.22, 0.14)
+	btn_style.border_color = Color(0.3, 0.6, 0.35)
+	btn_style.set_border_width_all(1)
+	btn_style.set_corner_radius_all(4)
+	btn_style.set_content_margin_all(4)
+	track_btn.add_theme_stylebox_override("normal", btn_style)
+	track_btn.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6))
+	track_btn.pressed.connect(func():
+		qm.set_tracked_quest(quest_id)
+		indicator.text = "✅ Tracking"
+	)
+	vbox.add_child(track_btn)
 
-	# Unread dot
-	if msg.get("unread", false):
-		var dot = Label.new()
-		dot.text = "● NEW"
-		dot.add_theme_font_size_override("font_size", 9)
-		dot.add_theme_color_override("font_color", Color(0.3, 0.8, 0.5))
-		vbox.add_child(dot)
+	# Store reference for later
+	_quest_cards[quest_id] = {"card": card, "indicator": indicator}
 
 	return card
+
 
 # ─── Settings App ────────────────────────────────────────────────────────────
 
@@ -651,12 +743,33 @@ func _create_taskbar() -> PanelContainer:
 
 	# Status icons
 	var status = Label.new()
-	status.text = "🔋 98%  |  📶  |  [X] Close"
+	status.text = "🔋 98%  |  📶  |  "
 	status.add_theme_font_size_override("font_size", 10)
 	status.add_theme_color_override("font_color", Color(0.45, 0.5, 0.6))
 	hbox.add_child(status)
 
+	var exit_btn = Button.new()
+	exit_btn.text = "Exit Game"
+	exit_btn.add_theme_font_size_override("font_size", 11)
+	var exit_style = StyleBoxFlat.new()
+	exit_style.bg_color = Color(0.6, 0.2, 0.2, 0.8)
+	exit_style.set_corner_radius_all(4)
+	exit_btn.add_theme_stylebox_override("normal", exit_style)
+	exit_btn.add_theme_color_override("font_color", Color.WHITE)
+	exit_btn.pressed.connect(_on_main_menu_pressed)
+	hbox.add_child(exit_btn)
+
 	return bar
+
+func _on_main_menu_pressed():
+	CustomConfirm.prompt(
+		"Exit to Main Menu",
+		"Are you sure you want to exit game?",
+		func():
+			close()
+			get_tree().paused = false
+			get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+	)
 
 # ─── Navigation ──────────────────────────────────────────────────────────────
 
@@ -672,7 +785,7 @@ func _open_app(app_id: String):
 	# Hide all app contents
 	retro_browser_content.visible = false
 	notes_content.visible = false
-	messages_content.visible = false
+	quest_log_content.visible = false
 	settings_content.visible = false
 
 	# Show the selected app
@@ -683,9 +796,9 @@ func _open_app(app_id: String):
 		"notes":
 			app_title_label.text = "📝 Notes"
 			notes_content.visible = true
-		"messages":
-			app_title_label.text = "📨 Messages"
-			messages_content.visible = true
+		"quest_log":
+			app_title_label.text = "📋 Quest Log"
+			quest_log_content.visible = true
 		"settings":
 			app_title_label.text = "⚙️ Settings"
 			settings_content.visible = true
@@ -696,8 +809,29 @@ func _back_to_desktop():
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
-func _set_player_can_move(value: bool):
-	var players = get_tree().get_nodes_in_group("player")
-	for p in players:
-		if "can_move" in p:
-			p.can_move = value
+func _unhandled_input(event):
+	if event.is_action_pressed("ui_cancel"):
+		var current_scene = get_tree().current_scene
+		if current_scene and (current_scene.name == "MainMenu" or current_scene.name == "IntroSlides" or current_scene.name == "LoginScreen"):
+			return
+		
+		var is_story_mode = false
+		if current_scene and (current_scene.name.contains("School") or current_scene.name.contains("Dorm") or current_scene.name.contains("Chapter") or get_tree().get_nodes_in_group("player").size() > 0):
+			is_story_mode = true
+
+		# Don't try to open Laptop UI if we are in Learning or Challenge Mode natively
+		if not is_story_mode:
+			return
+		
+		if not is_open:
+			# Check if player is allowed to open it
+			var players = get_tree().get_nodes_in_group("player")
+			if players.size() > 0:
+				var p = players[0]
+				if p.get("block_ui_input") or not p.get("can_move"):
+					return
+				if p.get("inventory_ui") and p.inventory_ui.is_open:
+					return
+			open()
+		else:
+			close()

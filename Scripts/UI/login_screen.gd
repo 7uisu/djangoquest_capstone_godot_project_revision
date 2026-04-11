@@ -58,4 +58,8 @@ func _on_guest_pressed():
 	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
 
 func _on_quit_pressed():
-	get_tree().quit()
+	CustomConfirm.prompt(
+		"Quit Game", 
+		"Are you sure you want to quit?", 
+		func(): get_tree().quit()
+	)

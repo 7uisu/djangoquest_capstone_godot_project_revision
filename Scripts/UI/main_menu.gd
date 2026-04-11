@@ -48,7 +48,11 @@ func _on_challenge_pressed():
 	add_child(challenge_picker)
 
 func _on_quit_pressed():
-	get_tree().quit()
+	CustomConfirm.prompt(
+		"Quit Game", 
+		"Are you sure you want to quit?", 
+		func(): get_tree().quit()
+	)
 
 func _on_testing_pressed():
 	get_tree().change_scene_to_file("res://Scenes/Ch1/school_map_npc_challenges_testing.tscn")

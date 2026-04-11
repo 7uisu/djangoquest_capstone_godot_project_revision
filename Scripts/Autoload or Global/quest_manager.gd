@@ -3,6 +3,7 @@ extends Node
 
 signal quest_changed(quest_id: String, quest_text: String)
 signal quest_visibility_changed(visible: bool)
+signal tracked_quest_changed(quest_id: String)
 
 const HUD_SCENE := preload("res://Scenes/UI/quest_hud.tscn")
 
@@ -12,6 +13,9 @@ var _hud: CanvasLayer = null
 var current_quest_id: String = ""
 var current_quest_text: String = ""
 var target_node_names: PackedStringArray = PackedStringArray()
+
+# Which quest the player has chosen to actively track (defaults to current_quest_id)
+var tracked_quest_id: String = ""
 
 var _has_quest: bool = false
 var _suppress_depth: int = 0
@@ -27,6 +31,10 @@ func set_quest(quest_id: String, quest_text: String, target_names: Variant = "")
 	current_quest_text = quest_text
 	target_node_names = _normalize_target_names(target_names)
 	_has_quest = not quest_id.is_empty() or not quest_text.is_empty()
+	# Auto-track the new main quest unless player manually chose something else
+	if tracked_quest_id.is_empty() or tracked_quest_id == current_quest_id:
+		tracked_quest_id = quest_id
+		tracked_quest_changed.emit(tracked_quest_id)
 	quest_changed.emit(current_quest_id, current_quest_text)
 	_sync_hud()
 
@@ -34,10 +42,12 @@ func set_quest(quest_id: String, quest_text: String, target_names: Variant = "")
 func clear_quest() -> void:
 	current_quest_id = ""
 	current_quest_text = ""
+	tracked_quest_id = ""
 	target_node_names = PackedStringArray()
 	_has_quest = false
 	_suppress_depth = 0
 	quest_changed.emit("", "")
+	tracked_quest_changed.emit("")
 	_sync_hud()
 
 
@@ -106,11 +116,11 @@ func refresh_ch1_school_quest() -> void:
 		clear_quest()
 		return
 	if _character_data.ch1_post_quiz_dialogue_done:
-		set_quest("ch1_exit_school", "Head to the exit door", ["ExitDoor1", "ExitDoor2"])
+		set_quest("ch1:_a_new_chapter", "Head toward the exit doors and begin your journey to college.", ["ExitDoor1", "ExitDoor2"])
 	elif _character_data.ch1_quiz_done:
-		set_quest("ch1_talk_friends", "Talk to your friends before leaving", ["MaleBestFriend", "FemaleBestFriend"])
+		set_quest("ch1:_goodbyes", "Chat with your friends before leaving the school grounds.", ["MaleBestFriend", "FemaleBestFriend"])
 	elif not _character_data.ch1_teaching_done:
-		set_quest("ch1_talk_teacher", "Talk to the SHS Professor to start class", "SHSTeacherInteractable")
+		set_quest("ch1:_the_first_lesson", "Speak with the Senior High School Professor to begin your web development journey.", "SHSTeacherInteractable")
 	else:
 		clear_quest()
 
@@ -127,9 +137,9 @@ func refresh_ch1_outdoor_quest() -> void:
 	if _character_data.ch1_spaghetti_guy_cutscene_done:
 		clear_quest()
 	elif _character_data.ch1_convenience_store_cutscene_done:
-		set_quest("ch1_enter_cafe", "Enter the Internet Cafe", ["InternetCafeFrontDoor", "InternetCafeFrontDoor2"])
+		set_quest("ch1:_the_internet_cafe", "Step inside the Internet Cafe and find a computer.", ["InternetCafeFrontDoor", "InternetCafeFrontDoor2"])
 	elif _character_data.ch1_post_quiz_dialogue_done:
-		set_quest("ch1_go_bus", "Go to the bus and travel to the Internet Cafe", ["BusFastTravel", "BusFastTravel2"])
+		set_quest("ch1:_catching_the_bus", "Board the bus and travel to the Internet Cafe.", ["BusFastTravel", "BusFastTravel2"])
 	else:
 		clear_quest()
 
@@ -146,7 +156,7 @@ func refresh_ch1_internet_cafe_quest() -> void:
 	if _character_data.ch1_spaghetti_guy_cutscene_done:
 		clear_quest()
 	else:
-		set_quest("ch1_talk_spaghetti", "Talk to the person at the Internet Cafe", "SpaghettiGuyNPC")
+		set_quest("ch1:_an_unusual_encounter", "Talk to the unusual person hanging out at the cafe.", "SpaghettiGuyNPC")
 
 
 func refresh_college_quest() -> void:
@@ -160,19 +170,19 @@ func refresh_college_quest() -> void:
 		return
 	var cd = _character_data
 	if not cd.ch2_y1s1_teaching_done:
-		set_quest("ch2_talk_markup", "Talk to Professor Markup", "NPCMaleCollegeProf01")
+		set_quest("ch2:_html_fundamentals", "Find Professor Markup for your first College module.", "NPCMaleCollegeProf01")
 	elif not cd.ch2_y1s2_teaching_done:
-		set_quest("ch2_talk_syntax", "Talk to Professor Syntax", "NPCFemaleCollegeProf01")
+		set_quest("ch2:_css_styling", "Speak with Professor Syntax to learn about styling websites.", "NPCFemaleCollegeProf01")
 	elif not cd.ch2_y2s1_teaching_done:
-		set_quest("ch2_talk_view", "Talk to Professor View", "NPCMaleCollegeProf02")
+		set_quest("ch2:_django_views", "Locate Professor View to start working with backend templates.", "NPCMaleCollegeProf02")
 	elif not cd.ch2_y2s2_teaching_done:
-		set_quest("ch2_talk_query", "Talk to Professor Query", "NPCMaleCollegeProf03")
+		set_quest("ch2:_database_models", "Find Professor Query to learn about databases and ORMs.", "NPCMaleCollegeProf03")
 	elif not cd.ch2_y3s1_teaching_done:
-		set_quest("ch2_go_2f_otek", "Go to the 2nd Floor — Talk to Professor Otek", ["CollegeStairsLeft", "CollegeStairsRight"])
+		set_quest("ch2:_finding_otek", "Head to the 2nd Floor to meet Professor Otek.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s2_teaching_done:
-		set_quest("ch2_go_2f_auth", "Go to the 2nd Floor — Talk to Professor Auth", ["CollegeStairsLeft", "CollegeStairsRight"])
+		set_quest("ch2:_finding_auth", "Head to the 2nd Floor to meet Professor Auth.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3mid_teaching_done:
-		set_quest("ch2_go_2f_rest", "Go to the 2nd Floor — Talk to Professor REST", ["CollegeStairsLeft", "CollegeStairsRight"])
+		set_quest("ch2:_finding_rest", "Head to the 2nd Floor to meet Professor REST.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	else:
 		clear_quest()
 
@@ -189,15 +199,31 @@ func refresh_college_2nd_floor_quest() -> void:
 	var cd = _character_data
 	# Only show 2nd floor quests if all 1st floor profs are done
 	if not (cd.ch2_y1s1_teaching_done and cd.ch2_y1s2_teaching_done and cd.ch2_y2s1_teaching_done and cd.ch2_y2s2_teaching_done):
-		set_quest("ch2_go_1f", "Go back to the 1st Floor to complete previous professors", ["CollegeStairsLeft", "CollegeStairsRight"])
+		set_quest("ch2:_missing_prerequisites", "Return to the 1st Floor and finish your earlier modules first.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s1_teaching_done:
-		set_quest("ch2_talk_otek", "Talk to Professor Otek", "NPCMaleCollegeProf04")
+		set_quest("ch2:_deployment_basics", "Speak with Professor Otek about deploying your website.", "NPCMaleCollegeProf04")
 	elif not cd.ch2_y3s2_teaching_done:
-		set_quest("ch2_talk_auth", "Talk to Professor Auth", "NPCFemaleCollegeProf02")
+		set_quest("ch2:_user_authentication", "Find Professor Auth to learn how to secure your app.", "NPCFemaleCollegeProf02")
 	elif not cd.ch2_y3mid_teaching_done:
-		set_quest("ch2_talk_rest", "Talk to Professor REST", "NPCFemaleCollegeProf03")
+		set_quest("ch2:_api_architecture", "Speak with Professor REST to master application interfaces.", "NPCFemaleCollegeProf03")
 	else:
 		clear_quest()
+
+
+# Called when the player clicks a quest entry in the Laptop UI
+func set_tracked_quest(id: String) -> void:
+	tracked_quest_id = id
+	tracked_quest_changed.emit(id)
+	# Note: do NOT call _sync_hud() here.
+	# The game is paused while the laptop is open, and syncing the HUD
+	# at this point could incorrectly hide it. The HUD will refresh
+	# automatically when the laptop closes and the game unpauses.
+
+
+func get_tracked_quest_text() -> String:
+	if tracked_quest_id == current_quest_id:
+		return current_quest_text
+	return ""
 
 
 func _sync_hud() -> void:
