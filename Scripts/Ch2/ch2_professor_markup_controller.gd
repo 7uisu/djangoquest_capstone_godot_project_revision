@@ -255,7 +255,8 @@ func _play_module_1_web_basics(skip_ide: bool):
 			"This all happens in [b]milliseconds[/b]"
 		],
 		"header": "MODULE 1 — WEB BASICS",
-		"slide_num": "1 / 10"
+		"slide_num": "1 / 10",
+		"reference": "Source: Mozilla Developer Network - Web Docs"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -281,7 +282,8 @@ func _play_module_1_web_basics(skip_ide: bool):
 		],
 		"code": "GET /home/ HTTP/1.1\nHost: www.example.com",
 		"header": "MODULE 1 — WEB BASICS",
-		"slide_num": "2 / 10"
+		"slide_num": "2 / 10",
+		"reference": "Source: Web Development with HTML/CSS/JS (Lemay et al., 2021)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -367,7 +369,8 @@ func _play_module_2_html(skip_ide: bool):
 			"Without HTML, there is no website"
 		],
 		"header": "MODULE 2 — HTML DOCUMENTS",
-		"slide_num": "3 / 10"
+		"slide_num": "3 / 10",
+		"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -394,7 +397,8 @@ func _play_module_2_html(skip_ide: bool):
 		],
 		"code": "<body>\n  <h1>Hello</h1>\n  <p>World</p>\n</body>",
 		"header": "MODULE 2 — HTML DOCUMENTS",
-		"slide_num": "4 / 10"
+		"slide_num": "4 / 10",
+		"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -482,7 +486,8 @@ func _play_module_3_css(skip_ide: bool):
 			"Content → Padding → Border → Margin"
 		],
 		"header": "MODULE 3 — CSS BASICS",
-		"slide_num": "5 / 10"
+		"slide_num": "5 / 10",
+		"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -507,7 +512,8 @@ func _play_module_3_css(skip_ide: bool):
 		],
 		"code": ".box {\n  margin: 20px;   /* outside */\n  padding: 10px;  /* inside */\n}",
 		"header": "MODULE 3 — CSS BASICS",
-		"slide_num": "6 / 10"
+		"slide_num": "6 / 10",
+		"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -593,7 +599,8 @@ func _play_module_4_flexbox(skip_ide: bool):
 			"Easy alignment and spacing"
 		],
 		"header": "MODULE 4 — FLEXBOX",
-		"slide_num": "7 / 10"
+		"slide_num": "7 / 10",
+		"reference": "Source: MDN Web Docs - HTML & CSS"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -618,7 +625,8 @@ func _play_module_4_flexbox(skip_ide: bool):
 		],
 		"code": ".container {\n  display: flex;\n  justify-content: center;\n}",
 		"header": "MODULE 4 — FLEXBOX",
-		"slide_num": "8 / 10"
+		"slide_num": "8 / 10",
+		"reference": "Source: MDN Web Docs - HTML & CSS"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -703,7 +711,8 @@ func _play_module_5_responsiveness(skip_ide: bool):
 			"The tool for this: [b]media queries[/b]"
 		],
 		"header": "MODULE 5 — RESPONSIVENESS",
-		"slide_num": "9 / 10"
+		"slide_num": "9 / 10",
+		"reference": "Source: MDN Web Docs - HTML & CSS"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -726,7 +735,8 @@ func _play_module_5_responsiveness(skip_ide: bool):
 		],
 		"code": "@media (max-width: 600px) {\n  .container {\n    flex-direction: column;\n  }\n}",
 		"header": "MODULE 5 — RESPONSIVENESS",
-		"slide_num": "10 / 10"
+		"slide_num": "10 / 10",
+		"reference": "Source: MDN Web Docs - HTML & CSS"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -1078,6 +1088,15 @@ func _create_placeholder_panel() -> CenterContainer:
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
 	body_vbox.add_child(footer)
 
+	# ── Reference ──
+	var reference = Label.new()
+	reference.name = "ReferenceLabel"
+	reference.text = ""
+	reference.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reference.add_theme_font_size_override("font_size", 11)
+	reference.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65, 0.8))
+	body_vbox.add_child(reference)
+
 	return center
 
 
@@ -1152,6 +1171,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 	var header_icon = placeholder.find_child("HeaderIcon", true, false)
 	if header_icon is Label:
 		header_icon.text = slide_data.get("header_icon", "🎓")
+
+	var ref_lbl = placeholder.find_child("ReferenceLabel", true, false)
+	if ref_lbl is Label:
+		var ref_text = slide_data.get("reference", "")
+		ref_lbl.text = ref_text
+		ref_lbl.visible = ref_text != ""
 
 	# Hide the legacy Text label
 	var legacy = placeholder.find_child("Text", true, false)

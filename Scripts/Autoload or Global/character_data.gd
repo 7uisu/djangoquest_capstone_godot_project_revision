@@ -131,7 +131,7 @@ func unlock_book(level_number: int):
 
 # --- Debug skip functionality ---
 # --- Make it false after testing ---
-@export var DEBUG_SKIP_TO_REST_PROFESSOR: bool = true
+@export var DEBUG_SKIP_TO_REST_PROFESSOR: bool = false
 
 func _ready():
 	if DEBUG_SKIP_TO_REST_PROFESSOR:

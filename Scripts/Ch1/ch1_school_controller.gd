@@ -370,11 +370,12 @@ func _play_teaching_sequence():
 		await dialogue_box.dialogue_finished
 	
 	# ─── Part 6: Wrap-up & Quiz Announcement ──────────────────────────
-	_change_teaching_image(img_player_with_students)
+	_change_teaching_image(SLIDES + "TeacherFacingStudentStanding.png")
 	
 	if dialogue_box:
 		dialogue_box.start([
 			{ "name": "Professor", "text": "Alright class, that wraps up our lesson on [color=#f0c674]Python's history[/color]!" },
+			{ "name": "Professor", "text": "The references for today's lesson are from [color=#f0c674]Python Crash Course (Matthes, 2023)[/color] and the official Python Documentation." },
 			{ "name": "Professor", "text": "Now, let's see how well you were paying attention..." },
 			{ "name": "Professor", "text": "Time for a quick [color=#f0c674]quiz[/color]! Good luck!" }
 		])
@@ -405,7 +406,7 @@ func _show_teaching_image_fullscreen(texture_path: String):
 		_teaching_texture_rect.anchors_preset = Control.PRESET_FULL_RECT
 		_teaching_texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 		_teaching_canvas.add_child(_teaching_texture_rect)
-	
+		
 	# Load and set the texture
 	var tex = load(texture_path)
 	if tex:

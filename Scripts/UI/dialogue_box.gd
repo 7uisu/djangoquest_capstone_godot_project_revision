@@ -23,6 +23,7 @@ var _type_tween: Tween = null
 var _indicator_tween: Tween = null
 var choice_container: HBoxContainer = null
 var is_waiting_for_choice: bool = false
+var toggle_button: Button = null
 
 signal choice_selected(choice_index: int)
 
@@ -33,13 +34,64 @@ func _ready():
 	choice_container.add_theme_constant_override("separation", 20)
 	$Panel/MarginContainer/VBoxContainer.add_child(choice_container)
 
+	# ── Create Toggle Button ──
+	toggle_button = Button.new()
+	toggle_button.name = "ToggleVisibilityButton"
+	toggle_button.text = "👁 Hide"
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.06, 0.12, 0.92)
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 0
+	style.border_color = Color(0.45, 0.55, 0.85, 0.9)
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	toggle_button.add_theme_stylebox_override("normal", style)
+	toggle_button.add_theme_stylebox_override("hover", style)
+	toggle_button.add_theme_stylebox_override("pressed", style)
+	toggle_button.add_theme_color_override("font_color", Color(0.65, 0.82, 1, 1))
+
+	var font_resource = preload("res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf")
+	toggle_button.add_theme_font_override("font", font_resource)
+	toggle_button.add_theme_font_size_override("font_size", 13)
+	
+	toggle_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_MINSIZE, 10)
+	toggle_button.offset_left = 40
+	toggle_button.offset_top = -208
+	toggle_button.offset_right = 110
+	toggle_button.offset_bottom = -180
+	
+	toggle_button.visible = false
+	toggle_button.pressed.connect(_on_toggle_button_pressed)
+	add_child(toggle_button)
+
 	visible = false
 	panel.visible = false
 	continue_indicator.visible = false
 	_start_indicator_blink()
 
+func _on_toggle_button_pressed():
+	if panel.visible:
+		panel.visible = false
+		toggle_button.text = "👁 Show"
+	else:
+		panel.visible = true
+		toggle_button.text = "👁 Hide"
+
 func _input(event):
 	if not is_active:
+		return
+		
+	var is_left_click = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
+
+	if not panel.visible:
+		if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept") or is_left_click:
+			panel.visible = true
+			if toggle_button:
+				toggle_button.text = "👁 Hide"
+			get_viewport().set_input_as_handled()
 		return
 
 	if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept"):
@@ -66,6 +118,9 @@ func start(lines: Array, speaker_portrait: Texture2D = null):
 	is_active = true
 	visible = true
 	panel.visible = true
+	if toggle_button:
+		toggle_button.visible = true
+		toggle_button.text = "👁 Hide"
 
 	# Freeze the player
 	_set_player_can_move(false)
@@ -164,6 +219,8 @@ func _close():
 	is_active = false
 	visible = false
 	panel.visible = false
+	if toggle_button:
+		toggle_button.visible = false
 	dialogue_lines.clear()
 	current_line_index = -1
 

@@ -93,18 +93,18 @@ horizontal_alignment = 1
 
 [node name="ProfessorGrid" type="GridContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-columns = 2
+columns = 3
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
 
 [node name="MarkupButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(350, 150)
+custom_minimum_size = Vector2(240, 100)
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
@@ -114,12 +114,12 @@ HTML & CSS Basics"
 
 [node name="SyntaxButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(350, 150)
+custom_minimum_size = Vector2(240, 100)
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
@@ -129,12 +129,12 @@ Python & OOP"
 
 [node name="ViewButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(350, 150)
+custom_minimum_size = Vector2(240, 100)
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
@@ -144,18 +144,63 @@ Django Setup"
 
 [node name="QueryButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
 layout_mode = 2
-custom_minimum_size = Vector2(350, 150)
+custom_minimum_size = Vector2(240, 100)
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Professor Query
 Databases"
+
+[node name="AuthButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 100)
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Professor Auth
+Authentication"
+
+[node name="TokenButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 100)
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Professor Token
+Security & Forms"
+
+[node name="RESTButton" type="Button" parent="CenterContainer/VBoxContainer/ProfessorGrid"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 100)
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Professor REST
+APIs & JSON"
 
 [node name="ButtonContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2

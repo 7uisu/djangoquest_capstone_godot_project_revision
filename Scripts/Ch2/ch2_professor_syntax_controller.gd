@@ -249,7 +249,8 @@ func _play_module_1_python_basics(skip_ide: bool):
 		],
 		"code": "for i in range(5):\n    print(i)\n# Output: 0, 1, 2, 3, 4",
 		"header": "MODULE 1 — PYTHON BASICS",
-		"slide_num": "1 / 6"
+		"slide_num": "1 / 6",
+		"reference": "Source: Python Crash Course (Matthes, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -278,7 +279,8 @@ func _play_module_1_python_basics(skip_ide: bool):
 		],
 		"code": "if score >= 90:\n    print('A')\nelif score >= 80:\n    print('B')\nelse:\n    print('C')",
 		"header": "MODULE 1 — PYTHON BASICS",
-		"slide_num": "2 / 6"
+		"slide_num": "2 / 6",
+		"reference": "Source: Python Crash Course (Matthes, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -368,7 +370,8 @@ func _play_module_2_oop(skip_ide: bool):
 		],
 		"code": "class Student:\n    def __init__(self, name):\n        self.name = name\n\nstudent1 = Student('Alice')",
 		"header": "MODULE 2 — OOP",
-		"slide_num": "3 / 6"
+		"slide_num": "3 / 6",
+		"reference": "Source: Python Crash Course (Matthes, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -398,7 +401,8 @@ func _play_module_2_oop(skip_ide: bool):
 		],
 		"code": "class Student:\n    def __init__(self, name, grade):\n        self.name = name\n        self.grade = grade\n    \n    def introduce(self):\n        print(f'I am {self.name}')",
 		"header": "MODULE 2 — OOP",
-		"slide_num": "4 / 6"
+		"slide_num": "4 / 6",
+		"reference": "Source: Python Crash Course (Matthes, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -489,7 +493,8 @@ func _play_module_3_http_requests(skip_ide: bool):
 			"Every [b]web app[/b] is just requests and responses"
 		],
 		"header": "MODULE 3 — HTTP & REQUESTS",
-		"slide_num": "5 / 6"
+		"slide_num": "5 / 6",
+		"reference": "Source: Official Python Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -515,7 +520,8 @@ func _play_module_3_http_requests(skip_ide: bool):
 		],
 		"code": "import requests\n\nresponse = requests.get('https://api.example.com/data')\nprint(response.status_code)  # 200\nprint(response.json())",
 		"header": "MODULE 3 — HTTP & REQUESTS",
-		"slide_num": "6 / 6"
+		"slide_num": "6 / 6",
+		"reference": "Source: requests.readthedocs.io"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -854,6 +860,15 @@ func _create_placeholder_panel() -> CenterContainer:
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
 	body_vbox.add_child(footer)
 
+	# ── Reference ──
+	var reference = Label.new()
+	reference.name = "ReferenceLabel"
+	reference.text = ""
+	reference.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reference.add_theme_font_size_override("font_size", 11)
+	reference.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65, 0.8))
+	body_vbox.add_child(reference)
+
 	return center
 
 
@@ -928,6 +943,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 	var header_icon = placeholder.find_child("HeaderIcon", true, false)
 	if header_icon is Label:
 		header_icon.text = slide_data.get("header_icon", "🐍")
+
+	var ref_lbl = placeholder.find_child("ReferenceLabel", true, false)
+	if ref_lbl is Label:
+		var ref_text = slide_data.get("reference", "")
+		ref_lbl.text = ref_text
+		ref_lbl.visible = ref_text != ""
 
 	# Hide the legacy Text label
 	var legacy = placeholder.find_child("Text", true, false)

@@ -864,7 +864,8 @@ func _play_module_2_views_routing(skip_ide: bool):
 		"code": "# views.py\nfrom django.http import HttpResponse\n\ndef home(request):\n    return HttpResponse('Welcome!')",
 		"header": "MODULE 2 — VIEWS & ROUTING",
 		"header_icon": "🌐",
-		"slide_num": "6 / 10"
+		"slide_num": "6 / 10",
+		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -953,7 +954,8 @@ func _play_module_3_templates(skip_ide: bool):
 		"code": "<!-- template.html -->\n<h1>Hello, {{ user.name }}!</h1>\n<p>You have {{ message_count }} messages.</p>",
 		"header": "MODULE 3 — TEMPLATES",
 		"header_icon": "📄",
-		"slide_num": "7 / 10"
+		"slide_num": "7 / 10",
+		"reference": "Source: MDN Web Docs - Django Templates"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -981,7 +983,8 @@ func _play_module_3_templates(skip_ide: bool):
 		"code": "# views.py\nfrom django.shortcuts import render\n\ndef home(request):\n    context = {'name': 'Alice'}\n    return render(request, 'home.html', context)",
 		"header": "MODULE 3 — TEMPLATES",
 		"header_icon": "📄",
-		"slide_num": "8 / 10"
+		"slide_num": "8 / 10",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -1067,7 +1070,8 @@ func _play_module_4_static_files(skip_ide: bool):
 		"code": "{% load static %}\n<html>\n<head>\n    <link rel=\"stylesheet\"\n          href=\"{% static 'css/style.css' %}\">\n</head>",
 		"header": "MODULE 4 — STATIC FILES",
 		"header_icon": "🎨",
-		"slide_num": "9 / 10"
+		"slide_num": "9 / 10",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -1095,7 +1099,8 @@ func _play_module_4_static_files(skip_ide: bool):
 		"code": "blog/\n├── static/\n│   └── css/\n│       └── style.css\n├── templates/\n│   └── home.html\n└── views.py",
 		"header": "MODULE 4 — STATIC FILES",
 		"header_icon": "🎨",
-		"slide_num": "10 / 10"
+		"slide_num": "10 / 10",
+		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -1428,6 +1433,15 @@ func _create_placeholder_panel() -> CenterContainer:
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
 	body_vbox.add_child(footer)
 
+	# ── Reference ──
+	var reference = Label.new()
+	reference.name = "ReferenceLabel"
+	reference.text = ""
+	reference.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reference.add_theme_font_size_override("font_size", 11)
+	reference.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65, 0.8))
+	body_vbox.add_child(reference)
+
 	return center
 
 
@@ -1502,6 +1516,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 	var header_icon = placeholder.find_child("HeaderIcon", true, false)
 	if header_icon is Label:
 		header_icon.text = slide_data.get("header_icon", "🐍")
+
+	var ref_lbl = placeholder.find_child("ReferenceLabel", true, false)
+	if ref_lbl is Label:
+		var ref_text = slide_data.get("reference", "")
+		ref_lbl.text = ref_text
+		ref_lbl.visible = ref_text != ""
 
 	# Hide the legacy Text label
 	var legacy = placeholder.find_child("Text", true, false)

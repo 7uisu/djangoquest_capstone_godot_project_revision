@@ -387,7 +387,8 @@ func _play_module_2_orm(skip_ide: bool):
 		"code": "# Get ALL students\nstudents = Student.objects.all()\n\n# Get ONE student by ID\nstudent = Student.objects.get(id=1)",
 		"header": "MODULE 2 — THE ORM",
 		"header_icon": "🔎",
-		"slide_num": "3 / 8"
+		"slide_num": "3 / 8",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -414,7 +415,8 @@ func _play_module_2_orm(skip_ide: bool):
 		"code": "# Get students with grade 'A'\nhonor_roll = Student.objects.filter(grade='A')\n\n# Chain filters\nseniors = Student.objects.filter(grade='A', year=4)",
 		"header": "MODULE 2 — THE ORM",
 		"header_icon": "🔎",
-		"slide_num": "4 / 8"
+		"slide_num": "4 / 8",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -494,7 +496,8 @@ func _play_module_3_admin(skip_ide: bool):
 		],
 		"header": "MODULE 3 — ADMIN PANEL",
 		"header_icon": "🛠️",
-		"slide_num": "5 / 8"
+		"slide_num": "5 / 8",
+		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -521,7 +524,8 @@ func _play_module_3_admin(skip_ide: bool):
 		"code": "# admin.py\nfrom django.contrib import admin\nfrom .models import Student\n\nadmin.site.register(Student)",
 		"header": "MODULE 3 — ADMIN PANEL",
 		"header_icon": "🛠️",
-		"slide_num": "6 / 8"
+		"slide_num": "6 / 8",
+		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -598,7 +602,8 @@ func _play_module_4_mvt(skip_ide: bool):
 		],
 		"header": "MODULE 4 — MVT FLOW",
 		"header_icon": "🔁",
-		"slide_num": "7 / 8"
+		"slide_num": "7 / 8",
+		"reference": "Source: Master Django MVT Architecture"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -624,7 +629,8 @@ func _play_module_4_mvt(skip_ide: bool):
 		"code": "def student_list(request):\n    students = Student.objects.all()\n    return render(request, 'list.html', {'students': students})",
 		"header": "MODULE 4 — MVT FLOW",
 		"header_icon": "🔁",
-		"slide_num": "8 / 8"
+		"slide_num": "8 / 8",
+		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -946,6 +952,15 @@ func _create_placeholder_panel() -> CenterContainer:
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
 	body_vbox.add_child(footer)
 
+	# ── Reference ──
+	var reference = Label.new()
+	reference.name = "ReferenceLabel"
+	reference.text = ""
+	reference.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reference.add_theme_font_size_override("font_size", 11)
+	reference.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65, 0.8))
+	body_vbox.add_child(reference)
+
 	return center
 
 func _show_teaching_slide(slide_data: Dictionary) -> void:
@@ -1006,6 +1021,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 	var header_icon = placeholder.find_child("HeaderIcon", true, false)
 	if header_icon is Label:
 		header_icon.text = slide_data.get("header_icon", "🎓")
+
+	var ref_lbl = placeholder.find_child("ReferenceLabel", true, false)
+	if ref_lbl is Label:
+		var ref_text = slide_data.get("reference", "")
+		ref_lbl.text = ref_text
+		ref_lbl.visible = ref_text != ""
 
 	var legacy = placeholder.find_child("Text", true, false)
 	if legacy is Label:

@@ -9,6 +9,9 @@ signal back_pressed
 @onready var syntax_button: Button = $CenterContainer/VBoxContainer/ProfessorGrid/SyntaxButton
 @onready var view_button: Button = $CenterContainer/VBoxContainer/ProfessorGrid/ViewButton
 @onready var query_button: Button = $CenterContainer/VBoxContainer/ProfessorGrid/QueryButton
+@onready var auth_button: Button = $CenterContainer/VBoxContainer/ProfessorGrid/AuthButton
+@onready var token_button: Button = $CenterContainer/VBoxContainer/ProfessorGrid/TokenButton
+@onready var rest_button: Button = $CenterContainer/VBoxContainer/ProfessorGrid/RESTButton
 @onready var back_button: Button = $CenterContainer/VBoxContainer/ButtonContainer/BackButton
 
 @onready var character_data = get_node("/root/CharacterData")
@@ -19,6 +22,9 @@ func _ready():
 	syntax_button.pressed.connect(_on_syntax_pressed)
 	view_button.pressed.connect(_on_view_pressed)
 	query_button.pressed.connect(_on_query_pressed)
+	auth_button.pressed.connect(_on_auth_pressed)
+	token_button.pressed.connect(_on_token_pressed)
+	rest_button.pressed.connect(_on_rest_pressed)
 	back_button.pressed.connect(_on_back_pressed)
 	
 	# Update button states based on progress
@@ -42,6 +48,18 @@ func _on_view_pressed():
 func _on_query_pressed():
 	if not query_button.disabled:
 		professor_selected.emit("query")
+
+func _on_auth_pressed():
+	if not auth_button.disabled:
+		professor_selected.emit("auth")
+
+func _on_token_pressed():
+	if not token_button.disabled:
+		professor_selected.emit("token")
+
+func _on_rest_pressed():
+	if not rest_button.disabled:
+		professor_selected.emit("rest")
 
 func _on_back_pressed():
 	back_pressed.emit()

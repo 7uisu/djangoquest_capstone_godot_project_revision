@@ -266,7 +266,8 @@ func _play_module_1_apis_json(skip_ide: bool):
 		],
 		"header": "MODULE 1 — APIs & JSON",
 		"header_icon": "📡",
-		"slide_num": "1 / 4"
+		"slide_num": "1 / 4",
+		"reference": "Source: Django REST Framework Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -294,7 +295,8 @@ func _play_module_1_apis_json(skip_ide: bool):
 		"code": "from rest_framework import serializers\nfrom .models import Post\n\nclass PostSerializer(serializers.ModelSerializer):\n    class Meta:\n        model = Post\n        fields = ['id', 'title', 'content']",
 		"header": "MODULE 1 — APIs & JSON",
 		"header_icon": "📡",
-		"slide_num": "2 / 4"
+		"slide_num": "2 / 4",
+		"reference": "Source: Django REST Framework Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -383,7 +385,8 @@ func _play_module_2_token_auth(skip_ide: bool):
 		"code": "Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b",
 		"header": "MODULE 2 — TOKEN AUTHENTICATION",
 		"header_icon": "🔐",
-		"slide_num": "3 / 4"
+		"slide_num": "3 / 4",
+		"reference": "Source: Django REST Framework Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -410,7 +413,8 @@ func _play_module_2_token_auth(skip_ide: bool):
 		"code": "REST_FRAMEWORK = {\n    'DEFAULT_AUTHENTICATION_CLASSES': [\n        'rest_framework.authentication.TokenAuthentication',\n    ]\n}",
 		"header": "MODULE 2 — TOKEN AUTHENTICATION",
 		"header_icon": "🔐",
-		"slide_num": "4 / 4"
+		"slide_num": "4 / 4",
+		"reference": "Source: Django REST Framework Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -737,6 +741,15 @@ func _create_placeholder_panel() -> CenterContainer:
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
 	body_vbox.add_child(footer)
 
+	# ── Reference ──
+	var reference = Label.new()
+	reference.name = "ReferenceLabel"
+	reference.text = ""
+	reference.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reference.add_theme_font_size_override("font_size", 11)
+	reference.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65, 0.8))
+	body_vbox.add_child(reference)
+
 	return center
 
 
@@ -800,6 +813,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 	var header_icon = placeholder.find_child("HeaderIcon", true, false)
 	if header_icon is Label:
 		header_icon.text = slide_data.get("header_icon", "📡")
+
+	var ref_lbl = placeholder.find_child("ReferenceLabel", true, false)
+	if ref_lbl is Label:
+		var ref_text = slide_data.get("reference", "")
+		ref_lbl.text = ref_text
+		ref_lbl.visible = ref_text != ""
 
 	var legacy = placeholder.find_child("Text", true, false)
 	if legacy is Label:

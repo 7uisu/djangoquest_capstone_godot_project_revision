@@ -32,6 +32,9 @@ func _show_learning_intro():
 		{"name": "DjangoQuest", "text": "[color=#f0c674]Professor Syntax[/color] teaches Python programming & OOP"},
 		{"name": "DjangoQuest", "text": "[color=#f0c674]Professor View[/color] teaches Django setup & views"},
 		{"name": "DjangoQuest", "text": "[color=#f0c674]Professor Query[/color] teaches databases & ORM"},
+		{"name": "DjangoQuest", "text": "[color=#f0c674]Professor Auth[/color] teaches authentication permissions"},
+		{"name": "DjangoQuest", "text": "[color=#f0c674]Professor Token[/color] teaches Django forms & security"},
+		{"name": "DjangoQuest", "text": "[color=#f0c674]Professor REST[/color] teaches JSON APIs & tokens"},
 		{"name": "DjangoQuest", "text": "Each lesson includes teaching slides and hands-on coding challenges."},
 		{"name": "DjangoQuest", "text": "Ready to start learning? Choose your professor!"}
 	]
@@ -75,6 +78,12 @@ func _launch_professor_lessons(professor_name: String):
 			_launch_view_lessons()
 		"query":
 			_launch_query_lessons()
+		"auth":
+			_launch_auth_lessons()
+		"token":
+			_launch_token_lessons()
+		"rest":
+			_launch_rest_lessons()
 		_:
 			print("LearningModeController: Unknown professor: ", professor_name)
 			_show_professor_selection()  # Show selection again
@@ -117,6 +126,27 @@ func _launch_query_lessons():
 	add_child(controller)
 	
 	# Simulate professor interaction to start lessons
+	controller._on_professor_interacted()
+
+func _launch_auth_lessons():
+	const ProfAuthController = preload("res://Scripts/Ch2/ch2_professor_auth_controller.gd")
+	var controller = ProfAuthController.new()
+	controller.is_learning_mode = true
+	add_child(controller)
+	controller._on_professor_interacted()
+
+func _launch_token_lessons():
+	const ProfTokenController = preload("res://Scripts/Ch2/ch2_professor_token_controller.gd")
+	var controller = ProfTokenController.new()
+	controller.is_learning_mode = true
+	add_child(controller)
+	controller._on_professor_interacted()
+
+func _launch_rest_lessons():
+	const ProfRestController = preload("res://Scripts/Ch2/ch2_professor_rest_controller.gd")
+	var controller = ProfRestController.new()
+	controller.is_learning_mode = true
+	add_child(controller)
 	controller._on_professor_interacted()
 
 func _get_dialogue_box():

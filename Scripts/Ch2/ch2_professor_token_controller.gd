@@ -271,7 +271,8 @@ func _play_module_1_forms(skip_ide: bool):
 		"code": "from django import forms\nfrom .models import Student\n\nclass StudentForm(forms.ModelForm):\n    class Meta:\n        model = Student\n        fields = ['name', 'grade']",
 		"header": "MODULE 1 — FORMS & VALIDATION",
 		"header_icon": "🛡️",
-		"slide_num": "1 / 6"
+		"slide_num": "1 / 6",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -300,7 +301,8 @@ func _play_module_1_forms(skip_ide: bool):
 		"code": "class StudentForm(forms.ModelForm):\n    class Meta:\n        model = Student\n        fields = ['name', 'grade']",
 		"header": "MODULE 1 — FORMS & VALIDATION",
 		"header_icon": "🛡️",
-		"slide_num": "2 / 6"
+		"slide_num": "2 / 6",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -385,7 +387,8 @@ func _play_module_2_csrf(skip_ide: bool):
 		],
 		"header": "MODULE 2 — CSRF PROTECTION",
 		"header_icon": "🔐",
-		"slide_num": "3 / 6"
+		"slide_num": "3 / 6",
+		"reference": "Source: Django Security Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -413,7 +416,8 @@ func _play_module_2_csrf(skip_ide: bool):
 		"code": "<form method=\"POST\">\n    {% csrf_token %}\n    {{ form.as_p }}\n    <button type=\"submit\">Save</button>\n</form>",
 		"header": "MODULE 2 — CSRF PROTECTION",
 		"header_icon": "🔐",
-		"slide_num": "4 / 6"
+		"slide_num": "4 / 6",
+		"reference": "Source: Django Security Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -500,7 +504,8 @@ func _play_module_3_messages(skip_ide: bool):
 		"code": "from django.contrib import messages\n\ndef save_student(request):\n    # After saving...\n    messages.success(request, 'Student saved!')",
 		"header": "MODULE 3 — MESSAGES FRAMEWORK",
 		"header_icon": "📢",
-		"slide_num": "5 / 6"
+		"slide_num": "5 / 6",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -528,7 +533,8 @@ func _play_module_3_messages(skip_ide: bool):
 		"code": "messages.success(request, 'Saved!')\nmessages.error(request, 'Invalid data.')\nmessages.warning(request, 'Check inputs.')\nmessages.info(request, 'Welcome back.')",
 		"header": "MODULE 3 — MESSAGES FRAMEWORK",
 		"header_icon": "📢",
-		"slide_num": "6 / 6"
+		"slide_num": "6 / 6",
+		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -854,6 +860,15 @@ func _create_placeholder_panel() -> CenterContainer:
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
 	body_vbox.add_child(footer)
 
+	# ── Reference ──
+	var reference = Label.new()
+	reference.name = "ReferenceLabel"
+	reference.text = ""
+	reference.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reference.add_theme_font_size_override("font_size", 11)
+	reference.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65, 0.8))
+	body_vbox.add_child(reference)
+
 	return center
 
 
@@ -918,6 +933,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 	var header_icon = placeholder.find_child("HeaderIcon", true, false)
 	if header_icon is Label:
 		header_icon.text = slide_data.get("header_icon", "🛡️")
+
+	var ref_lbl = placeholder.find_child("ReferenceLabel", true, false)
+	if ref_lbl is Label:
+		var ref_text = slide_data.get("reference", "")
+		ref_lbl.text = ref_text
+		ref_lbl.visible = ref_text != ""
 
 	# Hide the legacy Text label
 	var legacy = placeholder.find_child("Text", true, false)
