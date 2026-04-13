@@ -10,6 +10,9 @@ const AUTH_FILE: String = "user://auth.cfg"
 signal login_completed(success: bool, message: String)
 signal enroll_completed(success: bool, message: String, classroom_name: String)
 signal unenroll_completed(success: bool, message: String)
+signal save_uploaded(success: bool, message: String)
+signal save_downloaded(success: bool, data: Dictionary)
+signal save_deleted(success: bool, message: String)
 
 # ─── State ───────────────────────────────────────────────────────────────────
 var _access_token: String = ""
@@ -175,3 +178,113 @@ func _delete_auth_file():
 	if FileAccess.file_exists(AUTH_FILE):
 		var dir = DirAccess.open("user://")
 		dir.remove("auth.cfg")
+
+# ─── Cloud Save ──────────────────────────────────────────────────────────────
+
+func upload_save(save_data: Dictionary):
+	if not is_logged_in():
+		emit_signal("save_uploaded", false, "Not logged in.")
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(_on_upload_save_response.bind(http))
+
+	var body = JSON.stringify({"save_data": save_data})
+	var headers = [
+		"Content-Type: application/json",
+		"Authorization: Bearer %s" % _access_token,
+	]
+	var error = http.request(BASE_URL + "/api/game/save/", headers, HTTPClient.METHOD_PUT, body)
+
+	if error != OK:
+		emit_signal("save_uploaded", false, "Network error.")
+		http.queue_free()
+
+func _on_upload_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+	http.queue_free()
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		emit_signal("save_uploaded", false, "Could not reach server.")
+		return
+
+	if response_code == 200:
+		print("ApiManager: Save uploaded successfully.")
+		emit_signal("save_uploaded", true, "Save synced to cloud.")
+	else:
+		var json = JSON.parse_string(body.get_string_from_utf8())
+		var detail = json.get("detail", "Upload failed.") if json else "Upload failed."
+		emit_signal("save_uploaded", false, detail)
+
+
+func download_save():
+	if not is_logged_in():
+		emit_signal("save_downloaded", false, {})
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(_on_download_save_response.bind(http))
+
+	var headers = [
+		"Content-Type: application/json",
+		"Authorization: Bearer %s" % _access_token,
+	]
+	var error = http.request(BASE_URL + "/api/game/save/", headers, HTTPClient.METHOD_GET)
+
+	if error != OK:
+		emit_signal("save_downloaded", false, {})
+		http.queue_free()
+
+func _on_download_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+	http.queue_free()
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		emit_signal("save_downloaded", false, {})
+		return
+
+	if response_code == 200:
+		var json = JSON.parse_string(body.get_string_from_utf8())
+		if json:
+			print("ApiManager: Save downloaded successfully.")
+			emit_signal("save_downloaded", true, json)
+		else:
+			emit_signal("save_downloaded", false, {})
+	else:
+		# 404 = no save exists, which is a valid "success with no data" case
+		emit_signal("save_downloaded", false, {})
+
+
+func delete_cloud_save():
+	if not is_logged_in():
+		emit_signal("save_deleted", false, "Not logged in.")
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(_on_delete_save_response.bind(http))
+
+	var headers = [
+		"Content-Type: application/json",
+		"Authorization: Bearer %s" % _access_token,
+	]
+	var error = http.request(BASE_URL + "/api/game/save/", headers, HTTPClient.METHOD_DELETE)
+
+	if error != OK:
+		emit_signal("save_deleted", false, "Network error.")
+		http.queue_free()
+
+func _on_delete_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+	http.queue_free()
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		emit_signal("save_deleted", false, "Could not reach server.")
+		return
+
+	if response_code == 200:
+		print("ApiManager: Cloud save deleted.")
+		emit_signal("save_deleted", true, "Cloud save deleted.")
+	else:
+		var json = JSON.parse_string(body.get_string_from_utf8())
+		var detail = json.get("detail", "Delete failed.") if json else "Delete failed."
+		emit_signal("save_deleted", false, detail)

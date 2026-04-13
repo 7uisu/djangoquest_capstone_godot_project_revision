@@ -98,7 +98,23 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 
-[node name="StoryButton" type="Button" parent="VBoxContainer" unique_id=2058921989]
+[node name="ContinueButton" type="Button" parent="VBoxContainer" unique_id=2058921989]
+custom_minimum_size = Vector2(280, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+disabled = true
+text = "Continue"
+
+[node name="StoryButton" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(280, 40)
 layout_mode = 2
 size_flags_horizontal = 4

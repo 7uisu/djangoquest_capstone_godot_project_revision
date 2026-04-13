@@ -482,13 +482,21 @@ func _on_quiz_completed(score: int):
 		quiz_overlay.queue_free()
 
 	if score >= 3:
+		# Store the score — if this was a remedial attempt, save as remedial score
+		if _did_remedial_class:
+			character_data.ch1_remedial_score = score
+		else:
+			character_data.ch1_quiz_score = score
 		character_data.ch1_quiz_done = true
 		_enter_phase_3()
 	else:
+		# Store the failing first-attempt score before entering remedial
+		character_data.ch1_quiz_score = score
 		_enter_remedial_phase()
 
 func _enter_remedial_phase():
 	_did_remedial_class = true
+	character_data.ch1_did_remedial = true
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm:
 		qm.hide_quest()

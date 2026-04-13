@@ -748,8 +748,30 @@ func _create_taskbar() -> PanelContainer:
 	status.add_theme_color_override("font_color", Color(0.45, 0.5, 0.6))
 	hbox.add_child(status)
 
+	# Save button
+	var save_btn = Button.new()
+	save_btn.text = "💾 Save"
+	save_btn.add_theme_font_size_override("font_size", 11)
+	var save_style = StyleBoxFlat.new()
+	save_style.bg_color = Color(0.15, 0.35, 0.25, 0.9)
+	save_style.set_corner_radius_all(4)
+	save_style.set_content_margin_all(4)
+	save_btn.add_theme_stylebox_override("normal", save_style)
+	var save_hover = save_style.duplicate()
+	save_hover.bg_color = Color(0.2, 0.45, 0.3, 0.95)
+	save_btn.add_theme_stylebox_override("hover", save_hover)
+	save_btn.add_theme_color_override("font_color", Color(0.7, 1.0, 0.7))
 	var exit_btn = Button.new()
 	exit_btn.text = "Exit Game"
+
+	save_btn.pressed.connect(_on_save_pressed.bind(save_btn, exit_btn))
+	hbox.add_child(save_btn)
+
+	# Small spacer
+	var spacer = Control.new()
+	spacer.custom_minimum_size = Vector2(6, 0)
+	hbox.add_child(spacer)
+
 	exit_btn.add_theme_font_size_override("font_size", 11)
 	var exit_style = StyleBoxFlat.new()
 	exit_style.bg_color = Color(0.6, 0.2, 0.2, 0.8)
@@ -761,11 +783,41 @@ func _create_taskbar() -> PanelContainer:
 
 	return bar
 
+func _on_save_pressed(btn: Button, exit_btn: Button = null):
+	btn.text = "⏳ Saving..."
+	btn.disabled = true
+	if exit_btn:
+		exit_btn.disabled = true
+	
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+		# Wait a moment to give cloud upload time + visual feedback
+		await get_tree().create_timer(2.0).timeout
+		btn.text = "✅ Saved!"
+		btn.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
+		await get_tree().create_timer(1.5).timeout
+		btn.text = "💾 Save"
+		btn.add_theme_color_override("font_color", Color(0.7, 1.0, 0.7))
+		btn.disabled = false
+		if exit_btn:
+			exit_btn.disabled = false
+	else:
+		btn.text = "❌ Error"
+		await get_tree().create_timer(2.0).timeout
+		btn.text = "💾 Save"
+		btn.disabled = false
+		if exit_btn:
+			exit_btn.disabled = false
+
 func _on_main_menu_pressed():
 	CustomConfirm.prompt(
 		"Exit to Main Menu",
 		"Are you sure you want to exit game?",
 		func():
+			var qm = get_node_or_null("/root/QuestManager")
+			if qm:
+				qm.clear_quest()
 			close()
 			get_tree().paused = false
 			get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")

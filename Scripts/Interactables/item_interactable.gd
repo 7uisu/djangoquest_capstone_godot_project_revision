@@ -24,6 +24,15 @@ var has_been_picked_up: bool = false
 var _label_tween: Tween = null
 
 func _ready():
+	# Check if this item was already picked up in a previous session
+	var cd = get_node_or_null("/root/CharacterData")
+	if cd and name in cd.picked_up_items:
+		has_been_picked_up = true
+		visible = false
+		set_deferred("monitoring", false)
+		set_deferred("monitorable", false)
+		return
+
 	if interaction_label:
 		interaction_label.text = interaction_text
 		interaction_label.visible = false
@@ -71,6 +80,11 @@ func _on_dialogue_finished():
 
 func _give_item():
 	has_been_picked_up = true
+
+	# Register this pickup so it won't respawn on reload
+	var cd = get_node_or_null("/root/CharacterData")
+	if cd and not (name in cd.picked_up_items):
+		cd.picked_up_items.append(name)
 
 	# Determine quantity to give (check CodingItems for pickup_quantity)
 	var qty = 1
