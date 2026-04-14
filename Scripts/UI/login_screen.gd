@@ -82,7 +82,7 @@ func _on_cloud_save_checked_for_login(has_cloud: bool):
 			"Overwrite Guest Save?",
 			"You have a local guest save, but this account already has a cloud save. Logging in will overwrite your guest save. Are you sure?",
 			func():
-				_proceed_to_main_menu()
+			_proceed_to_main_menu()
 			,
 			func():
 				ApiManager.logout()
