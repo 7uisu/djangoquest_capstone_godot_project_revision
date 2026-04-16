@@ -16,40 +16,59 @@ var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 
 var _attempts: int = 0  # tracks incorrect submissions for progressive hints
+var _challenge_hints_used: int = 0  # hints used for current challenge (max 4 before Overflow Stack)
+const MAX_HINTS: int = 5             # 4 progressive + 1 Overflow Stack = 5 total
+
+# Global session hint counter — shared across ALL challenges in one session
+# Allows the adviser's rule: "only 5 hints total per session"
+var global_hints_used: int = 0
+const GLOBAL_MAX_HINTS: int = 5
 
 # ─── Node References ─────────────────────────────────────────────────────────
-@onready var title_label: Label = $TitleBar/TitleLabel
-@onready var timer_label: Label = $TitleBar/TimerLabel
-@onready var close_button: Button = $TitleBar/CloseButton
-@onready var gear_button: Button = $TitleBar/GearButton
+# Screens
+@onready var ide_screen: Control = $IDEScreen
+@onready var browser_screen: Control = $BrowserScreen
+var _is_browser_visible: bool = false
+
+@onready var title_label: Label = $IDEScreen/TitleBar/TitleLabel
+@onready var timer_label: Label = $IDEScreen/TitleBar/TimerLabel
+@onready var close_button: Button = $IDEScreen/TitleBar/CloseButton
+@onready var gear_button: Button = $IDEScreen/TitleBar/GearButton
 
 # Mission Panel
-@onready var mission_title: Label = $MainContent/MissionPanel/MissionScroll/MissionVBox/MissionTitle
-@onready var steps_container: VBoxContainer = $MainContent/MissionPanel/MissionScroll/MissionVBox/StepsContainer
-@onready var hint_button: Button = $MainContent/MissionPanel/MissionScroll/MissionVBox/HintButton
-@onready var hint_label: RichTextLabel = $MainContent/MissionPanel/MissionScroll/MissionVBox/HintLabel
+@onready var mission_title: Label = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/MissionTitle
+@onready var steps_container: VBoxContainer = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/StepsContainer
+@onready var hint_button: Button = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/HintButton
+@onready var hint_label: RichTextLabel = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/HintLabel
+@onready var overflow_stack_button: Button = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/OverflowStackButton
+@onready var alt_tab_button: Button = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/AltTabButton
 
 # Code Panel
-@onready var file_tab_label: Label = $MainContent/CodePanel/CodeVBox/FileTab
-@onready var code_display: RichTextLabel = $MainContent/CodePanel/CodeVBox/CodeScroll/CodeDisplay
-@onready var options_label: Label = $MainContent/CodePanel/CodeVBox/OptionsLabel
-@onready var options_container: VBoxContainer = $MainContent/CodePanel/CodeVBox/OptionsContainer
-@onready var free_type_edit: TextEdit = $MainContent/CodePanel/CodeVBox/FreeTypeEdit
-@onready var linter_label: RichTextLabel = $MainContent/CodePanel/CodeVBox/LinterLabel
+@onready var file_tabs_container: HBoxContainer = $IDEScreen/MainContent/CodePanel/CodeVBox/FileTabs
+@onready var file_tab_label: Label = $IDEScreen/MainContent/CodePanel/CodeVBox/FileTabs/FileTab
+@onready var code_display: RichTextLabel = $IDEScreen/MainContent/CodePanel/CodeVBox/CodeScroll/CodeDisplay
+@onready var code_edit: CodeEdit = $IDEScreen/MainContent/CodePanel/CodeVBox/CodeEditor
+@onready var code_scroll: ScrollContainer = $IDEScreen/MainContent/CodePanel/CodeVBox/CodeScroll
+@onready var options_label: Label = $IDEScreen/MainContent/CodePanel/CodeVBox/OptionsLabel
+@onready var options_container: VBoxContainer = $IDEScreen/MainContent/CodePanel/CodeVBox/OptionsContainer
+@onready var free_type_edit: TextEdit = $IDEScreen/MainContent/CodePanel/CodeVBox/FreeTypeEdit
+@onready var linter_label: RichTextLabel = $IDEScreen/MainContent/CodePanel/CodeVBox/LinterLabel
 
-@onready var output_panel: PanelContainer = $MainContent/OutputPanel
-@onready var output_title: Label = $MainContent/OutputPanel/OutputVBox/OutputTitleBar/OutputTitle
-@onready var output_display: RichTextLabel = $MainContent/OutputPanel/OutputVBox/OutputScroll/OutputDisplay
-@onready var reload_button: Button = $MainContent/OutputPanel/OutputVBox/OutputTitleBar/ReloadButton
-@onready var output_bg: ColorRect = $MainContent/OutputPanel/OutputVBox/OutputBG
-@onready var output_scroll: ScrollContainer = $MainContent/OutputPanel/OutputVBox/OutputScroll
-@onready var browser_preview: RichTextLabel = $MainContent/OutputPanel/OutputVBox/OutputBG/BrowserMargin/BrowserPreview
-@onready var toggle_output_button: Button = $BottomBar/ToggleOutputButton
+# Terminal Strip (bottom of code panel)
+@onready var terminal_strip: PanelContainer = $IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip
+@onready var terminal_header: Label = $IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox/TerminalHeader
+@onready var terminal_output: RichTextLabel = $IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox/TerminalScroll/TerminalOutput
+
+# Browser Screen
+@onready var browser_back_btn: Button = $BrowserScreen/BrowserToolbar/BackToIDEButton
+@onready var browser_address: Label = $BrowserScreen/BrowserToolbar/AddressBar
+@onready var reload_button: Button = $BrowserScreen/BrowserToolbar/ReloadButton
+@onready var browser_preview: RichTextLabel = $BrowserScreen/BrowserMargin/BrowserPreview
 
 # Bottom Bar
-@onready var run_button: Button = $BottomBar/RunButton
-@onready var progress_label: Label = $BottomBar/ProgressLabel
-@onready var feedback_label: Label = $BottomBar/FeedbackLabel
+@onready var run_button: Button = $IDEScreen/BottomBar/RunButton
+@onready var progress_label: Label = $IDEScreen/BottomBar/ProgressLabel
+@onready var feedback_label: Label = $IDEScreen/BottomBar/FeedbackLabel
 
 # Results Overlay
 @onready var results_overlay: PanelContainer = $ResultsOverlay
@@ -76,7 +95,7 @@ var _troll_lines: Array = []
 var _troll_line_index: int = 0
 var _troll_typing: bool = false
 
-# Overflow Stack
+# Overflow Stack (overlay on top of everything)
 @onready var overflow_overlay: PanelContainer = $OverflowStackOverlay
 @onready var stack_question: Label = $OverflowStackOverlay/StackVBox/StackQuestion
 @onready var stack_votes: Label = $OverflowStackOverlay/StackVBox/StackVotes
@@ -86,7 +105,7 @@ var _troll_typing: bool = false
 @onready var stack_close_button: Button = $OverflowStackOverlay/StackVBox/StackHeader/StackCloseButton
 
 # Item Buff System
-@onready var item_button: Button = $TitleBar/ItemButton
+@onready var item_button: Button = $IDEScreen/TitleBar/ItemButton
 @onready var item_popup: PanelContainer = $ItemPopup
 @onready var item_popup_title: Label = $ItemPopup/ItemPopupVBox/ItemPopupTitle
 @onready var item_list: VBoxContainer = $ItemPopup/ItemPopupVBox/ItemPopupScroll/ItemList
@@ -133,8 +152,8 @@ func _ready():
 	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
 	code_display.add_theme_font_override("normal_font", code_font)
 	code_display.add_theme_font_size_override("normal_font_size", 14)
-	output_display.add_theme_font_override("normal_font", code_font)
-	output_display.add_theme_font_size_override("normal_font_size", 14)
+	terminal_output.add_theme_font_override("normal_font", code_font)
+	terminal_output.add_theme_font_size_override("normal_font_size", 14)
 	free_type_edit.add_theme_font_override("font", code_font)
 	free_type_edit.add_theme_font_size_override("font_size", 14)
 	stack_answer.add_theme_font_override("normal_font", code_font)
@@ -152,7 +171,6 @@ func _ready():
 	run_button.pressed.connect(_on_run_pressed)
 	reload_button.pressed.connect(_on_reload_pressed)
 	continue_button.pressed.connect(_on_continue_pressed)
-	toggle_output_button.pressed.connect(_on_toggle_output_pressed)
 	free_type_edit.text_changed.connect(_on_free_type_changed)
 	gear_button.pressed.connect(_on_gear_pressed)
 	stack_close_button.pressed.connect(func(): overflow_overlay.visible = false)
@@ -160,6 +178,11 @@ func _ready():
 	troll_dialogue.mouse_filter = Control.MOUSE_FILTER_STOP
 	item_button.pressed.connect(_on_item_button_pressed)
 	item_popup_close.pressed.connect(func(): item_popup.visible = false)
+
+	# New screen-switching buttons
+	alt_tab_button.pressed.connect(_switch_to_browser)
+	browser_back_btn.pressed.connect(_switch_to_ide)
+	overflow_stack_button.pressed.connect(_on_overflow_stack_btn_pressed)
 
 	# Initial state
 	results_overlay.visible = false
@@ -173,6 +196,12 @@ func _ready():
 	light_flash.visible = false
 	troll_dialogue.visible = false
 	item_popup.visible = false
+	browser_screen.visible = false
+
+	# Style new UI elements
+	_style_terminal_strip()
+	_style_browser_screen()
+	_style_action_buttons()
 
 	# Style the free-type editor
 	_style_free_type_edit()
@@ -202,23 +231,19 @@ func load_challenge(challenge: Dictionary) -> void:
 	is_completed = false
 	selected_option = -1
 	_attempts = 0
+	_challenge_hints_used = 0  # Reset per-challenge hint counter
 	is_free_type = challenge.get("type", "") == "free_type"
 	is_terminal = challenge.get("type", "") == "terminal"
 
 	_setup_title()
 	_setup_mission_panel()
 	_setup_code_panel()
-	_setup_output_panel()
+	_setup_terminal()
 	_setup_timer()
 	_setup_bottom_bar()
 
 	results_overlay.visible = false
 	feedback_label.visible = false
-
-	# Show/hide output panel based on challenge setting
-	var show_output = challenge.get("show_output", true)
-	output_panel.visible = show_output
-	toggle_output_button.text = "◀ Hide Output" if show_output else "▶ Show Output"
 
 	if is_free_type or is_terminal:
 		run_button.disabled = true  # enabled when they type something
@@ -227,6 +252,11 @@ func load_challenge(challenge: Dictionary) -> void:
 
 	linter_label.visible = false
 	overflow_overlay.visible = false
+
+	# Reset browser and terminal
+	_switch_to_ide_instant()
+	_setup_terminal()
+	_setup_file_tabs()
 
 func load_challenge_set(challenges: Array, index: int = 0) -> void:
 	"""Load a set of challenges, showing progress like 'Challenge 1 / 5'."""
@@ -266,29 +296,101 @@ func _setup_mission_panel():
 		step_label.add_theme_font_size_override("font_size", 12)
 		steps_container.add_child(step_label)
 
-	# Hint — now opens Overflow Stack popup instead
+	# Hint button — label updates with remaining count
 	hint_label.visible = false
 	hint_label.text = current_challenge.get("hint", "")
-	var has_hint = current_challenge.get("hint", "") != ""
+	var has_hint = current_challenge.get("hint", "") != "" or current_challenge.get("hints", []).size() > 0
 	hint_button.visible = has_hint
 	if has_hint:
-		hint_button.text = "📚 Ask Overflow Stack"
+		_update_hint_button_label()
 
 func _setup_code_panel():
 	# File tab
 	file_tab_label.text = "  📄 " + current_challenge.get("file_name", "code.py")
 
-	# Syntax-highlighted code
 	var code_lines = current_challenge.get("code_lines", [])
 	var bug_line = current_challenge.get("bug_line", -1)
 	var topic = current_challenge.get("topic", "python")
+	var ctype = current_challenge.get("type", "debug")
 
+	# ── CodeEdit mode: free_type and terminal challenges ──
+	if is_free_type or is_terminal:
+		# Hide the old RichTextLabel display and TextEdit
+		code_scroll.visible = false
+		free_type_edit.visible = false
+		options_label.visible = false
+		options_container.visible = false
+		for child in options_container.get_children():
+			child.queue_free()
+
+		# Show CodeEdit
+		code_edit.visible = true
+
+		# Build the full code content: existing code + starter area
+		var starter = current_challenge.get("starter_code", "")
+		var full_code = ""
+		if code_lines.size() > 0:
+			full_code = "\n".join(code_lines)
+			if starter != "":
+				full_code += "\n" + starter
+		else:
+			full_code = starter
+
+		code_edit.text = full_code
+		code_edit.editable = true
+
+		# Apply syntax highlighting
+		_setup_code_highlighter(topic)
+
+		# Style CodeEdit
+		var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
+		code_edit.add_theme_font_override("font", code_font)
+		code_edit.add_theme_font_size_override("font_size", 14)
+
+		if is_terminal:
+			# Terminal green-on-black style
+			code_edit.add_theme_color_override("font_color", Color("00ff41"))
+			var term_style = StyleBoxFlat.new()
+			term_style.bg_color = Color("0d0d0d")
+			term_style.border_color = Color("333333")
+			term_style.set_border_width_all(1)
+			term_style.set_corner_radius_all(4)
+			term_style.set_content_margin_all(8)
+			code_edit.add_theme_stylebox_override("normal", term_style)
+			code_edit.add_theme_stylebox_override("focus", term_style)
+		else:
+			# IDE dark theme
+			code_edit.add_theme_color_override("font_color", Color("abb2bf"))
+			var ide_style = StyleBoxFlat.new()
+			ide_style.bg_color = Color("1e1e2e")
+			ide_style.border_color = Color("3d3d5c")
+			ide_style.set_border_width_all(1)
+			ide_style.set_corner_radius_all(0)
+			ide_style.set_content_margin_all(8)
+			code_edit.add_theme_stylebox_override("normal", ide_style)
+			code_edit.add_theme_stylebox_override("focus", ide_style)
+
+		# Place cursor at the end
+		code_edit.set_caret_line(code_edit.get_line_count() - 1)
+		code_edit.set_caret_column(code_edit.get_line(code_edit.get_line_count() - 1).length())
+
+		# Connect text changed
+		if not code_edit.text_changed.is_connected(_on_code_edit_changed):
+			code_edit.text_changed.connect(_on_code_edit_changed)
+		return
+
+	# ── RichTextLabel mode: multiple-choice challenges ──
+	code_edit.visible = false
+	code_scroll.visible = true
+	free_type_edit.visible = false
+	options_label.visible = true
+
+	# Syntax-highlighted code (BBCode)
 	var bbcode = ""
 	for i in range(code_lines.size()):
 		var line_num = str(i + 1).lpad(3, " ")
 		var line_color = COLOR_LINE_NUM
 
-		# Bug line highlight
 		if i == bug_line:
 			bbcode += "[bgcolor=" + COLOR_BUG_BG + "]"
 			bbcode += "[color=" + line_color + "]" + line_num + " [/color]"
@@ -304,44 +406,7 @@ func _setup_code_panel():
 	code_display.bbcode_enabled = true
 	code_display.text = bbcode
 
-	# Determine challenge type
-	var ctype = current_challenge.get("type", "debug")
-
-	# Terminal mode: show TextEdit styled as a terminal, hide options
-	if is_terminal:
-		options_label.text = "Type your command:"
-		options_container.visible = false
-		free_type_edit.visible = true
-		free_type_edit.text = current_challenge.get("starter_code", "")
-		free_type_edit.placeholder_text = current_challenge.get("placeholder", "$ ")
-		# Style as terminal
-		var term_style = StyleBoxFlat.new()
-		term_style.bg_color = Color("0d0d0d")
-		term_style.border_color = Color("333333")
-		term_style.set_border_width_all(1)
-		term_style.set_corner_radius_all(4)
-		term_style.set_content_margin_all(8)
-		free_type_edit.add_theme_stylebox_override("normal", term_style)
-		free_type_edit.add_theme_stylebox_override("focus", term_style)
-		free_type_edit.add_theme_color_override("font_color", Color("00ff41"))  # Matrix green
-		for child in options_container.get_children():
-			child.queue_free()
-		return
-
-	# Free-type mode: show TextEdit, hide options
-	if is_free_type:
-		options_label.text = "Type your code below:"
-		options_container.visible = false
-		free_type_edit.visible = true
-		free_type_edit.text = current_challenge.get("starter_code", "")
-		free_type_edit.placeholder_text = current_challenge.get("placeholder", "Type your code here...")
-		# Clear old option buttons
-		for child in options_container.get_children():
-			child.queue_free()
-		return
-
-	# Multiple-choice mode: show options, hide TextEdit
-	free_type_edit.visible = false
+	# Multiple-choice mode
 	options_container.visible = true
 	match ctype:
 		"debug": options_label.text = "Select the fix:"
@@ -360,7 +425,6 @@ func _setup_code_panel():
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.add_theme_font_size_override("font_size", 13)
 
-		# Style the button
 		var style_normal = StyleBoxFlat.new()
 		style_normal.bg_color = Color("2d2d3d")
 		style_normal.border_color = Color("3d3d5c")
@@ -385,6 +449,84 @@ func _setup_code_panel():
 		btn.pressed.connect(_on_option_selected.bind(i))
 		options_container.add_child(btn)
 
+# ─── CodeEdit Syntax Highlighter ────────────────────────────────────────────
+
+func _setup_code_highlighter(topic: String):
+	var highlighter = CodeHighlighter.new()
+
+	# Base colors
+	highlighter.number_color = Color("d19a66")       # orange
+	highlighter.symbol_color = Color("abb2bf")        # light grey
+	highlighter.function_color = Color("61afef")      # blue
+	highlighter.member_variable_color = Color("e06c75")  # red
+
+	match topic:
+		"python":
+			highlighter.keyword_colors = {
+				"def": Color("c678dd"), "return": Color("c678dd"),
+				"if": Color("c678dd"), "else": Color("c678dd"),
+				"elif": Color("c678dd"), "for": Color("c678dd"),
+				"while": Color("c678dd"), "in": Color("c678dd"),
+				"import": Color("c678dd"), "from": Color("c678dd"),
+				"class": Color("c678dd"), "and": Color("c678dd"),
+				"or": Color("c678dd"), "not": Color("c678dd"),
+				"True": Color("d19a66"), "False": Color("d19a66"),
+				"None": Color("d19a66"), "print": Color("61afef"),
+				"range": Color("61afef"), "len": Color("61afef"),
+				"str": Color("61afef"), "int": Color("61afef"),
+				"float": Color("61afef"), "list": Color("61afef"),
+				"dict": Color("61afef"), "self": Color("e06c75"),
+				"pass": Color("c678dd"), "break": Color("c678dd"),
+				"continue": Color("c678dd"), "with": Color("c678dd"),
+				"as": Color("c678dd"), "try": Color("c678dd"),
+				"except": Color("c678dd"), "finally": Color("c678dd"),
+				"raise": Color("c678dd"), "yield": Color("c678dd"),
+				"lambda": Color("c678dd"), "global": Color("c678dd"),
+			}
+			highlighter.color_regions = {
+				"\"": Color("98c379"),    # double-quote strings
+				"'": Color("98c379"),     # single-quote strings
+				"#": Color("5c6370"),     # comments
+			}
+		"html":
+			highlighter.keyword_colors = {
+				"html": Color("e06c75"), "head": Color("e06c75"),
+				"body": Color("e06c75"), "div": Color("e06c75"),
+				"h1": Color("e06c75"), "h2": Color("e06c75"),
+				"h3": Color("e06c75"), "p": Color("e06c75"),
+				"a": Color("e06c75"), "img": Color("e06c75"),
+				"form": Color("e06c75"), "input": Color("e06c75"),
+				"button": Color("e06c75"), "span": Color("e06c75"),
+				"ul": Color("e06c75"), "ol": Color("e06c75"),
+				"li": Color("e06c75"), "table": Color("e06c75"),
+				"tr": Color("e06c75"), "td": Color("e06c75"),
+				"link": Color("e06c75"), "meta": Color("e06c75"),
+				"title": Color("e06c75"), "script": Color("e06c75"),
+				"style": Color("e06c75"),
+			}
+			highlighter.color_regions = {
+				"\"": Color("98c379"),
+				"'": Color("98c379"),
+				"<!--": Color("5c6370"),
+			}
+		"css":
+			highlighter.keyword_colors = {
+				"color": Color("61afef"), "background-color": Color("61afef"),
+				"font-size": Color("61afef"), "text-align": Color("61afef"),
+				"margin": Color("61afef"), "padding": Color("61afef"),
+				"border": Color("61afef"), "display": Color("61afef"),
+				"position": Color("61afef"), "width": Color("61afef"),
+				"height": Color("61afef"), "flex": Color("61afef"),
+				"grid": Color("61afef"),
+			}
+			highlighter.color_regions = {
+				"\"": Color("98c379"),
+				"'": Color("98c379"),
+				"/*": Color("5c6370"),
+			}
+
+	code_edit.syntax_highlighter = highlighter
+
 # Helper to detect output_type — auto-detects from topic if not explicitly set
 func _get_output_type() -> String:
 	var output_type = current_challenge.get("output_type", "")
@@ -396,35 +538,130 @@ func _get_output_type() -> String:
 			output_type = "terminal"
 	return output_type
 
-func _setup_output_panel():
-	var output_type = _get_output_type()
+func _setup_terminal():
+	# Always-visible terminal strip at the bottom of the code panel
+	terminal_output.bbcode_enabled = true
+	var ctype = current_challenge.get("type", "debug")
+	if ctype == "predict_output":
+		terminal_output.text = "[color=#5c6370][i]Run the code to see the output...[/i][/color]"
+	elif current_challenge.get("error_output", "") != "":
+		terminal_output.text = "[color=#e06c75]" + current_challenge["error_output"] + "[/color]"
+	else:
+		terminal_output.text = "[color=#5c6370][i]Click ▶ Run to execute...[/i][/color]"
 
+	# Set browser preview initial state
+	var output_type = _get_output_type()
 	if output_type == "browser":
-		output_title.text = " 🌐 Preview — http://localhost:8000"
-		# Show browser preview area, hide terminal
-		output_bg.visible = true
-		output_scroll.visible = false
-		# Show initial browser state
-		browser_preview.add_theme_color_override("default_color", Color(0.2, 0.2, 0.2))
+		browser_address.text = " 🔒 http://127.0.0.1:8000/"
 		var error_out = current_challenge.get("error_output", "")
 		if error_out != "":
 			browser_preview.text = "[color=#cc3333][font_size=14]" + error_out + "[/font_size][/color]"
 		else:
-			browser_preview.text = "[color=#888888][i]Waiting for code...[/i][/color]"
-	else:
-		output_title.text = " 💻 Terminal"
-		# Show terminal, hide browser preview area
-		output_bg.visible = false
-		output_scroll.visible = true
-		# Show initial terminal state
-		output_display.bbcode_enabled = true
-		var ctype = current_challenge.get("type", "debug")
-		if ctype == "predict_output":
-			output_display.text = "[color=#5c6370][i]Run the code to see the output...[/i][/color]"
-		elif current_challenge.get("error_output", "") != "":
-			output_display.text = "[color=#e06c75]" + current_challenge["error_output"] + "[/color]"
+			browser_preview.text = "[color=#888888][i]Press ▶ Run in the IDE, then Alt-Tab here to see the result.[/i][/color]"
+
+func _setup_file_tabs():
+	# Clear old dynamic tab buttons (keep the static FileTab label as fallback)
+	for child in file_tabs_container.get_children():
+		if child != file_tab_label:
+			child.queue_free()
+
+	var files = current_challenge.get("files", {})
+	if files.is_empty():
+		# Single-file challenge: show the simple label
+		file_tab_label.visible = true
+		file_tab_label.text = "  📄 " + current_challenge.get("file_name", "code.py")
+		return
+
+	# Multi-file challenge: hide the simple label and create tab buttons
+	file_tab_label.visible = false
+	var active_file = current_challenge.get("active_file", "")
+	var first_file = true
+	for file_name in files.keys():
+		var tab_btn = Button.new()
+		tab_btn.text = "  📄 " + file_name
+		tab_btn.custom_minimum_size = Vector2(0, 28)
+		tab_btn.add_theme_font_size_override("font_size", 12)
+
+		var is_active = (file_name == active_file) or (active_file == "" and first_file)
+		var style = StyleBoxFlat.new()
+		if is_active:
+			style.bg_color = Color("1e1e2e")
+			style.border_color = Color("007acc")
+			style.set_border_width_all(0)
+			style.border_width_top = 2
+			tab_btn.add_theme_color_override("font_color", Color("ffffff"))
 		else:
-			output_display.text = "[color=#5c6370][i]Click ▶ Run to execute...[/i][/color]"
+			style.bg_color = Color("2d2d3d")
+			style.border_color = Color("3e3e42")
+			style.set_border_width_all(0)
+			tab_btn.add_theme_color_override("font_color", Color("888888"))
+
+		style.set_corner_radius_all(0)
+		style.set_content_margin_all(6)
+		tab_btn.add_theme_stylebox_override("normal", style)
+		tab_btn.add_theme_stylebox_override("hover", style)
+		tab_btn.add_theme_stylebox_override("pressed", style)
+
+		# Connect press to switch file content
+		var captured_name = file_name
+		tab_btn.pressed.connect(func(): _on_file_tab_pressed(captured_name))
+		file_tabs_container.add_child(tab_btn)
+		first_file = false
+
+func _on_file_tab_pressed(file_name: String):
+	_play_click()
+	var files = current_challenge.get("files", {})
+	var content = files.get(file_name, "")
+	var topic = current_challenge.get("topic", "python")
+
+	# Determine file topic from extension
+	if file_name.ends_with(".html"):
+		topic = "html"
+	elif file_name.ends_with(".css"):
+		topic = "css"
+	elif file_name.ends_with(".py"):
+		topic = "python"
+
+	# Re-render the code display with the file's content
+	var lines = content.split("\n")
+	var bbcode = ""
+	for i in range(lines.size()):
+		var line_num = str(i + 1).lpad(3, " ")
+		bbcode += "[color=" + COLOR_LINE_NUM + "]" + line_num + " [/color]"
+		bbcode += _syntax_highlight(lines[i], topic)
+		if i < lines.size() - 1:
+			bbcode += "\n"
+	code_display.text = bbcode
+
+	# Update tab highlighting
+	var active_file = current_challenge.get("active_file", "")
+	var is_editable = (file_name == active_file)
+	if is_editable:
+		free_type_edit.visible = is_free_type or is_terminal
+	else:
+		free_type_edit.visible = false
+
+	# Restyle all tabs
+	for child in file_tabs_container.get_children():
+		if child is Button:
+			var is_active = child.text.strip_edges().ends_with(file_name)
+			var style = StyleBoxFlat.new()
+			if is_active:
+				style.bg_color = Color("1e1e2e")
+				style.border_color = Color("007acc")
+				style.set_border_width_all(0)
+				style.border_width_top = 2
+				child.add_theme_color_override("font_color", Color("ffffff"))
+			else:
+				style.bg_color = Color("2d2d3d")
+				style.border_color = Color("3e3e42")
+				style.set_border_width_all(0)
+				child.add_theme_color_override("font_color", Color("888888"))
+			style.set_corner_radius_all(0)
+			style.set_content_margin_all(6)
+			child.add_theme_stylebox_override("normal", style)
+			child.add_theme_stylebox_override("hover", style)
+			child.add_theme_stylebox_override("pressed", style)
 
 # Generate fake rendered website content for the browser preview
 func _get_browser_preview_content(challenge_id: String, correct_output: String) -> String:
@@ -710,20 +947,14 @@ func _on_run_pressed():
 	if selected_option < options.size():
 		is_correct = options[selected_option].get("correct", false)
 
-	# Show output panel if hidden
-	if not output_panel.visible:
-		output_panel.visible = true
-		toggle_output_button.text = "◀ Hide Output"
-
-	# Update output panel
-	output_display.bbcode_enabled = true
+	# Update terminal + browser output
+	terminal_output.bbcode_enabled = true
 	if is_correct:
 		var correct_output = current_challenge.get("correct_output", "Success!")
 		var challenge_id = current_challenge.get("id", "")
+		terminal_output.text = "[color=#98c379]" + correct_output + "[/color]"
 		if _get_output_type() == "browser":
 			browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
-		else:
-			output_display.text = "[color=#98c379]" + correct_output + "[/color]"
 
 		feedback_label.text = "✅ Correct!"
 		feedback_label.add_theme_color_override("font_color", Color("98c379"))
@@ -731,10 +962,9 @@ func _on_run_pressed():
 			correct_sfx.play()
 	else:
 		var error_output = current_challenge.get("error_output", "Error!")
+		terminal_output.text = "[color=#e06c75]" + error_output + "[/color]"
 		if _get_output_type() == "browser":
 			browser_preview.text = "[color=#cc3333]" + error_output + "[/color]"
-		else:
-			output_display.text = "[color=#e06c75]" + error_output + "[/color]"
 
 		feedback_label.text = "❌ Incorrect — try to learn from this!"
 		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
@@ -796,115 +1026,71 @@ func _on_time_up():
 	await get_tree().create_timer(1.5).timeout
 	_show_results(false)
 
+# (Old guilt-trip _on_hint_pressed removed — replaced by new system above)
+
+func _update_hint_button_label():
+	var remaining = GLOBAL_MAX_HINTS - global_hints_used
+	if remaining <= 0:
+		hint_button.text = "📚 No Hints Remaining"
+		hint_button.disabled = true
+	else:
+		hint_button.text = "📚 Hint (%d / %d)" % [global_hints_used, GLOBAL_MAX_HINTS]
+		hint_button.disabled = false
+
 func _on_hint_pressed():
-	# Play mouse click
 	_play_click()
-	
-	# Create a guilt trip overlay dynamically
-	var overlay = ColorRect.new()
-	overlay.name = "GuiltTripOverlay"
-	overlay.color = Color(0, 0, 0, 0.8) # Dark translucent backdrop
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.z_index = 100 # Put on top of everything
-	
-	var center = CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.add_child(center)
-	
-	var panel = PanelContainer.new()
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color("1e1e2e")
-	style.border_color = Color("e06c75") # Red border
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(8)
-	style.set_content_margin_all(24)
-	panel.add_theme_stylebox_override("panel", style)
-	center.add_child(panel)
-	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 20)
-	panel.add_child(vbox)
-	
-	var title = Label.new()
-	title.text = "✨ OVERFLOW STACK PREMIUM ✨"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_color_override("font_color", Color("e0c675")) # Gold/Yellow
-	title.add_theme_font_size_override("font_size", 18)
-	vbox.add_child(title)
-	
-	var text_label = Label.new()
-	text_label.text = "Tired of staring at bugs?\nUnlock the exact answer instantly with Overflow Stack Premium!\n\n(Warning: Relying on copy-paste removes critical thinking skills.\nAre you sure you want to give up and skip the learning process?)"
-	text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_label.custom_minimum_size = Vector2(450, 0)
-	text_label.add_theme_color_override("font_color", Color("abb2bf"))
-	text_label.add_theme_font_size_override("font_size", 14)
-	vbox.add_child(text_label)
-	
-	var hbox = HBoxContainer.new()
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 20)
-	vbox.add_child(hbox)
-	
-	var yes_btn = Button.new()
-	yes_btn.text = "View Answer (Free Trial)"
-	var yes_style = StyleBoxFlat.new()
-	yes_style.bg_color = Color("3a2a1a") # Gold-ish dark
-	yes_style.border_color = Color("e0c675")
-	yes_style.set_border_width_all(1)
-	yes_style.set_corner_radius_all(4)
-	yes_style.set_content_margin_all(10)
-	yes_btn.add_theme_stylebox_override("normal", yes_style)
-	
-	var yes_hover = yes_style.duplicate()
-	yes_hover.bg_color = Color("5a4a2a")
-	yes_btn.add_theme_stylebox_override("hover", yes_hover)
-	yes_btn.add_theme_color_override("font_color", Color("e0c675"))
-	
-	var no_btn = Button.new()
-	no_btn.text = "Close Ad  [x]"
-	var no_style = StyleBoxFlat.new()
-	no_style.bg_color = Color("2a2a3a")
-	no_style.border_color = Color("5c6370")
-	no_style.set_border_width_all(1)
-	no_style.set_corner_radius_all(4)
-	no_style.set_content_margin_all(10)
-	no_btn.add_theme_stylebox_override("normal", no_style)
-	
-	var no_hover = no_style.duplicate()
-	no_hover.bg_color = Color("3a3a4a")
-	no_btn.add_theme_stylebox_override("hover", no_hover)
-	no_btn.add_theme_color_override("font_color", Color("abb2bf"))
-	
-	hbox.add_child(yes_btn)
-	hbox.add_child(no_btn)
-	
-	add_child(overlay)
-	
-	yes_btn.pressed.connect(func():
-		_play_click()
-		overlay.queue_free()
+
+	# Hard cap — no more hints this session
+	if global_hints_used >= GLOBAL_MAX_HINTS:
+		_update_hint_button_label()
+		return
+
+	global_hints_used += 1
+	_challenge_hints_used += 1
+	_update_hint_button_label()
+
+	# On the 5th hint (global), open Overflow Stack with conceptual help only
+	if global_hints_used >= GLOBAL_MAX_HINTS:
 		_show_overflow_stack()
-	)
-	
-	no_btn.pressed.connect(func():
-		_play_click()
-		overlay.queue_free()
-	)
+		return
+
+	# Otherwise show a progressive in-panel hint (hints 1–4)
+	# Support both a single "hint" string and a "hints" array for multi-level clues
+	var hints_array: Array = current_challenge.get("hints", [])
+	if hints_array.is_empty():
+		var single = current_challenge.get("hint", "")
+		if single != "":
+			hints_array = [single]
+
+	var hint_index = clamp(_challenge_hints_used - 1, 0, hints_array.size() - 1)
+	var hint_text = hints_array[hint_index] if hints_array.size() > 0 else "Think carefully about the syntax."
+
+	hint_label.bbcode_enabled = true
+	hint_label.text = "[color=#e0c675]💡 Hint %d:[/color] [color=#abb2bf]%s[/color]" % [_challenge_hints_used, hint_text]
+	hint_label.visible = true
+
+	# Animate hint label in
+	hint_label.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(hint_label, "modulate:a", 1.0, 0.25)
 
 func _on_reload_pressed():
 	# Re-show the initial output state
-	_setup_output_panel()
+	_setup_terminal()
 
-func _on_toggle_output_pressed():
+func _on_overflow_stack_btn_pressed():
 	_play_click()
-	output_panel.visible = !output_panel.visible
-	toggle_output_button.text = "◀ Hide Output" if output_panel.visible else "▶ Show Output"
+	_on_hint_pressed()
 
 func _on_free_type_changed():
-	# Enable run button when player has typed something
+	# Enable run button when player has typed something (legacy TextEdit)
 	if (is_free_type or is_terminal) and not is_completed:
 		run_button.disabled = free_type_edit.text.strip_edges() == ""
+
+func _on_code_edit_changed():
+	# Enable run button when player has typed something (CodeEdit)
+	if (is_free_type or is_terminal) and not is_completed:
+		run_button.disabled = code_edit.text.strip_edges() == ""
 
 func _on_close_pressed():
 	_play_click()
@@ -965,43 +1151,173 @@ func _show_results(success: bool):
 # ─── Free-Type Validation ────────────────────────────────────────────────────
 
 func _run_free_type():
-	var player_code = free_type_edit.text.strip_edges()
+	# ── Extract what the player typed ──
+	var full_text = ""
+	var player_typed_only = ""
+
+	if code_edit.visible:
+		full_text = code_edit.text
+		# Extract only the portion after pre-filled code_lines
+		var code_lines_arr = current_challenge.get("code_lines", [])
+		var all_lines = full_text.split("\n")
+		if code_lines_arr.size() > 0 and all_lines.size() > code_lines_arr.size():
+			var player_lines = []
+			for i in range(code_lines_arr.size(), all_lines.size()):
+				player_lines.append(all_lines[i])
+			player_typed_only = "\n".join(player_lines).strip_edges()
+		else:
+			player_typed_only = full_text.strip_edges()
+	else:
+		full_text = free_type_edit.text
+		player_typed_only = full_text.strip_edges()
+
 	var expected_answers = current_challenge.get("expected_answers", [])
 
-	# Check if the player's code matches any accepted answer
+	# ── Try server-side validation first (Judge0 + Gemini) ──
+	# Show a "compiling" state while we wait
+	terminal_output.bbcode_enabled = true
+	terminal_output.text = "[color=#61afef]⏳ Compiling...[/color]"
+	feedback_label.text = "Running your code..."
+	feedback_label.add_theme_color_override("font_color", Color("61afef"))
+	feedback_label.visible = true
+	run_button.disabled = true
+
+	# Determine language from challenge data (topic field)
+	var topic = current_challenge.get("topic", "python")
+	var language = "python"  # default
+	match topic:
+		"html", "css", "http":
+			language = "html"
+		"django":
+			language = "django"
+		"python", "oop", "variables", "functions", "loops":
+			language = "python"
+	
+	var challenge_id = current_challenge.get("id", "")
+	var expected_output = current_challenge.get("correct_output", "Success!")
+
+	# Call the Django backend via ApiManager
+	ApiManager.check_code(player_typed_only, language, challenge_id, expected_answers, expected_output)
+
+	# Wait for the response signal
+	var result = await ApiManager.code_checked
+
+	run_button.disabled = false
+
+	if result.get("offline", false):
+		# ── Server offline: fall back to local validation ──
+		print("coding_challenge_ui: Server offline, using local validation")
+		_run_free_type_local(full_text, player_typed_only, expected_answers)
+	else:
+		# ── Server responded: use its result ──
+		_handle_server_result(result)
+
+
+func _handle_server_result(result: Dictionary):
+	"""Handle the response from Django GameCheckCodeView."""
+	terminal_output.bbcode_enabled = true
+	var is_correct = result.get("success", false)
+	var output = result.get("output", "")
+	var ai_hint = result.get("ai_hint", "")
+
+	if is_correct:
+		is_completed = true
+		timer_running = false
+		free_type_edit.editable = false
+		code_edit.editable = false
+
+		var challenge_id = current_challenge.get("id", "")
+		terminal_output.text = "[color=#98c379]" + output + "[/color]"
+		if _get_output_type() == "browser":
+			browser_preview.text = _get_browser_preview_content(challenge_id, output)
+
+		feedback_label.text = "✅ Correct! Your code works!"
+		feedback_label.add_theme_color_override("font_color", Color("98c379"))
+		feedback_label.visible = true
+		run_button.disabled = true
+		if correct_sfx.stream:
+			correct_sfx.play()
+
+		await get_tree().create_timer(2.0).timeout
+		_show_results(true)
+	else:
+		_attempts += 1
+
+		# Build error display with AI hint if available
+		var error_text = "[color=#e06c75]" + output + "[/color]"
+
+		if ai_hint != "":
+			error_text += "\n\n[color=#d19a66]🤖 AI HINT: " + ai_hint + "[/color]"
+		else:
+			# Fall back to progressive hints from challenge data
+			var hints = current_challenge.get("progressive_hints", [])
+			var expected_answers_list = current_challenge.get("expected_answers", [])
+			var answer_text = expected_answers_list[0] if expected_answers_list.size() > 0 else ""
+			
+			if hints.size() > 0:
+				if _attempts <= hints.size():
+					var hint = hints[_attempts - 1]
+					error_text += "\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
+				else:
+					error_text += "\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
+
+		terminal_output.text = error_text
+		
+		if _get_output_type() == "browser":
+			browser_preview.text = "[color=#cc3333]" + output + "[/color]"
+
+		feedback_label.text = "❌ Not quite — check the terminal for hints!"
+		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
+		feedback_label.visible = true
+		if wrong_sfx.stream:
+			wrong_sfx.play()
+
+
+func _run_free_type_local(full_text: String, player_typed_only: String, expected_answers: Array):
+	"""Offline fallback: local multi-pass validation (no server needed)."""
+	# ── Multi-pass validation ──
 	var is_correct = false
+
 	for answer in expected_answers:
-		if player_code.strip_edges() == answer.strip_edges():
+		var ans = answer.strip_edges()
+
+		# Pass 1: Exact match of just what the player typed after pre-filled lines
+		if player_typed_only == ans:
 			is_correct = true
 			break
 
-	# Also check with normalized whitespace (collapse multiple spaces)
-	if not is_correct:
-		var normalized_player = _normalize_whitespace(player_code)
-		for answer in expected_answers:
-			if normalized_player == _normalize_whitespace(answer.strip_edges()):
-				is_correct = true
-				break
+		# Pass 2: Exact match of the full CodeEdit content
+		if full_text.strip_edges() == ans:
+			is_correct = true
+			break
 
-	# Show output panel if hidden
-	if not output_panel.visible:
-		output_panel.visible = true
-		toggle_output_button.text = "◀ Hide Output"
+		# Pass 3: The expected answer appears as a substring within the full text
+		if full_text.find(ans) != -1:
+			is_correct = true
+			break
 
-	output_display.bbcode_enabled = true
+		# Pass 4: Normalized whitespace comparison
+		if _normalize_whitespace(player_typed_only) == _normalize_whitespace(ans):
+			is_correct = true
+			break
+		if _normalize_whitespace(full_text.strip_edges()) == _normalize_whitespace(ans):
+			is_correct = true
+			break
+
+	terminal_output.bbcode_enabled = true
 
 	if is_correct:
 		# ── Correct: lock everything and show results ──
 		is_completed = true
 		timer_running = false
 		free_type_edit.editable = false
+		code_edit.editable = false
 
 		var correct_output = current_challenge.get("correct_output", "Success!")
 		var challenge_id = current_challenge.get("id", "")
+		terminal_output.text = "[color=#98c379]" + correct_output + "[/color]"
 		if _get_output_type() == "browser":
 			browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
-		else:
-			output_display.text = "[color=#98c379]" + correct_output + "[/color]"
 
 		feedback_label.text = "✅ Correct! Your code works!"
 		feedback_label.add_theme_color_override("font_color", Color("98c379"))
@@ -1016,39 +1332,27 @@ func _run_free_type():
 		# ── Wrong: show progressive hints ──
 		_attempts += 1
 		
-		# Get hints and answer
 		var hints = current_challenge.get("progressive_hints", [])
 		var expected_answers_list = current_challenge.get("expected_answers", [])
 		var answer_text = expected_answers_list[0] if expected_answers_list.size() > 0 else ""
 		
 		var error_output = current_challenge.get("error_output", "Error!")
 		
-		if _get_output_type() == "browser":
-			# Browser mode: show errors and hints in browser_preview
-			if hints.size() > 0:
-				if _attempts <= hints.size():
-					var hint = hints[_attempts - 1]
-					browser_preview.text = "[color=#cc3333]" + error_output + "[/color]\n\n[color=#cc8833]HINT " + str(_attempts) + ": " + hint + "[/color]"
-					feedback_label.text = "❌ Not quite — read the hint in the preview panel!"
-				else:
-					browser_preview.text = "[color=#cc3333]" + error_output + "[/color]\n\n[color=#4a9e4a]ANSWER: Just type exactly: " + answer_text + "[/color]"
-					feedback_label.text = "❌ Still stuck? I put the answer in the preview panel!"
+		if hints.size() > 0:
+			if _attempts <= hints.size():
+				var hint = hints[_attempts - 1]
+				terminal_output.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
+				feedback_label.text = "❌ Not quite — read the hint in the terminal!"
 			else:
-				browser_preview.text = "[color=#cc3333]" + error_output + "[/color]"
-				feedback_label.text = "❌ Not quite — check your code and try again!"
+				terminal_output.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
+				feedback_label.text = "❌ Still stuck? I put the answer in the terminal!"
 		else:
-			# Terminal mode: show errors and hints in output_display
-			if hints.size() > 0:
-				if _attempts <= hints.size():
-					var hint = hints[_attempts - 1]
-					output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
-					feedback_label.text = "❌ Not quite — read the hint in the output panel!"
-				else:
-					output_display.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
-					feedback_label.text = "❌ Still stuck? I put the answer in the output panel!"
-			else:
-				output_display.text = "[color=#e06c75]" + error_output + "[/color]"
-				feedback_label.text = "❌ Not quite — check your code and try again!"
+			terminal_output.text = "[color=#e06c75]" + error_output + "[/color]"
+			feedback_label.text = "❌ Not quite — check your code and try again!"
+
+		# Also update browser preview for browser-type challenges
+		if _get_output_type() == "browser":
+			browser_preview.text = "[color=#cc3333]" + error_output + "[/color]"
 
 		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
 		feedback_label.visible = true
@@ -1057,6 +1361,7 @@ func _run_free_type():
 
 		# Keep editor editable so they can fix and retry
 		free_type_edit.editable = true
+		code_edit.editable = true
 		run_button.disabled = false
 
 		# Show red squiggle linter
@@ -1096,7 +1401,7 @@ func _style_free_type_edit():
 
 func _input(event):
 	# When the player is typing in the free-type editor, let ALL keys through
-	if (is_free_type or is_terminal) and free_type_edit.has_focus():
+	if (is_free_type or is_terminal) and (free_type_edit.has_focus() or code_edit.has_focus()):
 		# Play keypad SFX on real key presses only (not held-key echoes)
 		if event is InputEventKey and event.pressed and not event.is_echo():
 			if keypad_sfx and keypad_sfx.stream:
@@ -1130,7 +1435,15 @@ const OVERFLOW_INTROS = [
 ]
 
 func _show_overflow_stack():
-	var hint_text = current_challenge.get("hint", "No hint available.")
+	# Find the deepest conceptual clue available (never the raw answer)
+	var hints_array: Array = current_challenge.get("hints", [])
+	if hints_array.is_empty():
+		var single = current_challenge.get("hint", "")
+		if single != "":
+			hints_array = [single]
+
+	# Use the last hint in the array as the "deepest" clue
+	var deep_clue = hints_array.back() if hints_array.size() > 0 else "Review the topic material and try again."
 	var title = current_challenge.get("title", "Help")
 
 	# Style the overlay
@@ -1147,20 +1460,24 @@ func _show_overflow_stack():
 	stack_logo.add_theme_font_size_override("font_size", 16)
 
 	# Question
-	stack_question.text = "Q: How do I fix \"" + title + "\"? Please help!!!"
+	stack_question.text = "Q: I'm really stuck on \"" + title + "\". Final hint please!"
 	stack_question.add_theme_color_override("font_color", Color("3b4045"))
 	stack_question.add_theme_font_size_override("font_size", 13)
 
 	# Votes
 	var vote_count = randi_range(12, 247)
-	stack_votes.text = "▲ " + str(vote_count) + " votes  •  ✅ Accepted Answer"
+	stack_votes.text = "▲ " + str(vote_count) + " votes  •  📣 Community Hint (No answers!)"
 	stack_votes.add_theme_color_override("font_color", Color("6a9955"))
 	stack_votes.add_theme_font_size_override("font_size", 12)
 
-	# Answer — grumpy but helpful
+	# Deep conceptual clue — NOT the answer
 	var intro = OVERFLOW_INTROS[randi() % OVERFLOW_INTROS.size()]
 	stack_answer.bbcode_enabled = true
-	stack_answer.text = "[color=#3b4045]" + intro + hint_text + "[/color]"
+	stack_answer.text = (
+		"[color=#3b4045]" + intro + deep_clue + "\n\n" +
+		"[color=#e06c75][b]⚠️ You have used all 5 hints for this session.[/b]\n" +
+		"The answer will not be shown. Review the lesson material and try again.[/color][/color]"
+	)
 	stack_answer.add_theme_font_size_override("normal_font_size", 13)
 
 	# User
@@ -1487,8 +1804,11 @@ func _buff_os_premium():
 
 	var answer = expected[0]
 	var half = answer.substr(0, int(answer.length() * 0.5))
-	free_type_edit.text = half
-	free_type_edit.visible = true
+	if code_edit.visible:
+		code_edit.text = half
+	else:
+		free_type_edit.text = half
+		free_type_edit.visible = true
 	run_button.disabled = false
 
 func _buff_encrypted_drive():
@@ -1498,10 +1818,9 @@ func _buff_encrypted_drive():
 	# Show correct output
 	var correct_output = current_challenge.get("correct_output", "✓ Correct!")
 	var challenge_id = current_challenge.get("id", "")
+	terminal_output.text = "[color=#98c379]" + correct_output + "[/color]"
 	if _get_output_type() == "browser":
 		browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
-	else:
-		output_display.text = correct_output
 
 	# Play correct SFX
 	if correct_sfx and correct_sfx.stream:
@@ -1521,8 +1840,123 @@ func _buff_encrypted_drive():
 func lock_typing(_locked: bool):
 	if is_free_type or is_terminal:
 		free_type_edit.editable = not _locked
+		code_edit.editable = not _locked
 		if _locked:
 			run_button.disabled = true
 		else:
 			# only enable run if there's text
-			run_button.disabled = free_type_edit.text.strip_edges() == ""
+			var current_text = code_edit.text if code_edit.visible else free_type_edit.text
+			run_button.disabled = current_text.strip_edges() == ""
+
+# ─── Screen Switching (IDE ↔ Browser) ────────────────────────────────────────
+
+func _switch_to_browser():
+	if _is_browser_visible:
+		return
+	_play_click()
+	_is_browser_visible = true
+	browser_screen.visible = true
+
+	var vp_width = get_viewport_rect().size.x
+	# Slide IDE left, Browser in from the right
+	var tween = create_tween().set_parallel(true)
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(ide_screen, "position:x", -vp_width, 0.35)
+	browser_screen.position.x = vp_width
+	tween.tween_property(browser_screen, "position:x", 0.0, 0.35)
+
+func _switch_to_ide():
+	if not _is_browser_visible:
+		return
+	_play_click()
+	_is_browser_visible = false
+
+	var vp_width = get_viewport_rect().size.x
+	var tween = create_tween().set_parallel(true)
+	tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(ide_screen, "position:x", 0.0, 0.35)
+	tween.tween_property(browser_screen, "position:x", vp_width, 0.35)
+	tween.chain().tween_callback(func(): browser_screen.visible = false)
+
+func _switch_to_ide_instant():
+	# Instantly reset to IDE view (no animation, used during load_challenge)
+	_is_browser_visible = false
+	ide_screen.position.x = 0
+	browser_screen.position.x = get_viewport_rect().size.x
+	browser_screen.visible = false
+
+# ─── Styling for New UI Elements ─────────────────────────────────────────────
+
+func _style_terminal_strip():
+	# Dark terminal-style background
+	var term_style = StyleBoxFlat.new()
+	term_style.bg_color = Color("0d0d0d")
+	term_style.border_color = Color("333333")
+	term_style.set_border_width_all(1)
+	term_style.set_corner_radius_all(0)
+	term_style.set_content_margin_all(6)
+	terminal_strip.add_theme_stylebox_override("panel", term_style)
+
+	# Terminal header label
+	terminal_header.add_theme_color_override("font_color", Color("888888"))
+	terminal_header.add_theme_font_size_override("font_size", 11)
+
+	# Terminal output text
+	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
+	terminal_output.add_theme_font_override("normal_font", code_font)
+	terminal_output.add_theme_font_size_override("normal_font_size", 12)
+	terminal_output.add_theme_color_override("default_color", Color("00ff41"))  # Matrix green
+
+func _style_browser_screen():
+	# Browser toolbar styling
+	var toolbar_style = StyleBoxFlat.new()
+	toolbar_style.bg_color = Color("e0e0e0")
+	toolbar_style.set_content_margin_all(6)
+
+	# Address bar
+	browser_address.add_theme_color_override("font_color", Color("333333"))
+	browser_address.add_theme_font_size_override("font_size", 13)
+
+	# Back button
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color("d0d0d0")
+	btn_style.border_color = Color("aaaaaa")
+	btn_style.set_border_width_all(1)
+	btn_style.set_corner_radius_all(4)
+	btn_style.set_content_margin_all(6)
+	browser_back_btn.add_theme_stylebox_override("normal", btn_style)
+	browser_back_btn.add_theme_color_override("font_color", Color("333333"))
+	browser_back_btn.add_theme_font_size_override("font_size", 12)
+
+	# Browser preview text
+	browser_preview.add_theme_color_override("default_color", Color("222222"))
+	browser_preview.add_theme_font_size_override("normal_font_size", 14)
+
+func _style_action_buttons():
+	# Overflow Stack button — orange themed
+	var os_style = StyleBoxFlat.new()
+	os_style.bg_color = Color("b05c00")
+	os_style.set_corner_radius_all(4)
+	os_style.set_content_margin_all(6)
+	overflow_stack_button.add_theme_stylebox_override("normal", os_style)
+	overflow_stack_button.add_theme_color_override("font_color", Color("ffffff"))
+	overflow_stack_button.add_theme_font_size_override("font_size", 12)
+
+	var os_hover = os_style.duplicate()
+	os_hover.bg_color = Color("d16d00")
+	overflow_stack_button.add_theme_stylebox_override("hover", os_hover)
+
+	# Alt-tab button — blue themed
+	var at_style = StyleBoxFlat.new()
+	at_style.bg_color = Color("2d2d3d")
+	at_style.border_color = Color("007acc")
+	at_style.set_border_width_all(1)
+	at_style.set_corner_radius_all(4)
+	at_style.set_content_margin_all(6)
+	alt_tab_button.add_theme_stylebox_override("normal", at_style)
+	alt_tab_button.add_theme_color_override("font_color", Color("ffffff"))
+	alt_tab_button.add_theme_font_size_override("font_size", 12)
+
+	var at_hover = at_style.duplicate()
+	at_hover.bg_color = Color("3e3e52")
+	alt_tab_button.add_theme_stylebox_override("hover", at_hover)

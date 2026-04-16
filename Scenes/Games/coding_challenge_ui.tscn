@@ -22,109 +22,139 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.118, 0.118, 0.18, 1)
 
-[node name="TitleBar" type="HBoxContainer" parent="." unique_id=1471354963]
+; ═══════════════════════════════════════════════════════════════
+; IDE SCREEN — The main coding view (slides left when browser opens)
+; ═══════════════════════════════════════════════════════════════
+
+[node name="IDEScreen" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleBar" type="HBoxContainer" parent="IDEScreen" unique_id=1471354963]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 36.0
 grow_horizontal = 2
 
-[node name="TitleBG" type="ColorRect" parent="TitleBar" unique_id=726581384]
+[node name="TitleBG" type="ColorRect" parent="IDEScreen/TitleBar" unique_id=726581384]
 layout_mode = 2
 size_flags_horizontal = 3
 color = Color(0.15, 0.15, 0.22, 1)
 
-[node name="TitleLabel" type="Label" parent="TitleBar" unique_id=2135794987]
+[node name="TitleLabel" type="Label" parent="IDEScreen/TitleBar" unique_id=2135794987]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "  DjangoQuest IDE"
 vertical_alignment = 1
 
-[node name="TimerLabel" type="Label" parent="TitleBar" unique_id=351419015]
+[node name="TimerLabel" type="Label" parent="IDEScreen/TitleBar" unique_id=351419015]
 layout_mode = 2
 text = "⏱ 30s"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="CloseButton" type="Button" parent="TitleBar" unique_id=1609112938]
+[node name="CloseButton" type="Button" parent="IDEScreen/TitleBar" unique_id=1609112938]
 custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
 text = "✕"
 
-[node name="GearButton" type="Button" parent="TitleBar"]
+[node name="GearButton" type="Button" parent="IDEScreen/TitleBar"]
 custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
 text = "⚙️"
 
-[node name="ItemButton" type="Button" parent="TitleBar"]
+[node name="ItemButton" type="Button" parent="IDEScreen/TitleBar"]
 custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "🎒 Use Item"
 
-[node name="MainContent" type="HSplitContainer" parent="." unique_id=1943070014]
+[node name="MainContent" type="HSplitContainer" parent="IDEScreen" unique_id=1943070014]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = 40.0
 offset_bottom = -44.0
-split_offsets = PackedInt32Array(-300, 0)
-split_offset = -300
 
-[node name="MissionPanel" type="PanelContainer" parent="MainContent" unique_id=1956791998]
+; ─── LEFT PANEL: Instructions + Actions ───
+
+[node name="MissionPanel" type="PanelContainer" parent="IDEScreen/MainContent" unique_id=1956791998]
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.25
 
-[node name="MissionScroll" type="ScrollContainer" parent="MainContent/MissionPanel" unique_id=1832495508]
+[node name="MissionScroll" type="ScrollContainer" parent="IDEScreen/MainContent/MissionPanel" unique_id=1832495508]
 layout_mode = 2
 
-[node name="MissionVBox" type="VBoxContainer" parent="MainContent/MissionPanel/MissionScroll" unique_id=698626451]
+[node name="MissionVBox" type="VBoxContainer" parent="IDEScreen/MainContent/MissionPanel/MissionScroll" unique_id=698626451]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MissionTitle" type="Label" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=703427392]
+[node name="MissionTitle" type="Label" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=703427392]
 layout_mode = 2
 text = "🔧 Mission"
 horizontal_alignment = 1
 
-[node name="Separator" type="HSeparator" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=981695158]
+[node name="Separator" type="HSeparator" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=981695158]
 layout_mode = 2
 
-[node name="StepsContainer" type="VBoxContainer" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=180834614]
+[node name="StepsContainer" type="VBoxContainer" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=180834614]
 layout_mode = 2
 
-[node name="HintButton" type="Button" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=56338262]
+[node name="HintButton" type="Button" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=56338262]
 layout_mode = 2
 text = "💡 Show Hint"
 
-[node name="HintLabel" type="RichTextLabel" parent="MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=399674129]
+[node name="HintLabel" type="RichTextLabel" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox" unique_id=399674129]
 visible = false
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 bbcode_enabled = true
 fit_content = true
 
-[node name="CodePanel" type="PanelContainer" parent="MainContent" unique_id=669824303]
+[node name="ActionsSeparator" type="HSeparator" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox"]
+layout_mode = 2
+
+[node name="OverflowStackButton" type="Button" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "📚 Overflow Stack"
+
+[node name="AltTabButton" type="Button" parent="IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+text = "🌐 Alt-Tab to Browser →"
+
+; ─── RIGHT PANEL: File Tabs + Code Editor + Terminal ───
+
+[node name="CodePanel" type="PanelContainer" parent="IDEScreen/MainContent" unique_id=669824303]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.45
+size_flags_stretch_ratio = 0.75
 
-[node name="CodeVBox" type="VBoxContainer" parent="MainContent/CodePanel" unique_id=1529442680]
+[node name="CodeVBox" type="VBoxContainer" parent="IDEScreen/MainContent/CodePanel" unique_id=1529442680]
 layout_mode = 2
 
-[node name="FileTab" type="Label" parent="MainContent/CodePanel/CodeVBox" unique_id=1662724486]
-custom_minimum_size = Vector2(0, 28)
+[node name="FileTabs" type="HBoxContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="FileTab" type="Label" parent="IDEScreen/MainContent/CodePanel/CodeVBox/FileTabs" unique_id=1662724486]
 layout_mode = 2
 text = "  📄 code.py"
 vertical_alignment = 1
 
-[node name="CodeScroll" type="ScrollContainer" parent="MainContent/CodePanel/CodeVBox" unique_id=113197896]
+[node name="CodeScroll" type="ScrollContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox" unique_id=113197896]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CodeDisplay" type="RichTextLabel" parent="MainContent/CodePanel/CodeVBox/CodeScroll" unique_id=705703751]
+[node name="CodeDisplay" type="RichTextLabel" parent="IDEScreen/MainContent/CodePanel/CodeVBox/CodeScroll" unique_id=705703751]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -133,86 +163,69 @@ bbcode_enabled = true
 fit_content = true
 selection_enabled = true
 
-[node name="OptionsLabel" type="Label" parent="MainContent/CodePanel/CodeVBox" unique_id=89240933]
+[node name="CodeEditor" type="CodeEdit" parent="IDEScreen/MainContent/CodePanel/CodeVBox"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "Type your code here..."
+caret_blink = true
+caret_blink_interval = 0.5
+gutters_draw_line_numbers = true
+gutters_zero_pad_line_numbers = true
+auto_brace_completion_enabled = true
+indent_automatic = true
+indent_size = 4
+
+[node name="OptionsLabel" type="Label" parent="IDEScreen/MainContent/CodePanel/CodeVBox" unique_id=89240933]
 layout_mode = 2
 text = "Select the fix:"
 
-[node name="OptionsContainer" type="VBoxContainer" parent="MainContent/CodePanel/CodeVBox" unique_id=823738236]
+[node name="OptionsContainer" type="VBoxContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox" unique_id=823738236]
 layout_mode = 2
 
-[node name="FreeTypeEdit" type="TextEdit" parent="MainContent/CodePanel/CodeVBox" unique_id=2052874648]
+[node name="FreeTypeEdit" type="TextEdit" parent="IDEScreen/MainContent/CodePanel/CodeVBox" unique_id=2052874648]
 visible = false
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 size_flags_vertical = 3
 placeholder_text = "Type your code here..."
 
-[node name="LinterLabel" type="RichTextLabel" parent="MainContent/CodePanel/CodeVBox"]
+[node name="LinterLabel" type="RichTextLabel" parent="IDEScreen/MainContent/CodePanel/CodeVBox"]
 visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 24)
 bbcode_enabled = true
 fit_content = true
 
-[node name="OutputPanel" type="PanelContainer" parent="MainContent" unique_id=1108858984]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.3
+; ─── TERMINAL STRIP (bottom of code panel) ───
 
-[node name="OutputVBox" type="VBoxContainer" parent="MainContent/OutputPanel" unique_id=538327847]
+[node name="TerminalStrip" type="PanelContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox"]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 
-[node name="OutputTitleBar" type="HBoxContainer" parent="MainContent/OutputPanel/OutputVBox" unique_id=165264032]
-custom_minimum_size = Vector2(0, 28)
+[node name="TerminalVBox" type="VBoxContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip"]
 layout_mode = 2
 
-[node name="OutputTitle" type="Label" parent="MainContent/OutputPanel/OutputVBox/OutputTitleBar" unique_id=159817805]
+[node name="TerminalHeader" type="Label" parent="IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox"]
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
-size_flags_horizontal = 3
-text = " 🌐 Preview — http://localhost:8000"
-vertical_alignment = 1
+text = " 💻 TERMINAL"
 
-[node name="ReloadButton" type="Button" parent="MainContent/OutputPanel/OutputVBox/OutputTitleBar" unique_id=1784380331]
-layout_mode = 2
-text = "🔄"
-
-[node name="OutputBG" type="ColorRect" parent="MainContent/OutputPanel/OutputVBox" unique_id=1900914135]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.95, 0.95, 0.95, 1)
-
-[node name="BrowserMargin" type="MarginContainer" parent="MainContent/OutputPanel/OutputVBox/OutputBG"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_bottom = 10
-
-[node name="BrowserPreview" type="RichTextLabel" parent="MainContent/OutputPanel/OutputVBox/OutputBG/BrowserMargin"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-bbcode_enabled = true
-text = ""
-scroll_active = true
-
-[node name="OutputScroll" type="ScrollContainer" parent="MainContent/OutputPanel/OutputVBox" unique_id=1255466862]
+[node name="TerminalScroll" type="ScrollContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="OutputDisplay" type="RichTextLabel" parent="MainContent/OutputPanel/OutputVBox/OutputScroll" unique_id=1785061269]
+[node name="TerminalOutput" type="RichTextLabel" parent="IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox/TerminalScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = true
+scroll_active = true
 
-[node name="BottomBar" type="HBoxContainer" parent="." unique_id=2025993095]
+; ─── BOTTOM BAR ───
+
+[node name="BottomBar" type="HBoxContainer" parent="IDEScreen" unique_id=2025993095]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -222,33 +235,103 @@ offset_top = -40.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="BottomBG" type="ColorRect" parent="BottomBar" unique_id=1439929526]
+[node name="BottomBG" type="ColorRect" parent="IDEScreen/BottomBar" unique_id=1439929526]
 layout_mode = 2
 size_flags_horizontal = 3
 color = Color(0.15, 0.15, 0.22, 1)
 
-[node name="RunButton" type="Button" parent="BottomBar" unique_id=1417654492]
+[node name="RunButton" type="Button" parent="IDEScreen/BottomBar" unique_id=1417654492]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "▶ Run"
 
-[node name="FeedbackLabel" type="Label" parent="BottomBar" unique_id=1635025129]
+[node name="FeedbackLabel" type="Label" parent="IDEScreen/BottomBar" unique_id=1635025129]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ProgressLabel" type="Label" parent="BottomBar" unique_id=802294963]
+[node name="ProgressLabel" type="Label" parent="IDEScreen/BottomBar" unique_id=802294963]
 layout_mode = 2
 text = "PYTHON — Fix the Print"
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="ToggleOutputButton" type="Button" parent="BottomBar" unique_id=870860214]
-custom_minimum_size = Vector2(120, 0)
+; ═══════════════════════════════════════════════════════════════
+; BROWSER SCREEN — Full-screen fake browser (slides in from right)
+; ═══════════════════════════════════════════════════════════════
+
+[node name="BrowserScreen" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BrowserBG" type="ColorRect" parent="BrowserScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.95, 0.95, 0.95, 1)
+
+[node name="BrowserToolbar" type="HBoxContainer" parent="BrowserScreen"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 44.0
+grow_horizontal = 2
+
+[node name="BrowserToolbarBG" type="ColorRect" parent="BrowserScreen/BrowserToolbar"]
 layout_mode = 2
-text = "◀ Hide Output"
+size_flags_horizontal = 3
+color = Color(0.88, 0.88, 0.88, 1)
+
+[node name="BackToIDEButton" type="Button" parent="BrowserScreen/BrowserToolbar"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+text = "← Back to Code (Alt-Tab)"
+
+[node name="AddressBar" type="Label" parent="BrowserScreen/BrowserToolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = " 🔒 http://127.0.0.1:8000/"
+vertical_alignment = 1
+
+[node name="ReloadButton" type="Button" parent="BrowserScreen/BrowserToolbar" unique_id=1784380331]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+text = "🔄"
+
+[node name="BrowserMargin" type="MarginContainer" parent="BrowserScreen"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 48.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="BrowserPreview" type="RichTextLabel" parent="BrowserScreen/BrowserMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+text = ""
+scroll_active = true
+
+; ═══════════════════════════════════════════════════════════════
+; OVERLAYS — Popups that float above everything
+; ═══════════════════════════════════════════════════════════════
 
 [node name="ResultsOverlay" type="PanelContainer" parent="." unique_id=214735185]
 visible = false

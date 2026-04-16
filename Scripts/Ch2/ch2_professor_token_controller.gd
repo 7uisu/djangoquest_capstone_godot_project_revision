@@ -15,6 +15,7 @@ extends Node
 
 const CODING_UI_SCENE = preload("res://Scenes/Games/coding_challenge_ui.tscn")
 const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
+const GLOSSARY_POPUP_SCENE = preload("res://Scripts/UI/glossary_popup.gd")
 
 @onready var character_data = get_node("/root/CharacterData")
 
@@ -906,9 +907,12 @@ func _show_teaching_slide(slide_data: Dictionary) -> void:
 		if bullet_arr.size() > 0:
 			var bb = ""
 			for b in bullet_arr:
-				bb += "[color=#7dacf0]  ●[/color]  " + b + "\n"
+				bb += "[color=#7dacf0]  ●[/color]  " + GlossaryData.auto_link(b) + "\n"
 			bullets_rtl.text = bb.strip_edges()
 			bullets_rtl.visible = true
+			if not bullets_rtl.meta_clicked.is_connected(_on_slide_glossary_clicked):
+				bullets_rtl.meta_underlined = true
+				bullets_rtl.meta_clicked.connect(_on_slide_glossary_clicked)
 		else:
 			bullets_rtl.visible = false
 
@@ -1093,3 +1097,10 @@ func _refresh_log_content():
 	if scroll:
 		await get_tree().process_frame
 		scroll.scroll_vertical = scroll.get_v_scroll_bar().max_value
+
+# ─── Glossary ────────────────────────────────────────────────────────────────
+func _on_slide_glossary_clicked(meta) -> void:
+	var term = str(meta).strip_edges().to_lower()
+	var popup = GLOSSARY_POPUP_SCENE.new()
+	get_tree().root.add_child(popup)
+	popup.show_definition(term)

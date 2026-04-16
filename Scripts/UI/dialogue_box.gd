@@ -11,6 +11,9 @@ signal dialogue_finished
 @onready var continue_indicator: Label = $Panel/MarginContainer/VBoxContainer/ContinueIndicator
 @onready var portrait: TextureRect = $Panel/Portrait
 
+# Preloaded Glossary Popup scene
+const GLOSSARY_POPUP_SCENE = preload("res://Scripts/UI/glossary_popup.gd")
+
 # Typewriter settings
 @export var chars_per_second: float = 40.0
 @export var auto_advance_delay: float = 0.0  # 0 = manual advance only
@@ -66,6 +69,11 @@ func _ready():
 	toggle_button.visible = false
 	toggle_button.pressed.connect(_on_toggle_button_pressed)
 	add_child(toggle_button)
+
+	# Enable BBCode so [url=term] glossary links work
+	text_label.bbcode_enabled = true
+	text_label.meta_underlined = true
+	text_label.meta_clicked.connect(_on_glossary_term_clicked)
 
 	visible = false
 	panel.visible = false
@@ -245,3 +253,16 @@ func _start_indicator_blink():
 	_indicator_tween = create_tween().set_loops()
 	_indicator_tween.tween_property(continue_indicator, "modulate:a", 0.3, 0.5)
 	_indicator_tween.tween_property(continue_indicator, "modulate:a", 1.0, 0.5)
+
+# ─── Glossary ───────────────────────────────────────────────────────────────
+
+# Called when a player clicks a [url=term]word[/url] in dialogue BBCode.
+# Usage in dialogue lines: "Django uses [url=mvt]MVT architecture[/url]."
+func _on_glossary_term_clicked(meta) -> void:
+	var term = str(meta).strip_edges().to_lower()
+	if GLOSSARY_POPUP_SCENE == null:
+		return
+	var popup = GLOSSARY_POPUP_SCENE.new()
+	# Add to the scene root so the popup's CanvasLayer (layer=100) renders above everything
+	get_tree().root.add_child(popup)
+	popup.show_definition(term)

@@ -31,6 +31,7 @@ ApiManager="*res://Scripts/Autoload or Global/api_manager.gd"
 GlobalLaptopUI="*res://Scenes/UI/laptop_ui.tscn"
 CustomConfirm="*res://Scenes/UI/custom_confirm.tscn"
 GlobalPauseMenu="*res://Scenes/UI/pause_menu.tscn"
+GlossaryData="*res://Scripts/Autoload or Global/glossary_data.gd"
 
 [display]
 

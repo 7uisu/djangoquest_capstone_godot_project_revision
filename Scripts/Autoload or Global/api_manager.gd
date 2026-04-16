@@ -13,6 +13,7 @@ signal unenroll_completed(success: bool, message: String)
 signal save_uploaded(success: bool, message: String)
 signal save_downloaded(success: bool, data: Dictionary)
 signal save_deleted(success: bool, message: String)
+signal code_checked(result: Dictionary)  # {success, output, ai_hint, judge0_output}
 
 # ─── State ───────────────────────────────────────────────────────────────────
 var _access_token: String = ""
@@ -288,3 +289,61 @@ func _on_delete_save_response(result: int, response_code: int, _headers: PackedS
 		var json = JSON.parse_string(body.get_string_from_utf8())
 		var detail = json.get("detail", "Delete failed.") if json else "Delete failed."
 		emit_signal("save_deleted", false, detail)
+
+# ─── Code Checking (Judge0 + Gemini) ────────────────────────────────────────
+
+func check_code(code: String, language: String, challenge_id: String, 
+				expected_answers: Array, expected_output: String = ""):
+	var http = HTTPRequest.new()
+	http.timeout = 60  # Gemini + Judge0 can take a few seconds
+	add_child(http)
+	http.request_completed.connect(_on_check_code_response.bind(http))
+
+	var body = JSON.stringify({
+		"code": code,
+		"language": language,
+		"challenge_id": challenge_id,
+		"expected_answers": expected_answers,
+		"expected_output": expected_output,
+	})
+	var headers = ["Content-Type: application/json"]
+	
+	var url = BASE_URL + "/api/game/check-code/"
+	print("[ApiManager] check_code -> POST %s" % url)
+	print("[ApiManager] body: %s" % body.substr(0, 100))
+
+	var error = http.request(url, headers, HTTPClient.METHOD_POST, body)
+
+	if error != OK:
+		print("[ApiManager] ❌ HTTPRequest.request() failed with error: %s" % str(error))
+		emit_signal("code_checked", {"offline": true})
+		http.queue_free()
+	else:
+		print("[ApiManager] ✅ Request sent, waiting for response...")
+
+func _on_check_code_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+	http.queue_free()
+	
+	print("[ApiManager] Response received: result=%s, response_code=%s" % [str(result), str(response_code)])
+
+	if result != HTTPRequest.RESULT_SUCCESS:
+		print("[ApiManager] ❌ Request failed! result=%s (0=SUCCESS, 1=CHUNKED_BODY_SIZE_MISMATCH, 2=CANT_CONNECT, 3=CANT_RESOLVE, 4=CONNECTION_ERROR, 5=TLS_HANDSHAKE_ERROR, 6=NO_RESPONSE, 7=BODY_SIZE_LIMIT_EXCEEDED, 8=BODY_DECOMPRESS_FAILED, 9=REQUEST_FAILED, 10=DOWNLOAD_FILE_CANT_OPEN, 11=DOWNLOAD_FILE_WRITE_ERROR, 12=REDIRECT_LIMIT_REACHED, 13=TIMEOUT)" % str(result))
+		emit_signal("code_checked", {"offline": true})
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json == null:
+		print("[ApiManager] ❌ Failed to parse JSON response")
+		emit_signal("code_checked", {"offline": true})
+		return
+
+	print("[ApiManager] ✅ Server response: success=%s" % str(json.get("success", false)))
+
+	emit_signal("code_checked", {
+		"offline": false,
+		"success": json.get("success", false),
+		"output": json.get("output", ""),
+		"ai_hint": json.get("ai_hint", ""),
+		"judge0_output": json.get("judge0_output", ""),
+	})
+

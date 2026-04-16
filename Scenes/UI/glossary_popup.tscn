@@ -1,0 +1,56 @@
+[gd_scene load_steps=3 format=3 uid="uid://glossary_popup"]
+
+[ext_resource type="Script" path="res://Scripts/UI/glossary_popup.gd" id="1_glossary"]
+[ext_resource type="FontFile" uid="uid://pixelify" path="res://Textures/Fonts/Pixelify_Sans/PixelifySans-VariableFont_wght.ttf" id="2_font"]
+
+[node name="GlossaryPopup" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_glossary")
+
+[node name="Overlay" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.55)
+mouse_filter = 1
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+custom_minimum_size = Vector2(400, 0)
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/Margin"]
+theme_override_constants/separation = 14
+
+[node name="TermLabel" type="Label" parent="Center/Panel/Margin/VBox"]
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.878, 0.776, 0.459, 1)
+theme_override_fonts/font = ExtResource("2_font")
+text = "Term"
+
+[node name="Divider" type="HSeparator" parent="Center/Panel/Margin/VBox"]
+theme_override_colors/color = Color(0.267, 0.267, 0.267, 1)
+
+[node name="DefinitionLabel" type="RichTextLabel" parent="Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(360, 80)
+theme_override_font_sizes/normal_font_size = 13
+theme_override_fonts/normal_font = ExtResource("2_font")
+theme_override_colors/default_color = Color(0.671, 0.698, 0.745, 1)
+bbcode_enabled = true
+fit_content = true
+text = ""
+
+[node name="CloseButton" type="Button" parent="Center/Panel/Margin/VBox"]
+theme_override_font_sizes/font_size = 13
+theme_override_fonts/font = ExtResource("2_font")
+text = "✕  Close"
