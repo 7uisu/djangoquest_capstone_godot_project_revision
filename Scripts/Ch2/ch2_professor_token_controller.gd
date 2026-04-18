@@ -163,6 +163,11 @@ func _start_lesson_sequence():
 	_challenge_canvas = null
 	_challenge_ui = null
 	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
+	
 	await get_tree().create_timer(0.3).timeout
 	
 	# Completion dialogue
@@ -188,6 +193,14 @@ func _start_lesson_sequence():
 		player.block_ui_input = false
 	
 	_cutscene_running = false
+
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
 
 	if qm:
 		qm.show_quest()
@@ -219,7 +232,11 @@ func _await_challenge_done(ui) -> void:
 		await get_tree().create_timer(0.1).timeout
 	while not ui.results_overlay.visible:
 		await get_tree().create_timer(0.1).timeout
-	await get_tree().create_timer(1.5).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -327,7 +344,7 @@ func _play_module_1_forms(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"token_modelform", "Define a ModelForm", "python", "forms.py",
 		["from django import forms", "from .models import Student", "", "class StudentForm(forms.ModelForm):", "    # Define the Meta class linking to the Student model", "    "],
-		["Define class Meta with model = Student and fields = ['name', 'grade']"],
+		["Define class Meta with model = Student and fields = ['name', 'grade']", "Why: ModelForms automatically generate HTML forms based on your database models, saving you from writing repetitive validation logic."],
 		"Type your code here...",
 		[
 			"class Meta:\n        model = Student\n        fields = ['name', 'grade']",
@@ -342,6 +359,7 @@ func _play_module_1_forms(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "forms.py": "file", "templates": {"form.html": "file"}}, "api": {"__init__.py": "file", "urls.py": "file", "views.py": "file", "serializers.py": "file"}, ".env": "file", "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -442,7 +460,7 @@ func _play_module_2_csrf(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"token_csrf", "Add CSRF Protection", "html", "form.html",
 		["<form method=\"POST\">", "    <!-- Add the CSRF token below -->", "    ", "    {{ form.as_p }}", "    <button type=\"submit\">Save</button>", "</form>"],
-		["Add the {% csrf_token %} template tag"],
+		["Add the {% csrf_token %} template tag", "Why: The CSRF token protects your forms from Cross-Site Request Forgery attacks, ensuring submissions actually come from your own site."],
 		"Type the template tag here...",
 		[
 			"{% csrf_token %}",
@@ -459,6 +477,7 @@ func _play_module_2_csrf(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "forms.py": "file", "templates": {"form.html": "file"}}, "api": {"__init__.py": "file", "urls.py": "file", "views.py": "file", "serializers.py": "file"}, ".env": "file", "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -558,7 +577,7 @@ func _play_module_3_messages(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"token_messages", "Send a Success Message", "python", "views.py",
 		["from django.contrib import messages", "", "def save_student(request):", "    # Student saved successfully!", "    # Send a success message to the user", "    "],
-		["Write: messages.success(request, 'Saved!')"],
+		["Write: messages.success(request, 'Saved!')", "Why: The messages framework lets you queue one-time notifications that automatically display to users on the next page load."],
 		"Type your code here...",
 		[
 			"messages.success(request, 'Saved!')",
@@ -575,6 +594,7 @@ func _play_module_3_messages(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "forms.py": "file", "templates": {"form.html": "file"}}, "api": {"__init__.py": "file", "urls.py": "file", "views.py": "file", "serializers.py": "file"}, ".env": "file", "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -610,8 +630,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -628,7 +646,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -1078,6 +1096,8 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var line_label = RichTextLabel.new()
 		line_label.bbcode_enabled = true
@@ -1089,6 +1109,15 @@ func _refresh_log_content():
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
 		var name_color = "#a3c4f3" if speaker == "Professor Otek" else "#c8e6c9"
+		if challenge_active and (
+			text.find("\n") != -1
+			or text.find("{%") != -1
+			or text.find("%}") != -1
+			or text.find("csrf") != -1
+			or text.find("<form") != -1
+			or text.find("method=") != -1
+		):
+			text = "[REDACTED - solve the challenge first!]"
 
 		line_label.text = "[color=" + name_color + "][b]" + speaker + ":[/b][/color] [color=#d4d4d8]" + text + "[/color]"
 		log_content.add_child(line_label)

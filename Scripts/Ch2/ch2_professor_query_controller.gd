@@ -168,6 +168,11 @@ func _start_lesson_sequence():
 	_challenge_canvas = null
 	_challenge_ui = null
 	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
+	
 	await get_tree().create_timer(0.3).timeout
 	
 	# Completion dialogue
@@ -193,6 +198,14 @@ func _start_lesson_sequence():
 		player.block_ui_input = false
 	
 	_cutscene_running = false
+
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
 
 	if qm:
 		qm.show_quest()
@@ -224,7 +237,11 @@ func _await_challenge_done(ui) -> void:
 		await get_tree().create_timer(0.1).timeout
 	while not ui.results_overlay.visible:
 		await get_tree().create_timer(0.1).timeout
-	await get_tree().create_timer(1.5).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -328,7 +345,7 @@ func _play_module_1_models(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"query_model", "Define a Model Field", "python", "models.py",
 		["from django.db import models", "", "class Student(models.Model):", "    # Define a name field using a CharField with max_length=100", "    "],
-		["Define the 'name' field using models.CharField(max_length=100)"],
+		["Define the 'name' field using models.CharField(max_length=100)", "Why: Models define your database schema in Python code. Django automatically translates this class into full SQL database tables."],
 		"Type the field definition here...",
 		[
 			"name = models.CharField(max_length=100)",
@@ -342,6 +359,7 @@ func _play_module_1_models(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -361,7 +379,256 @@ func _play_module_1_models(skip_ide: bool):
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor Query", "text": "Good. That column can now hold up to 100 characters of text." },
-			{ "name": "Professor Query", "text": "Now we need to learn how to actually [color=#f0c674]get data out[/color] of these tables." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.2).timeout
+	
+	# ─── Teaching Slide 2.1: Database Backends ─────────────────────────
+	_show_teaching_slide({
+		"icon": "🗄️",
+		"title": "Database Backends",
+		"subtitle": "SQLite vs PostgreSQL",
+		"bullets": [
+			"[b]SQLite[/b] comes built into Django by default. It's stored as a simple file (db.sqlite3).",
+			"Perfect for local development.",
+			"[b]PostgreSQL[/b] or [b]MySQL[/b] is what you use in production.",
+			"You configure this inside [b]settings.py[/b]!"
+		],
+		"code": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.sqlite3',\n        'NAME': BASE_DIR / 'db.sqlite3',\n    }\n}",
+		"header": "MODULE 1 — MODELS & MIGRATIONS",
+		"header_icon": "🗃️",
+		"slide_num": "3 / 10"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Query", "text": "Out of the box, Django is configured to use [color=#f0c674]SQLite[/color]." },
+			{ "name": "Professor Query", "text": "It's lightweight. But when you deploy to production, you will usually swap it out for PostgreSQL." },
+			{ "name": "Professor Query", "text": "Now, let's test your structural intuition before moving on to Relationships." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+
+	await _transition_from_teaching_to_ide(skip_ide)
+	
+	# ─── Coding Challenge 1.2: Guess the Field Minigame ────────────
+	if not skip_ide:
+		ui = await _ensure_challenge_ui()
+		ch_data = _make_challenge(
+			"query_guess_fields", "Guess The Field Mapping", "python", "models.py",
+			[
+				"from django.db import models", 
+				"", 
+				"class Book(models.Model):",
+				"    # 1. Stores a short Title string (max length 200)",
+				"    title = ",
+				"",
+				"    # 2. Stores a gigantic text block (unlimited length)",
+				"    synopsis = ",
+				"",
+				"    # 3. Stores True or False",
+				"    is_published = ",
+				""
+			],
+			["Fill in the missing field types (models.CharField, models.TextField, models.BooleanField)", "Why: Matching the right type to the data requirement ensures efficient, uncorrupted SQL mapping."],
+			"Type the field declarations here...",
+			[],
+			"✅ Success! Fields mapped properly to VARCHAR, TEXT, and BOOLEAN.",
+			"Error: Invalid Field Definition. Check spelling and capitalization.",
+			[
+				"For Title: title = models.CharField(max_length=200)",
+				"For Synopsis: synopsis = models.TextField()",
+				"For is_published: is_published = models.BooleanField(default=False)"
+			]
+		)
+		ch_data["files"] = {
+			"models.py": "from django.db import models\n\nclass Book(models.Model):\n    # 1. Stores a short Title string (max length 200)\n    title = \n\n    # 2. Stores a gigantic text block (unlimited length)\n    synopsis = \n\n    # 3. Stores True or False\n    is_published = \n"
+		}
+		ch_data["active_file"] = "models.py"
+		ch_data["starter_code"] = ""
+		ch_data["expected_answers"] = {
+			"models.py": [
+				"    title = models.CharField(max_length=200)\n\n    # 2. Stores a gigantic text block (unlimited length)\n    synopsis = models.TextField()\n\n    # 3. Stores True or False\n    is_published = models.BooleanField()",
+				"    title = models.CharField(max_length=200)\n\n    # 2. Stores a gigantic text block (unlimited length)\n    synopsis = models.TextField()\n\n    # 3. Stores True or False\n    is_published = models.BooleanField(default=False)"
+			]
+		}
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "settings.py": "file", "urls.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "migrations": {"0001_initial.py": "file"}, "models.py": "file", "views.py": "file"}, "db.sqlite3": "file", "manage.py": "file"}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+		
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Query", "text": "Replace the blanks with the correct Django Field constraints." },
+				{ "name": "Professor Query", "text": "Look closely at [color=#f0c674]models.py[/color] and read the comments to deduce the correct Model field." },
+			])
+			await dialogue_box.dialogue_finished
+		
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+	
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Query", "text": "Perfect. Moving along." }
+		])
+		await dialogue_box.dialogue_finished
+
+	# ─── Teaching Slide 2.2: DB Relationships ─────────────────────────
+	_show_teaching_slide({
+		"icon": "🔗",
+		"title": "Database Relationships",
+		"subtitle": "Connecting your tables",
+		"bullets": [
+			"[b]One-to-Many (ForeignKey)[/b]: One Author has Many Books.",
+			"[b]One-to-One (OneToOneField)[/b]: One User has One Profile.",
+			"[b]Many-to-Many (ManyToManyField)[/b]: Many Students take Many Courses."
+		],
+		"code": "author = models.ForeignKey(Author, on_delete=models.CASCADE)",
+		"header": "MODULE 1 — MODELS & MIGRATIONS",
+		"header_icon": "🗃️",
+		"slide_num": "4 / 10"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Query", "text": "Data rarely exists in isolation. Tables connect to other tables." },
+			{ "name": "Professor Query", "text": "A Book isn't just a book. It belongs to an Author." },
+			{ "name": "Professor Query", "text": "Before you write code, you must understand the real-world semantics." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+
+	await _transition_from_teaching_to_ide(skip_ide)
+	
+	# ─── Coding Challenge 1.3: AI Evaluator (OTO) ────────────
+	if not skip_ide:
+		ui = await _ensure_challenge_ui()
+		
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Query", "text": "I will judge your theoretical understanding before we write the physical query." },
+				{ "name": "Professor Query", "text": "First, give me exactly two examples for a One-to-One relationship." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var ch_data1 = _make_challenge(
+			"query_ai_evaluator_1", "Relationship Architecture", "ai_evaluator", "brainstorming.txt",
+			[
+				"Write out 2 real-world examples for a One-to-One relationship.",
+				"",
+				"Example format: 'A Car has a OneToOne with an Engine.'",
+				"",
+				"1. # Place first answer here",
+				"2. # Place second answer here"
+			],
+			[
+				"Provide exactly 2 real-world examples for a OneToOne relationship.",
+				"",
+				"Expected Format:",
+				"1. [First analogy]",
+				"2. [Second analogy]"
+			],
+			"Type your database analogies here...",
+			[],
+			"AI is evaluating...",
+			"AI Evaluation failed.",
+			["Provide strict, real world examples."]
+		)
+		ch_data1["files"] = {"brainstorming.txt": ""}
+		ch_data1["active_file"] = "brainstorming.txt"
+		ch_data1["topic"] = "ai_evaluator"
+		ch_data1["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file"}, "brainstorming.txt": "file"}
+		ch_data1["instructions"] = ["OneToOne"]
+		
+		ui.load_challenge(ch_data1)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		# ─── OTM ───
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Query", "text": "Good. Now for the second one." },
+				{ "name": "Professor Query", "text": "Provide exactly two examples for a One-to-Many relationship." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var ch_data2 = _make_challenge(
+			"query_ai_evaluator_2", "Relationship Architecture", "ai_evaluator", "brainstorming.txt",
+			[
+				"Write out 2 real-world examples for a One-to-Many relationship.",
+				"",
+				"Example format: 'A Library has a OneToMany with Books.'",
+				"",
+				"1. # Place first answer here",
+				"2. # Place second answer here"
+			],
+			[
+				"Provide exactly 2 real-world examples for a OneToMany relationship.",
+				"",
+				"Expected Format:",
+				"1. [First analogy]",
+				"2. [Second analogy]"
+			],
+			"Type your database analogies here...",
+			[],
+			"AI is evaluating...",
+			"AI Evaluation failed.",
+			["Provide strict, real world examples."]
+		)
+		ch_data2["files"] = {"brainstorming.txt": ""}
+		ch_data2["active_file"] = "brainstorming.txt"
+		ch_data2["topic"] = "ai_evaluator"
+		ch_data2["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file"}, "brainstorming.txt": "file"}
+		ch_data2["instructions"] = ["OneToMany"]
+		
+		ui.load_challenge(ch_data2)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		# ─── MTM ───
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Query", "text": "Great. Finally, the Many-to-Many relationship." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var ch_data3 = _make_challenge(
+			"query_ai_evaluator_3", "Relationship Architecture", "ai_evaluator", "brainstorming.txt",
+			[
+				"Write out 2 real-world examples for a Many-to-Many relationship.",
+				"",
+				"Example format: 'Students have a ManyToMany with Classes.'",
+				"",
+				"1. # Place first answer here",
+				"2. # Place second answer here"
+			],
+			[
+				"Provide exactly 2 real-world examples for a ManyToMany relationship.",
+				"",
+				"Expected Format:",
+				"1. [First analogy]",
+				"2. [Second analogy]"
+			],
+			"Type your database analogies here...",
+			[],
+			"AI is evaluating...",
+			"AI Evaluation failed.",
+			["Provide strict, real world examples."]
+		)
+		ch_data3["files"] = {"brainstorming.txt": ""}
+		ch_data3["active_file"] = "brainstorming.txt"
+		ch_data3["topic"] = "ai_evaluator"
+		ch_data3["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file"}, "brainstorming.txt": "file"}
+		ch_data3["instructions"] = ["ManyToMany"]
+		
+		ui.load_challenge(ch_data3)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Query", "text": "Adequate logic. Now we need to learn how to actually [color=#f0c674]get data out[/color] of these tables using the ORM." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -439,7 +706,7 @@ func _play_module_2_orm(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"query_orm", "Extract Specific Data", "python", "views.py",
 		["from .models import Student", "", "def get_excellent_students():", "    # Use ORM to get all students whose grade is 'A'", "    return "],
-		["Write: Student.objects.filter(grade='A')"],
+		["Write: Student.objects.filter(grade='A')", "Why: Filtering allows you to efficiently retrieve only the specific records you need, rather than loading the entire database into memory."],
 		"Type the ORM query here...",
 		[
 			"Student.objects.filter(grade='A')",
@@ -453,6 +720,7 @@ func _play_module_2_orm(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -546,7 +814,7 @@ func _play_module_3_admin(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"query_admin", "Register to Admin", "python", "admin.py",
 		["from django.contrib import admin", "from .models import Student", "", "# Register the Student model below:", ""],
-		["Type admin.site.register(Student)"],
+		["Type admin.site.register(Student)", "Why: Registering your model tells Django to automatically generate a graphical CRUD interface for it in the /admin/ panel."],
 		"Type the admin register command...",
 		[
 			"admin.site.register(Student)"
@@ -559,6 +827,7 @@ func _play_module_3_admin(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -651,7 +920,7 @@ func _play_module_4_mvt(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"query_mvt", "Complete the View", "python", "views.py",
 		["from django.shortcuts import render", "from .models import Student", "", "def list_students(request):", "    # Retrieve ALL student records to pass to the template", "    students = ", "", "    return render(request, 'list.html', {'students': students})"],
-		["Use ORM to extract all records using objects.all()"],
+		["Use ORM to extract all records using objects.all()", "Why: The ORM lets you retrieve data from the database using Python objects instead of writing raw SQL queries."],
 		"Type the extraction query here...",
 		[
 			"Student.objects.all()"
@@ -664,6 +933,7 @@ func _play_module_4_mvt(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -700,8 +970,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -718,7 +986,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -1156,9 +1424,20 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var name_str = entry.get("name", "Unknown")
 		var text_str = entry.get("text", "")
+		if challenge_active and (
+			text_str.find("\n") != -1
+			or text_str.find("QuerySet") != -1
+			or text_str.find(".filter(") != -1
+			or text_str.find(".get(") != -1
+			or text_str.find("=") != -1
+			or text_str.find("objects.") != -1
+		):
+			text_str = "[REDACTED - solve the challenge first!]"
 		
 		var entry_vbox = VBoxContainer.new()
 		entry_vbox.add_theme_constant_override("separation", 0)

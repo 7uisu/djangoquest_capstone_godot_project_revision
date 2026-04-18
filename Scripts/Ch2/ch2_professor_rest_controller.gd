@@ -148,6 +148,11 @@ func _start_lesson_sequence():
 		await _play_module_2_token_auth(DEBUG_SKIP_IDE)
 		if character_data:
 			character_data.ch2_y3mid_current_module = 2
+
+	if current_module <= 2:
+		await _play_module_3_viewsets_routers(DEBUG_SKIP_IDE)
+		if character_data:
+			character_data.ch2_y3mid_current_module = 3
 	
 	# ─── All modules done ─────────────────────────────────────────
 	
@@ -158,6 +163,11 @@ func _start_lesson_sequence():
 		_challenge_canvas.queue_free()
 	_challenge_canvas = null
 	_challenge_ui = null
+	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
 	
 	await get_tree().create_timer(0.3).timeout
 	
@@ -185,6 +195,14 @@ func _start_lesson_sequence():
 		player.block_ui_input = false
 	
 	_cutscene_running = false
+
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
 
 	if qm:
 		qm.show_quest()
@@ -215,7 +233,11 @@ func _await_challenge_done(ui) -> void:
 		await get_tree().create_timer(0.1).timeout
 	while not ui.results_overlay.visible:
 		await get_tree().create_timer(0.1).timeout
-	await get_tree().create_timer(1.5).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -321,7 +343,7 @@ func _play_module_1_apis_json(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"rest_serializer", "Create a ModelSerializer", "python", "serializers.py",
 		["from rest_framework import serializers", "from .models import Post", "", "class PostSerializer(serializers.ModelSerializer):", "    class Meta:", "        model = Post", "        "],
-		["Write: fields = ['id', 'title', 'content']"],
+		["Write: fields = ['id', 'title', 'content']", "Why: Serializers translate complex database models into simple formats like JSON, making the data ready to be transmitted over an API."],
 		"Type your code here...",
 		[
 			"fields = ['id', 'title', 'content']",
@@ -338,6 +360,7 @@ func _play_module_1_apis_json(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "serializers.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -438,7 +461,7 @@ func _play_module_2_token_auth(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"rest_token_auth", "Configure Token Authentication", "python", "settings.py",
 		["REST_FRAMEWORK = {", "    'DEFAULT_AUTHENTICATION_CLASSES': [", "        "],
-		["Write: 'rest_framework.authentication.TokenAuthentication',"],
+		["Write: 'rest_framework.authentication.TokenAuthentication',", "Why: Adding this to DRF settings tells the API to expect and validate token-based authentication headers from clients."],
 		"Type your code here...",
 		[
 			"'rest_framework.authentication.TokenAuthentication',",
@@ -454,6 +477,7 @@ func _play_module_2_token_auth(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "serializers.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -481,7 +505,98 @@ func _play_module_2_token_auth(skip_ide: bool):
 	await get_tree().create_timer(0.3).timeout
 
 
+
 # ══════════════════════════════════════════════════════════════════════
+#  MODULE 3 — ViewSets & Routers (DRF Architecture)
+# ══════════════════════════════════════════════════════════════════════
+
+func _play_module_3_viewsets_routers(skip_ide: bool):
+	dialogue_box = _get_dialogue_box()
+	_before_teaching_slides()
+
+	# ─── Slide: ViewSets ───
+	_show_teaching_slide({
+		"icon": "🏗️",
+		"title": "ViewSets & Routers",
+		"subtitle": "Full CRUD API in minimal code",
+		"bullets": [
+			"Writing separate views for list, create, retrieve, update, delete is repetitive.",
+			"A [b]ModelViewSet[/b] combines ALL of those into a single class.",
+			"A [b]Router[/b] automatically generates all the URL patterns.",
+			"Together: [b]one class + one router = full REST API[/b]."
+		],
+		"code": "from rest_framework.viewsets import ModelViewSet\nfrom rest_framework.routers import DefaultRouter\n\nclass PostViewSet(ModelViewSet):\n    queryset = Post.objects.all()\n    serializer_class = PostSerializer\n\nrouter = DefaultRouter()\nrouter.register('posts', PostViewSet)",
+		"header": "MODULE 3 — VIEWSETS & ROUTERS",
+		"header_icon": "🔧",
+		"slide_num": "5 / 6"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor REST", "text": "You wrote a Serializer. You configured Token Auth." },
+			{ "name": "Professor REST", "text": "But right now, you'd need to write 5 separate views just for basic CRUD." },
+			{ "name": "Student", "text": "That sounds like a lot of repetition." },
+			{ "name": "Professor REST", "text": "Exactly. That's why DRF gives you [color=#f0c674]ModelViewSet[/color]." },
+			{ "name": "Professor REST", "text": "One class. Full CRUD. And a [color=#f0c674]Router[/color] auto-generates all your URLs." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	# ─── Challenge: ViewSet + Router ───
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"rest_viewset", "Build a ViewSet & Router", "django", "views.py",
+			[],
+			["Create a ModelViewSet with queryset and serializer_class, then register it with a Router.", "Why: ViewSets eliminate the need to write individual API views for each CRUD operation. One class handles list, create, retrieve, update, and delete."],
+			"Type the ViewSet and Router...",
+			[],
+			"✅ Full REST API generated!\n  GET    /api/posts/      → List\n  POST   /api/posts/      → Create\n  GET    /api/posts/{id}/  → Retrieve\n  PUT    /api/posts/{id}/  → Update\n  DELETE /api/posts/{id}/  → Delete",
+			"Error: Ensure queryset and serializer_class are set, and the router registers the viewset.",
+			[
+				"In views.py: queryset = Post.objects.all()",
+				"In views.py: serializer_class = PostSerializer",
+				"In urls.py: router.register('posts', PostViewSet)"
+			]
+		)
+		ch_data["files"] = {
+			"views.py": "from rest_framework.viewsets import ModelViewSet\nfrom .models import Post\nfrom .serializers import PostSerializer\n\nclass PostViewSet(ModelViewSet):\n    # TODO: Set the queryset to all Post objects\n    queryset = \n    # TODO: Set the serializer class\n    serializer_class = \n",
+			"urls.py": "from rest_framework.routers import DefaultRouter\nfrom .views import PostViewSet\n\nrouter = DefaultRouter()\n# TODO: Register the PostViewSet with the prefix 'posts'\n\n\nurlpatterns = router.urls\n"
+		}
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file", "urls.py": "file"}, "blog": {"__init__.py": "file", "models.py": "file", "serializers.py": "file", "views.py": "file", "urls.py": "file"}, "manage.py": "file"}
+		ch_data["active_file"] = "views.py"
+		ch_data["expected_answers"] = {
+			"views.py": [
+				"    queryset = Post.objects.all()\n    # TODO: Set the serializer class\n    serializer_class = PostSerializer"
+			],
+			"urls.py": [
+				"router.register('posts', PostViewSet)",
+				"router.register(\"posts\", PostViewSet)"
+			]
+		}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor REST", "text": "In [color=#f0c674]views.py[/color], set [color=#f0c674]queryset[/color] and [color=#f0c674]serializer_class[/color]." },
+				{ "name": "Professor REST", "text": "In [color=#f0c674]urls.py[/color], register the ViewSet with the router." }
+			])
+			await dialogue_box.dialogue_finished
+
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor REST", "text": "That's it. Two files. Five API endpoints. Fully functional CRUD." },
+				{ "name": "Professor REST", "text": "This is how production Django REST APIs are built." },
+				{ "name": "Professor REST", "text": "Serializers. Authentication. ViewSets. You now build [color=#f0c674]systems[/color], not pages." }
+			])
+			await dialogue_box.dialogue_finished
+
+
 #  HELPERS — Identical to other professor controllers
 # ══════════════════════════════════════════════════════════════════════
 
@@ -491,8 +606,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -509,7 +622,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -957,6 +1070,8 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var line_label = RichTextLabel.new()
 		line_label.bbcode_enabled = true
@@ -968,6 +1083,16 @@ func _refresh_log_content():
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
 		var name_color = "#a3c4f3" if speaker == "Professor REST" else "#c8e6c9"
+		if challenge_active and (
+			text.find("\n") != -1
+			or text.find("GET") != -1
+			or text.find("POST") != -1
+			or text.find("PUT") != -1
+			or text.find("DELETE") != -1
+			or text.find("/") != -1
+			or text.find("{") != -1
+		):
+			text = "[REDACTED - solve the challenge first!]"
 
 		line_label.text = "[color=" + name_color + "][b]" + speaker + ":[/b][/color] [color=#d4d4d8]" + text + "[/color]"
 		log_content.add_child(line_label)

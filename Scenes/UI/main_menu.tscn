@@ -114,7 +114,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 disabled = true
 text = "Continue"
 
-[node name="StoryButton" type="Button" parent="VBoxContainer"]
+[node name="StoryButton" type="Button" parent="VBoxContainer" unique_id=1571854622]
 custom_minimum_size = Vector2(280, 40)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -163,8 +163,8 @@ text = "Challenge Mode"
 custom_minimum_size = Vector2(280, 40)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.4, 1.0, 0.4, 1)
-theme_override_colors/font_hover_color = Color(0.5, 1.0, 0.5, 1)
+theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
+theme_override_colors/font_hover_color = Color(0.5, 1, 0.5, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
 theme_override_font_sizes/font_size = 16
@@ -189,7 +189,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Unenroll from Class"
 
-[node name="Spacer2" type="Control" parent="VBoxContainer"]
+[node name="Spacer2" type="Control" parent="VBoxContainer" unique_id=1014813799]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 
@@ -223,7 +223,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Login to existing account"
 
-[node name="QuitButton" type="Button" parent="VBoxContainer"]
+[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=1120704315]
 custom_minimum_size = Vector2(280, 40)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -238,7 +238,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Close / Exit Game"
 
-[node name="TestingButton" type="Button" parent="."]
+[node name="TestingButton" type="Button" parent="." unique_id=604401785]
 modulate = Color(1, 1, 1, 0.1)
 layout_mode = 1
 anchors_preset = 1

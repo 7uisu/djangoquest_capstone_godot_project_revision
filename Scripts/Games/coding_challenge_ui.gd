@@ -15,14 +15,23 @@ var is_terminal: bool = false   # true for terminal command challenges
 var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 
-var _attempts: int = 0  # tracks incorrect submissions for progressive hints
-var _challenge_hints_used: int = 0  # hints used for current challenge (max 4 before Overflow Stack)
-const MAX_HINTS: int = 5             # 4 progressive + 1 Overflow Stack = 5 total
-
-# Global session hint counter — shared across ALL challenges in one session
-# Allows the adviser's rule: "only 5 hints total per session"
-var global_hints_used: int = 0
-const GLOBAL_MAX_HINTS: int = 5
+var _attempts: int = 0  # tracks incorrect submissions
+var _ai_hint_used: bool = false       # one AI hint per challenge
+var _ai_hint_text: String = ""        # cached AI hint so player can review it
+var _free_hints_revealed: int = 0     # how many free hints are visible in OverflowStack
+const MAX_FREE_HINTS: int = 3         # maximum free hints per challenge
+var _challenge_active: bool = false   # true while player is working on a challenge (for log censoring)
+var _premium_hint_button: Button = null
+var why_button: Button = null
+var why_overlay: PanelContainer = null
+var why_text_label: RichTextLabel = null
+var _current_why_text: String = ""
+var project_tree_view: Tree = null
+var project_tree_panel: PanelContainer = null
+var terminal_prefix_label: Label = null
+var _active_file_name: String = ""
+var _file_buffers: Dictionary = {}
+const PREMIUM_HINT_INSTRUCTIONS := "You are a tutoring assistant. Give exactly 3 short, straight-to-the-point hints. Do NOT reveal the final answer or paste the full correct code. If the user is wrong, explain what concept to look at and what to change, in ≤ 2 sentences per hint. Use bullet points."
 
 # ─── Node References ─────────────────────────────────────────────────────────
 # Screens
@@ -184,6 +193,10 @@ func _ready():
 	browser_back_btn.pressed.connect(_switch_to_ide)
 	overflow_stack_button.pressed.connect(_on_overflow_stack_btn_pressed)
 
+	_setup_why_ui()
+	_setup_tree_ui()
+	_setup_terminal_prefix_ui()
+
 	# Initial state
 	results_overlay.visible = false
 	hint_label.visible = false
@@ -202,6 +215,7 @@ func _ready():
 	_style_terminal_strip()
 	_style_browser_screen()
 	_style_action_buttons()
+	_style_layout_panels()
 
 	# Style the free-type editor
 	_style_free_type_edit()
@@ -231,9 +245,15 @@ func load_challenge(challenge: Dictionary) -> void:
 	is_completed = false
 	selected_option = -1
 	_attempts = 0
-	_challenge_hints_used = 0  # Reset per-challenge hint counter
+	_ai_hint_used = false
+	_ai_hint_text = ""
+	_free_hints_revealed = 0
+	_challenge_active = true
+	_active_file_name = ""
+	_file_buffers.clear()
 	is_free_type = challenge.get("type", "") == "free_type"
-	is_terminal = challenge.get("type", "") == "terminal"
+	var f_name = challenge.get("file_name", "")
+	is_terminal = challenge.get("type", "") == "terminal" or f_name == "terminal.py" or f_name == "terminal"
 
 	_setup_title()
 	_setup_mission_panel()
@@ -257,6 +277,13 @@ func load_challenge(challenge: Dictionary) -> void:
 	_switch_to_ide_instant()
 	_setup_terminal()
 	_setup_file_tabs()
+	
+	# Initialize Tree
+	if current_challenge.has("project_tree"):
+		project_tree_panel.visible = true
+		_render_project_tree(current_challenge["project_tree"], _active_file_name)
+	elif project_tree_panel:
+		project_tree_panel.visible = false
 
 func load_challenge_set(challenges: Array, index: int = 0) -> void:
 	"""Load a set of challenges, showing progress like 'Challenge 1 / 5'."""
@@ -287,22 +314,38 @@ func _setup_mission_panel():
 	# Add mission steps
 	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
 	var steps = current_challenge.get("mission_steps", [])
+	
+	_current_why_text = ""
+	if why_button:
+		why_button.visible = false
+
+	var step_idx = 1
 	for i in range(steps.size()):
+		var step_text = steps[i]
+		if step_text.begins_with("Why:"):
+			_current_why_text = step_text.substr(4).strip_edges()
+			if why_button:
+				why_button.visible = true
+			continue
+
 		var step_label = Label.new()
-		step_label.text = str(i + 1) + ". " + steps[i]
+		step_label.text = str(step_idx) + ". " + step_text
 		step_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		step_label.add_theme_color_override("font_color", Color("abb2bf"))
 		step_label.add_theme_font_override("font", code_font)
 		step_label.add_theme_font_size_override("font_size", 12)
 		steps_container.add_child(step_label)
+		step_idx += 1
 
-	# Hint button — label updates with remaining count
+	# Hint button — HIDDEN (hints now live in OverflowStack)
 	hint_label.visible = false
-	hint_label.text = current_challenge.get("hint", "")
+	hint_button.visible = false
+
+	# OverflowStack button — always visible for challenges with hints
 	var has_hint = current_challenge.get("hint", "") != "" or current_challenge.get("hints", []).size() > 0
-	hint_button.visible = has_hint
+	overflow_stack_button.visible = has_hint
 	if has_hint:
-		_update_hint_button_label()
+		_update_overflow_button_label()
 
 func _setup_code_panel():
 	# File tab
@@ -312,6 +355,7 @@ func _setup_code_panel():
 	var bug_line = current_challenge.get("bug_line", -1)
 	var topic = current_challenge.get("topic", "python")
 	var ctype = current_challenge.get("type", "debug")
+	var files = current_challenge.get("files", {})
 
 	# ── CodeEdit mode: free_type and terminal challenges ──
 	if is_free_type or is_terminal:
@@ -326,21 +370,34 @@ func _setup_code_panel():
 		# Show CodeEdit
 		code_edit.visible = true
 
-		# Build the full code content: existing code + starter area
-		var starter = current_challenge.get("starter_code", "")
-		var full_code = ""
-		if code_lines.size() > 0:
-			full_code = "\n".join(code_lines)
-			if starter != "":
-				full_code += "\n" + starter
+		# Build initial editable content (single-file or multi-file challenge)
+		if not files.is_empty():
+			var preferred_active = current_challenge.get("active_file", "")
+			if preferred_active == "" or not files.has(preferred_active):
+				preferred_active = str(files.keys()[0])
+			_active_file_name = preferred_active
+			for file_name in files.keys():
+				_file_buffers[file_name] = str(files[file_name])
+			code_edit.text = str(_file_buffers.get(_active_file_name, ""))
+			code_edit.clear_undo_history()
 		else:
-			full_code = starter
-
-		code_edit.text = full_code
+			var starter = current_challenge.get("starter_code", "")
+			var full_code = ""
+			if code_lines.size() > 0:
+				full_code = "\n".join(code_lines)
+				if starter != "":
+					full_code += "\n" + starter
+			else:
+				full_code = starter
+			code_edit.text = full_code
+			code_edit.clear_undo_history()
 		code_edit.editable = true
 
-		# Apply syntax highlighting
-		_setup_code_highlighter(topic)
+		# Apply real-time syntax highlighting for active topic
+		if is_terminal:
+			code_edit.syntax_highlighter = null
+		else:
+			_setup_code_highlighter(topic)
 
 		# Style CodeEdit
 		var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
@@ -355,10 +412,48 @@ func _setup_code_panel():
 			term_style.border_color = Color("333333")
 			term_style.set_border_width_all(1)
 			term_style.set_corner_radius_all(4)
+
+			var current_user = "Player"
+			if ApiManager.has_method("get_username") and ApiManager.get_username() != "":
+				current_user = ApiManager.get_username()
+			
+			var dynamic_prefix = ""
+			if current_challenge.has("terminal_prefix"):
+				dynamic_prefix = current_challenge["terminal_prefix"].replace("{user}", current_user)
+			else:
+				var path_base = "C:\\Users\\" + current_user
+				if topic in ["python", "oop", "variables", "functions", "loops"]:
+					path_base += "\\Documents\\PythonProjects"
+				elif topic in ["html", "css", "http"]:
+					path_base += "\\Documents\\WebRoot"
+				else:
+					path_base += "\\Documents\\Websites"
+					
+				if current_challenge.get("active_dir", "") == "websites":
+					pass
+				elif current_challenge.get("active_dir", "") == "mysite" or (current_challenge.has("project_tree") and current_challenge["project_tree"].has("mysite")):
+					path_base += "\\mysite"
+				
+				if current_challenge.has("project_tree") and current_challenge["project_tree"].has("venv"):
+					dynamic_prefix = "(venv) " + path_base + ">"
+				else:
+					dynamic_prefix = path_base + ">"
+				
+			if dynamic_prefix != "" and terminal_prefix_label:
+				terminal_prefix_label.text = dynamic_prefix
+				terminal_prefix_label.visible = true
+				term_style.border_width_top = 0
+				term_style.corner_radius_top_left = 0
+				term_style.corner_radius_top_right = 0
+			elif terminal_prefix_label:
+				terminal_prefix_label.visible = false
+
 			term_style.set_content_margin_all(8)
 			code_edit.add_theme_stylebox_override("normal", term_style)
 			code_edit.add_theme_stylebox_override("focus", term_style)
 		else:
+			if terminal_prefix_label:
+				terminal_prefix_label.visible = false
 			# IDE dark theme
 			code_edit.add_theme_color_override("font_color", Color("abb2bf"))
 			var ide_style = StyleBoxFlat.new()
@@ -483,12 +578,10 @@ func _setup_code_highlighter(topic: String):
 				"raise": Color("c678dd"), "yield": Color("c678dd"),
 				"lambda": Color("c678dd"), "global": Color("c678dd"),
 			}
-			highlighter.color_regions = {
-				"\"": Color("98c379"),    # double-quote strings
-				"'": Color("98c379"),     # single-quote strings
-				"#": Color("5c6370"),     # comments
-			}
-		"html":
+			highlighter.add_color_region("\"", "\"", Color("98c379"))
+			highlighter.add_color_region("'", "'", Color("98c379"))
+			highlighter.add_color_region("#", "", Color("5c6370"), true)
+		"html", "django":
 			highlighter.keyword_colors = {
 				"html": Color("e06c75"), "head": Color("e06c75"),
 				"body": Color("e06c75"), "div": Color("e06c75"),
@@ -504,11 +597,12 @@ func _setup_code_highlighter(topic: String):
 				"title": Color("e06c75"), "script": Color("e06c75"),
 				"style": Color("e06c75"),
 			}
-			highlighter.color_regions = {
-				"\"": Color("98c379"),
-				"'": Color("98c379"),
-				"<!--": Color("5c6370"),
-			}
+			highlighter.add_color_region("\"", "\"", Color("98c379"))
+			highlighter.add_color_region("'", "'", Color("98c379"))
+			highlighter.add_color_region("<!--", "-->", Color("5c6370"))
+			highlighter.add_color_region("{#", "#}", Color("5c6370"))
+			highlighter.add_color_region("{%", "%}", Color("d19a66"))
+			highlighter.add_color_region("{{", "}}", Color("d19a66"))
 		"css":
 			highlighter.keyword_colors = {
 				"color": Color("61afef"), "background-color": Color("61afef"),
@@ -519,11 +613,9 @@ func _setup_code_highlighter(topic: String):
 				"height": Color("61afef"), "flex": Color("61afef"),
 				"grid": Color("61afef"),
 			}
-			highlighter.color_regions = {
-				"\"": Color("98c379"),
-				"'": Color("98c379"),
-				"/*": Color("5c6370"),
-			}
+			highlighter.add_color_region("\"", "\"", Color("98c379"))
+			highlighter.add_color_region("'", "'", Color("98c379"))
+			highlighter.add_color_region("/*", "*/", Color("5c6370"))
 
 	code_edit.syntax_highlighter = highlighter
 
@@ -569,7 +661,12 @@ func _setup_file_tabs():
 	if files.is_empty():
 		# Single-file challenge: show the simple label
 		file_tab_label.visible = true
-		file_tab_label.text = "  📄 " + current_challenge.get("file_name", "code.py")
+		if is_terminal:
+			file_tab_label.text = "  >_ Terminal"
+		else:
+			file_tab_label.text = "  📄 " + current_challenge.get("file_name", "code.py")
+		file_tab_label.add_theme_font_size_override("font_size", 11)
+		file_tab_label.add_theme_color_override("font_color", Color("a9b4c0"))
 		return
 
 	# Multi-file challenge: hide the simple label and create tab buttons
@@ -579,8 +676,8 @@ func _setup_file_tabs():
 	for file_name in files.keys():
 		var tab_btn = Button.new()
 		tab_btn.text = "  📄 " + file_name
-		tab_btn.custom_minimum_size = Vector2(0, 28)
-		tab_btn.add_theme_font_size_override("font_size", 12)
+		tab_btn.custom_minimum_size = Vector2(0, 24)
+		tab_btn.add_theme_font_size_override("font_size", 11)
 
 		var is_active = (file_name == active_file) or (active_file == "" and first_file)
 		var style = StyleBoxFlat.new()
@@ -588,18 +685,21 @@ func _setup_file_tabs():
 			style.bg_color = Color("1e1e2e")
 			style.border_color = Color("007acc")
 			style.set_border_width_all(0)
-			style.border_width_top = 2
+			style.border_width_top = 3
 			tab_btn.add_theme_color_override("font_color", Color("ffffff"))
 		else:
-			style.bg_color = Color("2d2d3d")
-			style.border_color = Color("3e3e42")
+			style.bg_color = Color("252537")
+			style.border_color = Color("343847")
 			style.set_border_width_all(0)
-			tab_btn.add_theme_color_override("font_color", Color("888888"))
+			tab_btn.add_theme_color_override("font_color", Color("7f8794"))
 
 		style.set_corner_radius_all(0)
-		style.set_content_margin_all(6)
+		style.set_content_margin_all(4)
 		tab_btn.add_theme_stylebox_override("normal", style)
-		tab_btn.add_theme_stylebox_override("hover", style)
+		var hover_style = style.duplicate()
+		if not is_active:
+			hover_style.bg_color = Color("2d3042")
+		tab_btn.add_theme_stylebox_override("hover", hover_style)
 		tab_btn.add_theme_stylebox_override("pressed", style)
 
 		# Connect press to switch file content
@@ -622,24 +722,42 @@ func _on_file_tab_pressed(file_name: String):
 	elif file_name.ends_with(".py"):
 		topic = "python"
 
-	# Re-render the code display with the file's content
-	var lines = content.split("\n")
-	var bbcode = ""
-	for i in range(lines.size()):
-		var line_num = str(i + 1).lpad(3, " ")
-		bbcode += "[color=" + COLOR_LINE_NUM + "]" + line_num + " [/color]"
-		bbcode += _syntax_highlight(lines[i], topic)
-		if i < lines.size() - 1:
-			bbcode += "\n"
-	code_display.text = bbcode
+	# Re-render content depending on challenge mode
+	if is_free_type or is_terminal:
+		if _active_file_name != "" and _file_buffers.has(_active_file_name):
+			_file_buffers[_active_file_name] = code_edit.text
+		_active_file_name = file_name
+		if _file_buffers.has(file_name):
+			code_edit.text = str(_file_buffers[file_name])
+		else:
+			_file_buffers[file_name] = str(content)
+			code_edit.text = str(content)
+		code_edit.clear_undo_history()
+		code_edit.set_caret_line(0)
+		code_edit.set_caret_column(0)
+		
+		# Update real-time syntax highlighting based on the active tab
+		if is_terminal:
+			code_edit.syntax_highlighter = null
+		else:
+			_setup_code_highlighter(topic)
+	else:
+		var lines = str(content).split("\n")
+		var bbcode = ""
+		for i in range(lines.size()):
+			var line_num = str(i + 1).lpad(3, " ")
+			bbcode += "[color=" + COLOR_LINE_NUM + "]" + line_num + " [/color]"
+			bbcode += _syntax_highlight(lines[i], topic)
+			if i < lines.size() - 1:
+				bbcode += "\n"
+		code_display.text = bbcode
 
 	# Update tab highlighting
 	var active_file = current_challenge.get("active_file", "")
-	var is_editable = (file_name == active_file)
-	if is_editable:
-		free_type_edit.visible = is_free_type or is_terminal
-	else:
-		free_type_edit.visible = false
+	if is_free_type or is_terminal:
+		active_file = _active_file_name
+	# Legacy free_type_edit should stay hidden while CodeEdit is used.
+	free_type_edit.visible = false
 
 	# Restyle all tabs
 	for child in file_tabs_container.get_children():
@@ -650,17 +768,20 @@ func _on_file_tab_pressed(file_name: String):
 				style.bg_color = Color("1e1e2e")
 				style.border_color = Color("007acc")
 				style.set_border_width_all(0)
-				style.border_width_top = 2
+				style.border_width_top = 3
 				child.add_theme_color_override("font_color", Color("ffffff"))
 			else:
-				style.bg_color = Color("2d2d3d")
-				style.border_color = Color("3e3e42")
+				style.bg_color = Color("252537")
+				style.border_color = Color("343847")
 				style.set_border_width_all(0)
-				child.add_theme_color_override("font_color", Color("888888"))
+				child.add_theme_color_override("font_color", Color("7f8794"))
 			style.set_corner_radius_all(0)
-			style.set_content_margin_all(6)
+			style.set_content_margin_all(4)
 			child.add_theme_stylebox_override("normal", style)
-			child.add_theme_stylebox_override("hover", style)
+			var hover_style = style.duplicate()
+			if not is_active:
+				hover_style.bg_color = Color("2d3042")
+			child.add_theme_stylebox_override("hover", hover_style)
 			child.add_theme_stylebox_override("pressed", style)
 
 # Generate fake rendered website content for the browser preview
@@ -1026,61 +1147,239 @@ func _on_time_up():
 	await get_tree().create_timer(1.5).timeout
 	_show_results(false)
 
-# (Old guilt-trip _on_hint_pressed removed — replaced by new system above)
+# (Old guilt-trip _on_hint_pressed removed — hints are now in OverflowStack)
 
-func _update_hint_button_label():
-	var remaining = GLOBAL_MAX_HINTS - global_hints_used
-	if remaining <= 0:
-		hint_button.text = "📚 No Hints Remaining"
-		hint_button.disabled = true
+func _update_overflow_button_label():
+	var hints_array = _get_hints_array()
+	var total = min(hints_array.size(), MAX_FREE_HINTS)
+	if _free_hints_revealed >= total:
+		overflow_stack_button.text = "📚 OverflowStack (Hint) [%d/%d]" % [total, total]
 	else:
-		hint_button.text = "📚 Hint (%d / %d)" % [global_hints_used, GLOBAL_MAX_HINTS]
-		hint_button.disabled = false
+		overflow_stack_button.text = "📚 OverflowStack (Hint) [%d/%d]" % [_free_hints_revealed, total]
 
-func _on_hint_pressed():
-	_play_click()
-
-	# Hard cap — no more hints this session
-	if global_hints_used >= GLOBAL_MAX_HINTS:
-		_update_hint_button_label()
-		return
-
-	global_hints_used += 1
-	_challenge_hints_used += 1
-	_update_hint_button_label()
-
-	# On the 5th hint (global), open Overflow Stack with conceptual help only
-	if global_hints_used >= GLOBAL_MAX_HINTS:
-		_show_overflow_stack()
-		return
-
-	# Otherwise show a progressive in-panel hint (hints 1–4)
-	# Support both a single "hint" string and a "hints" array for multi-level clues
-	var hints_array: Array = current_challenge.get("hints", [])
+func _get_hints_array() -> Array:
+	var hints_array: Array = current_challenge.get("progressive_hints", [])
+	if hints_array.is_empty():
+		hints_array = current_challenge.get("hints", [])
 	if hints_array.is_empty():
 		var single = current_challenge.get("hint", "")
 		if single != "":
 			hints_array = [single]
+	return hints_array
 
-	var hint_index = clamp(_challenge_hints_used - 1, 0, hints_array.size() - 1)
-	var hint_text = hints_array[hint_index] if hints_array.size() > 0 else "Think carefully about the syntax."
+func _on_hint_pressed():
+	# Legacy — do nothing, hints are in OverflowStack now
+	pass
 
-	hint_label.bbcode_enabled = true
-	hint_label.text = "[color=#e0c675]💡 Hint %d:[/color] [color=#abb2bf]%s[/color]" % [_challenge_hints_used, hint_text]
-	hint_label.visible = true
-
-	# Animate hint label in
-	hint_label.modulate.a = 0.0
-	var tween = create_tween()
-	tween.tween_property(hint_label, "modulate:a", 1.0, 0.25)
-
-func _on_reload_pressed():
-	# Re-show the initial output state
-	_setup_terminal()
+func _on_why_btn_pressed():
+	_play_click()
+	if why_text_label and _current_why_text != "":
+		why_text_label.text = "[color=#abb2bf][b]Why are we typing this?[/b]\n\n%s[/color]" % _current_why_text
+		why_overlay.visible = true
 
 func _on_overflow_stack_btn_pressed():
 	_play_click()
-	_on_hint_pressed()
+	# Reveal one more free hint each time the button is pressed
+	var hints_array = _get_hints_array()
+	var total = min(hints_array.size(), MAX_FREE_HINTS)
+	if _free_hints_revealed < total:
+		_free_hints_revealed += 1
+	_update_overflow_button_label()
+	_show_overflow_stack()
+
+func _get_player_submission() -> Dictionary:
+	if _active_file_name != "":
+		_file_buffers[_active_file_name] = code_edit.text
+
+	var full_text = ""
+	var player_typed_only = ""
+
+	if code_edit.visible:
+		if _active_file_name != "":
+			full_text = str(_file_buffers.get(_active_file_name, code_edit.text))
+		else:
+			full_text = code_edit.text
+
+		var files = current_challenge.get("files", {})
+		if _active_file_name != "" and files.has(_active_file_name):
+			var baseline = str(files[_active_file_name]).strip_edges()
+			var current_text = full_text.strip_edges()
+			if current_text.begins_with(baseline) and current_text.length() > baseline.length():
+				player_typed_only = current_text.substr(baseline.length()).strip_edges()
+			else:
+				player_typed_only = current_text
+		else:
+			var code_lines_arr = current_challenge.get("code_lines", [])
+			var all_lines = full_text.split("\n")
+			if code_lines_arr.size() > 0 and all_lines.size() > code_lines_arr.size():
+				var player_lines = []
+				for i in range(code_lines_arr.size(), all_lines.size()):
+					player_lines.append(all_lines[i])
+				player_typed_only = "\n".join(player_lines).strip_edges()
+			else:
+				player_typed_only = full_text.strip_edges()
+	else:
+		full_text = free_type_edit.text
+		player_typed_only = full_text.strip_edges()
+
+	var result = {
+		"full_text": full_text,
+		"player_typed_only": player_typed_only,
+	}
+
+	# ── Multi-tab: build dict of ALL file buffers ──
+	var files = current_challenge.get("files", {})
+	if not files.is_empty():
+		var all_files: Dictionary = {}
+		for file_name in files.keys():
+			if _file_buffers.has(file_name):
+				all_files[file_name] = str(_file_buffers[file_name]).strip_edges()
+			else:
+				all_files[file_name] = str(files[file_name]).strip_edges()
+		result["all_files"] = all_files
+
+	return result
+
+func _ensure_premium_hint_button() -> Button:
+	if _premium_hint_button and is_instance_valid(_premium_hint_button):
+		return _premium_hint_button
+
+	var stack_vbox = overflow_overlay.get_node_or_null("StackVBox")
+	if stack_vbox == null:
+		return null
+
+	_premium_hint_button = Button.new()
+	_premium_hint_button.text = "Use Premium AI Hint"
+	_premium_hint_button.custom_minimum_size = Vector2(0, 34)
+	_premium_hint_button.add_theme_font_size_override("font_size", 12)
+	_premium_hint_button.pressed.connect(_on_premium_hint_pressed)
+
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color("0077cc")
+	btn_style.border_color = Color("005999")
+	btn_style.set_border_width_all(1)
+	btn_style.set_corner_radius_all(4)
+	btn_style.set_content_margin_all(6)
+	_premium_hint_button.add_theme_stylebox_override("normal", btn_style)
+	_premium_hint_button.add_theme_color_override("font_color", Color("ffffff"))
+
+	var hover_style = btn_style.duplicate()
+	hover_style.bg_color = Color("1290f0")
+	_premium_hint_button.add_theme_stylebox_override("hover", hover_style)
+
+	var disabled_style = btn_style.duplicate()
+	disabled_style.bg_color = Color("5b6470")
+	disabled_style.border_color = Color("444b54")
+	_premium_hint_button.add_theme_stylebox_override("disabled", disabled_style)
+	_premium_hint_button.add_theme_color_override("font_disabled_color", Color("d7dce2"))
+
+	stack_vbox.add_child(_premium_hint_button)
+	stack_vbox.move_child(_premium_hint_button, stack_user.get_index())
+	return _premium_hint_button
+
+func _on_premium_hint_pressed():
+	_play_click()
+	if _ai_hint_used:
+		_show_overflow_stack()
+		return
+
+	if is_completed:
+		feedback_label.text = "Premium hint unavailable after the challenge is solved."
+		feedback_label.add_theme_color_override("font_color", Color("d19a66"))
+		feedback_label.visible = true
+		return
+
+	CustomConfirm.prompt(
+		"Use Premium AI Hint",
+		"Are you sure you want to use your 1 premium AI hint?",
+		_request_premium_ai_hint
+	)
+
+func _request_premium_ai_hint():
+	if _ai_hint_used:
+		_show_overflow_stack()
+		return
+
+	var submission = _get_player_submission()
+	var expected_answers = current_challenge.get("expected_answers", [])
+	var topic = current_challenge.get("topic", "python")
+	var language = "python"
+	match topic:
+		"html", "css", "http":
+			language = "html"
+		"django":
+			language = "django"
+		"python", "oop", "variables", "functions", "loops":
+			language = "python"
+
+	var challenge_id = current_challenge.get("id", "")
+	var expected_output = current_challenge.get("correct_output", "Success!")
+	var code_to_check = submission.get("player_typed_only", "")
+	if code_to_check == "":
+		code_to_check = submission.get("full_text", "")
+	code_to_check = _build_ai_context_payload(code_to_check)
+
+	feedback_label.text = "Requesting your premium AI hint..."
+	feedback_label.add_theme_color_override("font_color", Color("61afef"))
+	feedback_label.visible = true
+	var premium_button = _ensure_premium_hint_button()
+	if premium_button:
+		premium_button.disabled = true
+		premium_button.text = "Loading Premium AI Hint..."
+
+	ApiManager.check_code(code_to_check, language, challenge_id, expected_answers, expected_output)
+	var result = await ApiManager.code_checked
+
+	if result.get("offline", false):
+		_ai_hint_text = "Premium AI hint is unavailable right now because the server could not be reached. Please try again later."
+		_ai_hint_used = true
+	elif result.get("ai_hint", "") != "":
+		_ai_hint_text = result.get("ai_hint", "")
+		_ai_hint_used = true
+	else:
+		_ai_hint_text = "The premium assistant could not generate a hint for this attempt. Review the free hints and try a slightly different approach."
+		_ai_hint_used = true
+
+	_show_overflow_stack()
+	feedback_label.text = "Premium AI hint added to OverflowStack."
+	feedback_label.add_theme_color_override("font_color", Color("61afef"))
+	feedback_label.visible = true
+
+func _build_ai_context_payload(active_code: String) -> String:
+	# Provide multi-file context (tabs) + strict hinting instructions.
+	var files = current_challenge.get("files", {})
+	if files.is_empty():
+		return "# " + PREMIUM_HINT_INSTRUCTIONS + "\n\n" + active_code
+
+	# Ensure latest active buffer is captured
+	if _active_file_name != "":
+		_file_buffers[_active_file_name] = code_edit.text
+
+	var parts: Array[String] = []
+	parts.append("# " + PREMIUM_HINT_INSTRUCTIONS)
+	parts.append("# CONTEXT: This is a multi-file Django-style project. Read ALL files below before hinting.")
+	parts.append("# The user may be editing only one file at a time. Do not assume missing files are correct.")
+	parts.append("")
+	parts.append("### ACTIVE_FILE: " + (_active_file_name if _active_file_name != "" else str(current_challenge.get("active_file", ""))))
+	parts.append("")
+
+	# Use buffers if present (includes user edits), otherwise fall back to original challenge files
+	var file_names: Array = files.keys()
+	file_names.sort()
+	for file_name in file_names:
+		var content = ""
+		if _file_buffers.has(file_name):
+			content = str(_file_buffers[file_name])
+		else:
+			content = str(files[file_name])
+		parts.append("### FILE: " + str(file_name))
+		parts.append(content)
+		parts.append("")
+
+	# Also include the active snippet explicitly (helps models focus)
+	parts.append("### USER_ACTIVE_SNIPPET")
+	parts.append(active_code)
+	return "\n".join(parts)
 
 func _on_free_type_changed():
 	# Enable run button when player has typed something (legacy TextEdit)
@@ -1090,6 +1389,8 @@ func _on_free_type_changed():
 func _on_code_edit_changed():
 	# Enable run button when player has typed something (CodeEdit)
 	if (is_free_type or is_terminal) and not is_completed:
+		if _active_file_name != "":
+			_file_buffers[_active_file_name] = code_edit.text
 		run_button.disabled = code_edit.text.strip_edges() == ""
 
 func _on_close_pressed():
@@ -1108,38 +1409,52 @@ func _play_click():
 	player.play()
 	player.finished.connect(player.queue_free)
 
+var _browser_nag_shown: bool = false
+
 func _on_continue_pressed():
 	var success = results_title.text.contains("Correct") or results_title.text.contains("Solved")
+	
+	# Give the student a chance to view their browser before destroying the IDE
+	if success and _get_output_type() == "browser" and not _browser_nag_shown:
+		_browser_nag_shown = true
+		_play_click()
+		results_text.text = "You can view the browser first!\nClick Next again to continue."
+		continue_button.text = "Next ▸"
+		return
+
+	_challenge_active = false
 	emit_signal("challenge_completed", success, current_challenge.get("id", ""))
 	queue_free()
 
 # ─── Results ─────────────────────────────────────────────────────────────────
 
 func _show_results(success: bool):
+	# Always show results on the IDE, never the browser
+	_switch_to_ide_instant()
 	results_overlay.visible = true
 
 	if success:
+		if current_challenge.has("project_tree_on_success"):
+			_render_project_tree(current_challenge["project_tree_on_success"], _active_file_name)
 		results_title.text = "✅ Challenge Solved!"
 		results_title.add_theme_color_override("font_color", Color("98c379"))
 		results_text.text = "Great job! You got it right."
 
-		# Hide X button on success for NPC challenges so they can't accidentally quit
+		# Show continue button with context-aware label
+		continue_button.visible = true
 		if hide_close_button:
+			# NPC challenge — show Next or Done
 			close_button.visible = false
-			# Auto-emit success after a short delay
-			await get_tree().create_timer(2.0).timeout
-			emit_signal("challenge_completed", true, current_challenge.get("id", ""))
+			continue_button.text = "Next ▸"
+		else:
+			continue_button.text = "Done ✓"
 	else:
 		results_title.text = "❌ Not Quite..."
 		results_title.add_theme_color_override("font_color", Color("e06c75"))
-		# Show which was correct
-		var options = current_challenge.get("options", [])
-		var correct_text = ""
-		for opt in options:
-			if opt.get("correct", false):
-				correct_text = opt.get("text", "")
-				break
-		results_text.text = "The correct answer was:\n" + correct_text
+		# Do NOT reveal the correct answer
+		results_text.text = "Review the lesson material and try again."
+		continue_button.visible = true
+		continue_button.text = "OK"
 
 	results_text.add_theme_color_override("font_color", Color("abb2bf"))
 
@@ -1151,66 +1466,68 @@ func _show_results(success: bool):
 # ─── Free-Type Validation ────────────────────────────────────────────────────
 
 func _run_free_type():
-	# ── Extract what the player typed ──
-	var full_text = ""
-	var player_typed_only = ""
-
-	if code_edit.visible:
-		full_text = code_edit.text
-		# Extract only the portion after pre-filled code_lines
-		var code_lines_arr = current_challenge.get("code_lines", [])
-		var all_lines = full_text.split("\n")
-		if code_lines_arr.size() > 0 and all_lines.size() > code_lines_arr.size():
-			var player_lines = []
-			for i in range(code_lines_arr.size(), all_lines.size()):
-				player_lines.append(all_lines[i])
-			player_typed_only = "\n".join(player_lines).strip_edges()
-		else:
-			player_typed_only = full_text.strip_edges()
-	else:
-		full_text = free_type_edit.text
-		player_typed_only = full_text.strip_edges()
-
+	var submission = _get_player_submission()
 	var expected_answers = current_challenge.get("expected_answers", [])
+	var topic = current_challenge.get("topic", "python")
 
-	# ── Try server-side validation first (Judge0 + Gemini) ──
-	# Show a "compiling" state while we wait
 	terminal_output.bbcode_enabled = true
-	terminal_output.text = "[color=#61afef]⏳ Compiling...[/color]"
-	feedback_label.text = "Running your code..."
+	terminal_output.text = "[color=#61afef]⏳ Checking...[/color]"
+	feedback_label.text = "Checking your code..."
 	feedback_label.add_theme_color_override("font_color", Color("61afef"))
 	feedback_label.visible = true
 	run_button.disabled = true
+	free_type_edit.editable = false
+	code_edit.editable = false
 
-	# Determine language from challenge data (topic field)
-	var topic = current_challenge.get("topic", "python")
-	var language = "python"  # default
-	match topic:
-		"html", "css", "http":
-			language = "html"
-		"django":
-			language = "django"
-		"python", "oop", "variables", "functions", "loops":
-			language = "python"
-	
-	var challenge_id = current_challenge.get("id", "")
-	var expected_output = current_challenge.get("correct_output", "Success!")
+	# Brief delay for visual feedback
+	await get_tree().create_timer(0.5).timeout
 
-	# Call the Django backend via ApiManager
-	ApiManager.check_code(player_typed_only, language, challenge_id, expected_answers, expected_output)
+	if topic == "ai_evaluator":
+		var student_text = submission.get("player_typed_only", submission.get("full_text", ""))
+		var context = "\n".join(current_challenge.get("instructions", []))
+		ApiManager.check_ai_evaluator(current_challenge.get("id", "ai_task"), student_text, context)
+		var result = await ApiManager.ai_evaluated
+		_handle_ai_evaluator_result(result)
+		return
 
-	# Wait for the response signal
-	var result = await ApiManager.code_checked
+	# ── Local-only validation (no server/Judge0 needed) ──
+	_run_free_type_local(submission, expected_answers)
 
-	run_button.disabled = false
+func _handle_ai_evaluator_result(result: Dictionary):
+	terminal_output.bbcode_enabled = true
+	var is_correct = result.get("success", false)
+	var output = result.get("feedback", "")
 
-	if result.get("offline", false):
-		# ── Server offline: fall back to local validation ──
-		print("coding_challenge_ui: Server offline, using local validation")
-		_run_free_type_local(full_text, player_typed_only, expected_answers)
+	if is_correct:
+		is_completed = true
+		timer_running = false
+		free_type_edit.editable = false
+		code_edit.editable = false
+
+		terminal_output.text = "[color=#98c379]" + output + "[/color]"
+
+		feedback_label.text = "✅ Concept Mastered!"
+		feedback_label.add_theme_color_override("font_color", Color("98c379"))
+		feedback_label.visible = true
+		run_button.disabled = true
+		if correct_sfx.stream:
+			correct_sfx.play()
+
+		await get_tree().create_timer(2.0).timeout
+		_show_results(true)
 	else:
-		# ── Server responded: use its result ──
-		_handle_server_result(result)
+		_attempts += 1
+		terminal_output.text = "[color=#e06c75]" + output + "[/color]"
+
+		feedback_label.text = "❌ Not quite — adjust your hypothesis."
+		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
+		feedback_label.visible = true
+		if wrong_sfx.stream:
+			wrong_sfx.play()
+
+		free_type_edit.editable = true
+		code_edit.editable = true
+		run_button.disabled = false
 
 
 func _handle_server_result(result: Dictionary):
@@ -1218,7 +1535,6 @@ func _handle_server_result(result: Dictionary):
 	terminal_output.bbcode_enabled = true
 	var is_correct = result.get("success", false)
 	var output = result.get("output", "")
-	var ai_hint = result.get("ai_hint", "")
 
 	if is_correct:
 		is_completed = true
@@ -1243,68 +1559,81 @@ func _handle_server_result(result: Dictionary):
 	else:
 		_attempts += 1
 
-		# Build error display with AI hint if available
+		# Show error only in terminal — no hints here
 		var error_text = "[color=#e06c75]" + output + "[/color]"
-
-		if ai_hint != "":
-			error_text += "\n\n[color=#d19a66]🤖 AI HINT: " + ai_hint + "[/color]"
-		else:
-			# Fall back to progressive hints from challenge data
-			var hints = current_challenge.get("progressive_hints", [])
-			var expected_answers_list = current_challenge.get("expected_answers", [])
-			var answer_text = expected_answers_list[0] if expected_answers_list.size() > 0 else ""
-			
-			if hints.size() > 0:
-				if _attempts <= hints.size():
-					var hint = hints[_attempts - 1]
-					error_text += "\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
-				else:
-					error_text += "\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
-
 		terminal_output.text = error_text
-		
+
+		# Also show error on browser for web topics
 		if _get_output_type() == "browser":
 			browser_preview.text = "[color=#cc3333]" + output + "[/color]"
 
-		feedback_label.text = "❌ Not quite — check the terminal for hints!"
+		feedback_label.text = "❌ Not quite — check OverflowStack for hints!"
 		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
 		feedback_label.visible = true
 		if wrong_sfx.stream:
 			wrong_sfx.play()
 
 
-func _run_free_type_local(full_text: String, player_typed_only: String, expected_answers: Array):
+func _run_free_type_local(submission: Dictionary, expected_answers):
 	"""Offline fallback: local multi-pass validation (no server needed)."""
-	# ── Multi-pass validation ──
 	var is_correct = false
 
-	for answer in expected_answers:
-		var ans = answer.strip_edges()
-
-		# Pass 1: Exact match of just what the player typed after pre-filled lines
-		if player_typed_only == ans:
-			is_correct = true
-			break
-
-		# Pass 2: Exact match of the full CodeEdit content
-		if full_text.strip_edges() == ans:
-			is_correct = true
-			break
-
-		# Pass 3: The expected answer appears as a substring within the full text
-		if full_text.find(ans) != -1:
-			is_correct = true
-			break
-
-		# Pass 4: Normalized whitespace comparison
-		if _normalize_whitespace(player_typed_only) == _normalize_whitespace(ans):
-			is_correct = true
-			break
-		if _normalize_whitespace(full_text.strip_edges()) == _normalize_whitespace(ans):
-			is_correct = true
-			break
+	# ── Multi-tab validation: expected_answers is a dict {filename: [answers]} ──
+	if expected_answers is Dictionary and submission.has("all_files"):
+		var all_files = submission["all_files"]
+		var all_tabs_pass = true
+		for file_name in expected_answers.keys():
+			var file_content = str(all_files.get(file_name, "")).strip_edges()
+			var file_answers = expected_answers[file_name]
+			var tab_pass = false
+			for answer in file_answers:
+				var ans = str(answer).strip_edges()
+				if file_content == ans or ans in file_content:
+					tab_pass = true
+					break
+				if _normalize_whitespace(file_content) == _normalize_whitespace(ans) or _normalize_whitespace(ans) in _normalize_whitespace(file_content):
+					tab_pass = true
+					break
+			if not tab_pass:
+				all_tabs_pass = false
+				break
+		is_correct = all_tabs_pass
+	else:
+		# ── Single-tab validation (original logic) ──
+		var full_text = submission.get("full_text", "")
+		var player_typed_only = submission.get("player_typed_only", "")
+		for answer in expected_answers:
+			var ans = str(answer).strip_edges()
+			# Exact match of typed text
+			if player_typed_only == ans:
+				is_correct = true
+				break
+			# Exact match of full content
+			if full_text.strip_edges() == ans:
+				is_correct = true
+				break
+			# Substring match
+			if full_text.find(ans) != -1:
+				is_correct = true
+				break
+			# Normalized whitespace comparison
+			if _normalize_whitespace(player_typed_only) == _normalize_whitespace(ans):
+				is_correct = true
+				break
+			if _normalize_whitespace(full_text.strip_edges()) == _normalize_whitespace(ans):
+				is_correct = true
+				break
 
 	terminal_output.bbcode_enabled = true
+
+	var custom_error = ""
+
+	if is_correct:
+		# ── Indentation Check ──
+		var indentation_warning = _check_indentation_warning(submission, expected_answers)
+		if indentation_warning != "":
+			is_correct = false
+			custom_error = "IndentationError: " + indentation_warning
 
 	if is_correct:
 		# ── Correct: lock everything and show results ──
@@ -1329,26 +1658,10 @@ func _run_free_type_local(full_text: String, player_typed_only: String, expected
 		await get_tree().create_timer(2.0).timeout
 		_show_results(true)
 	else:
-		# ── Wrong: show progressive hints ──
 		_attempts += 1
-		
-		var hints = current_challenge.get("progressive_hints", [])
-		var expected_answers_list = current_challenge.get("expected_answers", [])
-		var answer_text = expected_answers_list[0] if expected_answers_list.size() > 0 else ""
-		
-		var error_output = current_challenge.get("error_output", "Error!")
-		
-		if hints.size() > 0:
-			if _attempts <= hints.size():
-				var hint = hints[_attempts - 1]
-				terminal_output.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#d19a66]HINT " + str(_attempts) + ": " + hint + "[/color]"
-				feedback_label.text = "❌ Not quite — read the hint in the terminal!"
-			else:
-				terminal_output.text = "[color=#e06c75]" + error_output + "[/color]\n\n[color=#98c379]ANSWER: Just type exactly: " + answer_text + "[/color]"
-				feedback_label.text = "❌ Still stuck? I put the answer in the terminal!"
-		else:
-			terminal_output.text = "[color=#e06c75]" + error_output + "[/color]"
-			feedback_label.text = "❌ Not quite — check your code and try again!"
+		var error_output = custom_error if custom_error != "" else current_challenge.get("error_output", "Error!")
+		terminal_output.text = "[color=#e06c75]" + error_output + "[/color]"
+		feedback_label.text = "❌ Not quite — check OverflowStack for hints!"
 
 		# Also update browser preview for browser-type challenges
 		if _get_output_type() == "browser":
@@ -1368,6 +1681,42 @@ func _run_free_type_local(full_text: String, player_typed_only: String, expected
 		linter_label.visible = true
 		linter_label.bbcode_enabled = true
 		linter_label.text = "[color=#e06c75]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[/color] [color=#5c6370]syntax error[/color]"
+
+func _check_indentation_warning(submission: Dictionary, expected_answers) -> String:
+	var topic = current_challenge.get("topic", "python")
+	if topic not in ["python", "django"]:
+		return ""  # Only warn for Python/Django
+
+	if expected_answers is Dictionary and submission.has("all_files"):
+		var all_files = submission["all_files"]
+		for file_name in expected_answers.keys():
+			if not file_name.ends_with(".py"):
+				continue
+			var file_content = str(all_files.get(file_name, ""))
+			for answer in expected_answers[file_name]:
+				var ans = str(answer)
+				for ans_line in ans.split("\n"):
+					if ans_line.begins_with("    ") or ans_line.begins_with("\t"):
+						var stripped_ans = ans_line.strip_edges()
+						for line in file_content.split("\n"):
+							if line.strip_edges() == stripped_ans:
+								if not line.begins_with("    ") and not line.begins_with("\t"):
+									return "Code in " + file_name + " lacks indentation! Python relies on it; real code would need to be indented."
+	else:
+		var player_text = submission.get("player_typed_only", "")
+		var full_text = submission.get("full_text", "")
+		var text_to_check = player_text if player_text != "" else full_text
+		for answer in expected_answers:
+			var ans = str(answer)
+			for ans_line in ans.split("\n"):
+				if ans_line.begins_with("    ") or ans_line.begins_with("\t"):
+					var stripped_ans = ans_line.strip_edges()
+					for line in text_to_check.split("\n"):
+						if line.strip_edges() == stripped_ans:
+							if not line.begins_with("    ") and not line.begins_with("\t"):
+								return "Correct logic, but Python relies on indentation. This line would need to be indented inside its block."
+
+	return ""
 
 func _normalize_whitespace(text: String) -> String:
 	# Collapse all whitespace sequences into single spaces
@@ -1435,15 +1784,8 @@ const OVERFLOW_INTROS = [
 ]
 
 func _show_overflow_stack():
-	# Find the deepest conceptual clue available (never the raw answer)
-	var hints_array: Array = current_challenge.get("hints", [])
-	if hints_array.is_empty():
-		var single = current_challenge.get("hint", "")
-		if single != "":
-			hints_array = [single]
-
-	# Use the last hint in the array as the "deepest" clue
-	var deep_clue = hints_array.back() if hints_array.size() > 0 else "Review the topic material and try again."
+	var hints_array = _get_hints_array()
+	var total_free_hints = min(hints_array.size(), MAX_FREE_HINTS)
 	var title = current_challenge.get("title", "Help")
 
 	# Style the overlay
@@ -1460,25 +1802,49 @@ func _show_overflow_stack():
 	stack_logo.add_theme_font_size_override("font_size", 16)
 
 	# Question
-	stack_question.text = "Q: I'm really stuck on \"" + title + "\". Final hint please!"
+	stack_question.text = "Q: I'm really stuck on \"" + title + "\". What clues can I get without revealing the answer?"
 	stack_question.add_theme_color_override("font_color", Color("3b4045"))
 	stack_question.add_theme_font_size_override("font_size", 13)
 
 	# Votes
-	var vote_count = randi_range(12, 247)
-	stack_votes.text = "▲ " + str(vote_count) + " votes  •  📣 Community Hint (No answers!)"
+	var vote_count = randi_range(12, 247) + (_free_hints_revealed * 3)
+	var premium_status = "Premium AI used" if _ai_hint_used else "Premium AI available"
+	stack_votes.text = "▲ " + str(vote_count) + " votes  •  Free hints %d/%d  •  %s" % [_free_hints_revealed, total_free_hints, premium_status]
 	stack_votes.add_theme_color_override("font_color", Color("6a9955"))
 	stack_votes.add_theme_font_size_override("font_size", 12)
 
-	# Deep conceptual clue — NOT the answer
-	var intro = OVERFLOW_INTROS[randi() % OVERFLOW_INTROS.size()]
 	stack_answer.bbcode_enabled = true
-	stack_answer.text = (
-		"[color=#3b4045]" + intro + deep_clue + "\n\n" +
-		"[color=#e06c75][b]⚠️ You have used all 5 hints for this session.[/b]\n" +
-		"The answer will not be shown. Review the lesson material and try again.[/color][/color]"
-	)
+	stack_answer.scroll_active = true
+	stack_answer.scroll_following = true
+	var thread_lines: Array[String] = []
+	thread_lines.append("[color=#3b4045][b]Accepted Answer[/b][/color]")
+
+	if _free_hints_revealed <= 0:
+		thread_lines.append("[color=#5c6370]No free hints revealed yet. Click the OverflowStack button again to unlock Hint 1.[/color]")
+	else:
+		for i in range(_free_hints_revealed):
+			var intro = OVERFLOW_INTROS[i % OVERFLOW_INTROS.size()]
+			var hint_text = hints_array[i] if i < hints_array.size() else "Review the lesson material and trace the code carefully."
+			thread_lines.append("[color=#3b4045][b]Hint %d:[/b] %s%s[/color]" % [i + 1, intro, hint_text])
+
+	if _free_hints_revealed >= total_free_hints and total_free_hints > 0:
+		thread_lines.append("[color=#e06c75][b]Free hints exhausted.[/b] The answer will not be shown here.[/color]")
+
+	if _ai_hint_used:
+		thread_lines.append("")
+		thread_lines.append("[color=#0077cc][b]Premium AI Hint:[/b] %s[/color]" % _ai_hint_text)
+	else:
+		thread_lines.append("")
+		thread_lines.append("[color=#5c6370]Need a stronger nudge? Use your one premium AI hint for this challenge.[/color]")
+
+	stack_answer.text = "\n\n".join(thread_lines)
 	stack_answer.add_theme_font_size_override("normal_font_size", 13)
+
+	var premium_button = _ensure_premium_hint_button()
+	if premium_button:
+		premium_button.visible = true
+		premium_button.disabled = _ai_hint_used
+		premium_button.text = "Premium AI Hint Used" if _ai_hint_used else "Use Premium AI Hint"
 
 	# User
 	stack_user.text = "answered by " + OVERFLOW_USERS[randi() % OVERFLOW_USERS.size()]
@@ -1850,12 +2216,18 @@ func lock_typing(_locked: bool):
 
 # ─── Screen Switching (IDE ↔ Browser) ────────────────────────────────────────
 
+var _results_was_visible: bool = false  # track overlay state across screen switches
+
 func _switch_to_browser():
 	if _is_browser_visible:
 		return
 	_play_click()
 	_is_browser_visible = true
 	browser_screen.visible = true
+	# Hide results overlay so it stays on the IDE only
+	_results_was_visible = results_overlay.visible
+	if _results_was_visible:
+		results_overlay.visible = false
 
 	var vp_width = get_viewport_rect().size.x
 	# Slide IDE left, Browser in from the right
@@ -1870,6 +2242,9 @@ func _switch_to_ide():
 		return
 	_play_click()
 	_is_browser_visible = false
+	# Restore results overlay if it was showing before we switched
+	if _results_was_visible:
+		results_overlay.visible = true
 
 	var vp_width = get_viewport_rect().size.x
 	var tween = create_tween().set_parallel(true)
@@ -1884,6 +2259,24 @@ func _switch_to_ide_instant():
 	ide_screen.position.x = 0
 	browser_screen.position.x = get_viewport_rect().size.x
 	browser_screen.visible = false
+
+func _on_reload_pressed():
+	_play_click()
+
+	if _get_output_type() != "browser":
+		feedback_label.text = "Nothing to reload for this challenge."
+		feedback_label.add_theme_color_override("font_color", Color("d19a66"))
+		feedback_label.visible = true
+		return
+
+	if is_completed:
+		var correct_output = current_challenge.get("correct_output", "Success!")
+		var challenge_id = current_challenge.get("id", "")
+		browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
+	elif current_challenge.get("error_output", "") != "":
+		browser_preview.text = "[color=#cc3333]" + current_challenge.get("error_output", "") + "[/color]"
+	else:
+		browser_preview.text = "[color=#888888][i]Press ▶ Run in the IDE, then Alt-Tab here to see the result.[/i][/color]"
 
 # ─── Styling for New UI Elements ─────────────────────────────────────────────
 
@@ -1936,27 +2329,239 @@ func _style_action_buttons():
 	# Overflow Stack button — orange themed
 	var os_style = StyleBoxFlat.new()
 	os_style.bg_color = Color("b05c00")
-	os_style.set_corner_radius_all(4)
-	os_style.set_content_margin_all(6)
+	os_style.set_corner_radius_all(3)
+	os_style.set_content_margin_all(5)
 	overflow_stack_button.add_theme_stylebox_override("normal", os_style)
 	overflow_stack_button.add_theme_color_override("font_color", Color("ffffff"))
-	overflow_stack_button.add_theme_font_size_override("font_size", 12)
+	overflow_stack_button.add_theme_font_size_override("font_size", 11)
 
 	var os_hover = os_style.duplicate()
 	os_hover.bg_color = Color("d16d00")
 	overflow_stack_button.add_theme_stylebox_override("hover", os_hover)
+
+	# Why button — purple themed (learning)
+	if why_button:
+		var why_style = StyleBoxFlat.new()
+		why_style.bg_color = Color("5e2b97")
+		why_style.set_corner_radius_all(3)
+		why_style.set_content_margin_all(5)
+		why_button.add_theme_stylebox_override("normal", why_style)
+		why_button.add_theme_color_override("font_color", Color("ffffff"))
+		why_button.add_theme_font_size_override("font_size", 11)
+
+		var why_hover = why_style.duplicate()
+		why_hover.bg_color = Color("793bbf")
+		why_button.add_theme_stylebox_override("hover", why_hover)
 
 	# Alt-tab button — blue themed
 	var at_style = StyleBoxFlat.new()
 	at_style.bg_color = Color("2d2d3d")
 	at_style.border_color = Color("007acc")
 	at_style.set_border_width_all(1)
-	at_style.set_corner_radius_all(4)
-	at_style.set_content_margin_all(6)
+	at_style.set_corner_radius_all(3)
+	at_style.set_content_margin_all(5)
 	alt_tab_button.add_theme_stylebox_override("normal", at_style)
 	alt_tab_button.add_theme_color_override("font_color", Color("ffffff"))
-	alt_tab_button.add_theme_font_size_override("font_size", 12)
+	alt_tab_button.add_theme_font_size_override("font_size", 11)
 
 	var at_hover = at_style.duplicate()
 	at_hover.bg_color = Color("3e3e52")
 	alt_tab_button.add_theme_stylebox_override("hover", at_hover)
+
+func _style_layout_panels():
+	# Subtle desktop-like panel contrast and tighter spacing.
+	var mission_panel = get_node_or_null("IDEScreen/MainContent/MissionPanel")
+	var code_panel = get_node_or_null("IDEScreen/MainContent/CodePanel")
+
+	if mission_panel:
+		var mission_style = StyleBoxFlat.new()
+		mission_style.bg_color = Color("202233")
+		mission_style.border_color = Color("343847")
+		mission_style.set_border_width_all(1)
+		mission_style.set_corner_radius_all(3)
+		mission_style.set_content_margin_all(6)
+		mission_panel.add_theme_stylebox_override("panel", mission_style)
+
+	if code_panel:
+		var code_style = StyleBoxFlat.new()
+		code_style.bg_color = Color("1b1d2b")
+		code_style.border_color = Color("303648")
+		code_style.set_border_width_all(1)
+		code_style.set_corner_radius_all(3)
+		code_style.set_content_margin_all(6)
+		code_panel.add_theme_stylebox_override("panel", code_style)
+
+	if project_tree_panel:
+		var tree_style = StyleBoxFlat.new()
+		tree_style.bg_color = Color("181a26")
+		tree_style.border_color = Color("303648")
+		tree_style.set_border_width_all(1)
+		tree_style.set_content_margin_all(6)
+		project_tree_panel.add_theme_stylebox_override("panel", tree_style)
+
+func _setup_why_ui():
+	var mission_vbox = overflow_stack_button.get_parent()
+	why_button = Button.new()
+	why_button.name = "WhyButton"
+	why_button.text = "📘 Purpose of Code"
+	why_button.visible = false
+	mission_vbox.add_child(why_button)
+	mission_vbox.move_child(why_button, overflow_stack_button.get_index())
+	why_button.pressed.connect(_on_why_btn_pressed)
+	
+	why_overlay = overflow_overlay.duplicate()
+	why_overlay.name = "WhyOverlay"
+	self.add_child(why_overlay)
+	why_overlay.visible = false
+	
+	var why_close_btn = why_overlay.find_child("StackCloseButton", true, false)
+	if why_close_btn:
+		var conns = why_close_btn.pressed.get_connections()
+		for c in conns:
+			why_close_btn.pressed.disconnect(c.callable)
+		why_close_btn.pressed.connect(func(): why_overlay.visible = false)
+	
+	var why_title = why_overlay.find_child("StackLogo", true, false)
+	if why_title:
+		why_title.text = "📘 Purpose of Code"
+		why_title.add_theme_color_override("font_color", Color("a280d4"))
+	
+	why_text_label = why_overlay.find_child("StackAnswer", true, false)
+	if why_text_label:
+		why_text_label.text = ""
+	
+	var votes = why_overlay.find_child("StackVotes", true, false)
+	if votes: votes.visible = false
+	var q = why_overlay.find_child("StackQuestion", true, false)
+	if q: q.visible = false
+	var u = why_overlay.find_child("StackUser", true, false)
+	if u: u.visible = false
+
+func _setup_tree_ui():
+	var main_content = $IDEScreen/MainContent
+	var code_panel = main_content.get_node_or_null("CodePanel")
+	if not code_panel:
+		return
+	
+	project_tree_panel = PanelContainer.new()
+	project_tree_panel.name = "ProjectTreePanel"
+	project_tree_panel.custom_minimum_size = Vector2(180, 0)
+	
+	var tree_vbox = VBoxContainer.new()
+	project_tree_panel.add_child(tree_vbox)
+	
+	var tree_header = Label.new()
+	tree_header.text = "📁 EXPLORER"
+	tree_header.add_theme_font_size_override("font_size", 11)
+	tree_header.add_theme_color_override("font_color", Color("888888"))
+	tree_header.custom_minimum_size = Vector2(0, 20)
+	tree_vbox.add_child(tree_header)
+	
+	project_tree_view = Tree.new()
+	project_tree_view.name = "ProjectTree"
+	project_tree_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	project_tree_view.columns = 1
+	project_tree_view.hide_root = false
+	
+	var font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
+	project_tree_view.add_theme_font_override("font", font)
+	project_tree_view.add_theme_font_size_override("font_size", 12)
+	project_tree_view.add_theme_color_override("font_color", Color("abb2bf"))
+	
+	var tree_style = StyleBoxEmpty.new()
+	project_tree_view.add_theme_stylebox_override("panel", tree_style)
+	
+	tree_vbox.add_child(project_tree_view)
+	
+	var new_split = HSplitContainer.new()
+	new_split.name = "RightSplit"
+	new_split.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	
+	main_content.remove_child(code_panel)
+	main_content.add_child(new_split)
+	new_split.add_child(code_panel)
+	new_split.add_child(project_tree_panel)
+
+func _render_project_tree(tree_dict: Dictionary, highlight_file: String):
+	if not project_tree_view or not project_tree_panel:
+		return
+	project_tree_view.clear()
+	
+	var root = project_tree_view.create_item()
+	var current_user = "Player"
+	if ApiManager.has_method("get_username") and ApiManager.get_username() != "":
+		current_user = ApiManager.get_username()
+	
+	var root_str = "C:\\...\\" + current_user
+	var topic = current_challenge.get("topic", "")
+	if topic in ["python", "oop", "variables", "functions", "loops"]:
+		root_str += "\\PythonProjects"
+	elif topic in ["html", "css", "http"]:
+		root_str += "\\WebRoot"
+	else:
+		root_str += "\\Websites"
+	
+	var active_dir = current_challenge.get("active_dir", "")
+	if active_dir == "mysite" or (active_dir != "websites" and current_challenge.has("project_tree") and current_challenge["project_tree"].has("mysite")):
+		root_str += "\\mysite"
+	root_str += ">"
+	
+	root.set_text(0, root_str)
+	root.set_custom_color(0, Color("5c6370"))
+	
+	_build_tree_recursive(tree_dict, root, highlight_file.get_file())
+	root.collapsed = false
+
+func _build_tree_recursive(current_dict: Dictionary, parent_item: TreeItem, highlight_file: String):
+	var keys = current_dict.keys()
+	# Sort keys so folders and files are somewhat organized
+	keys.sort()
+	for key in keys:
+		var val = current_dict[key]
+		var item = project_tree_view.create_item(parent_item)
+		var is_highlighted = (key == highlight_file)
+		
+		if typeof(val) == TYPE_DICTIONARY:
+			# Folder
+			if is_highlighted:
+				item.set_text(0, "📂 " + str(key))
+				item.set_custom_color(0, Color("98c379"))
+			else:
+				item.set_text(0, "📁 " + str(key))
+				item.set_custom_color(0, Color("61afef"))
+			_build_tree_recursive(val, item, highlight_file)
+			item.collapsed = false
+		else:
+			# File
+			if is_highlighted:
+				item.set_text(0, "📝 " + str(key))
+				item.set_custom_color(0, Color("98c379"))
+			else:
+				item.set_text(0, "📄 " + str(key))
+				item.set_custom_color(0, Color("abb2bf"))
+func _setup_terminal_prefix_ui():
+	var code_vbox = code_edit.get_parent()
+	if not code_vbox:
+		return
+	terminal_prefix_label = Label.new()
+	terminal_prefix_label.name = "TerminalPrefixLabel"
+	terminal_prefix_label.visible = false
+	terminal_prefix_label.add_theme_font_size_override("font_size", 13)
+	terminal_prefix_label.add_theme_color_override("font_color", Color("abb2bf"))
+	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
+	terminal_prefix_label.add_theme_font_override("font", code_font)
+	
+	var term_style = StyleBoxFlat.new()
+	term_style.bg_color = Color("0d0d0d")
+	term_style.border_color = Color("333333")
+	term_style.set_border_width_all(1)
+	term_style.border_width_bottom = 0
+	term_style.corner_radius_top_left = 4
+	term_style.corner_radius_top_right = 4
+	term_style.content_margin_left = 8
+	term_style.content_margin_top = 8
+	term_style.content_margin_bottom = 2
+	terminal_prefix_label.add_theme_stylebox_override("normal", term_style)
+
+	code_vbox.add_child(terminal_prefix_label)
+	code_vbox.move_child(terminal_prefix_label, code_edit.get_index())

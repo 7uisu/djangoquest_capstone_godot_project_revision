@@ -147,6 +147,16 @@ func _start_lesson_sequence():
 		await _play_module_2_crud_permissions(DEBUG_SKIP_IDE)
 		if character_data:
 			character_data.ch2_y3s2_current_module = 2
+
+	if current_module <= 2:
+		await _play_module_3_abstract_user(DEBUG_SKIP_IDE)
+		if character_data:
+			character_data.ch2_y3s2_current_module = 3
+
+	if current_module <= 3:
+		await _play_module_4_password_hashing(DEBUG_SKIP_IDE)
+		if character_data:
+			character_data.ch2_y3s2_current_module = 4
 	
 	# ─── All modules done ─────────────────────────────────────────
 	
@@ -157,6 +167,11 @@ func _start_lesson_sequence():
 		_challenge_canvas.queue_free()
 	_challenge_canvas = null
 	_challenge_ui = null
+	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
 	
 	await get_tree().create_timer(0.3).timeout
 	
@@ -183,6 +198,14 @@ func _start_lesson_sequence():
 		player.block_ui_input = false
 	
 	_cutscene_running = false
+
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
 
 	if qm:
 		qm.show_quest()
@@ -213,7 +236,11 @@ func _await_challenge_done(ui) -> void:
 		await get_tree().create_timer(0.1).timeout
 	while not ui.results_overlay.visible:
 		await get_tree().create_timer(0.1).timeout
-	await get_tree().create_timer(1.5).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -319,7 +346,7 @@ func _play_module_1_authentication(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"auth_authenticate", "Authenticate a User", "python", "views.py",
 		["from django.contrib.auth import authenticate, login", "", "def login_view(request):", "    username = request.POST['username']", "    password = request.POST['password']", "    # Authenticate the user with the provided credentials", "    user = "],
-		["Write: authenticate(request, username=username, password=password)"],
+		["Write: authenticate(request, username=username, password=password)", "Why: The authenticate function is Django's secure way to verify that a username and password match a valid user in the database."],
 		"Type your code here...",
 		[
 			"authenticate(request, username=username, password=password)",
@@ -335,6 +362,7 @@ func _play_module_1_authentication(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -434,7 +462,7 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"auth_permissions", "Check Ownership", "python", "views.py",
 		["def edit_post(request, post_id):", "    post = Post.objects.get(id=post_id)", "    # Check if the current user owns this post", "    "],
-		["Write: if request.user == post.owner:"],
+		["Write: if request.user == post.owner:", "Why: Checking ownership ensures that logged-in users can only modify their own data, preventing unauthorized edits."],
 		"Type your code here...",
 		[
 			"if request.user == post.owner:",
@@ -450,6 +478,7 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file"}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -477,7 +506,175 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 	await get_tree().create_timer(0.3).timeout
 
 
+
+
 # ══════════════════════════════════════════════════════════════════════
+#  MODULE 3 — AbstractUser (Extending Django's User Model)
+# ══════════════════════════════════════════════════════════════════════
+
+func _play_module_3_abstract_user(skip_ide: bool):
+	dialogue_box = _get_dialogue_box()
+	_before_teaching_slides()
+
+	# ─── Slide: Why extend the User model? ─────────────────────
+	_show_teaching_slide({
+		"icon": "👤",
+		"title": "AbstractUser",
+		"subtitle": "Extending Django's built-in User model",
+		"bullets": [
+			"Django's default User has: [b]username, email, password[/b] — and nothing else.",
+			"Real apps need extra fields: [b]phone, bio, avatar, role[/b].",
+			"[b]AbstractUser[/b] lets you inherit ALL default fields and add your own.",
+			"You MUST set [b]AUTH_USER_MODEL[/b] in settings.py BEFORE your first migrate."
+		],
+		"code": "from django.contrib.auth.models import AbstractUser\n\nclass CustomUser(AbstractUser):\n    phone = models.CharField(max_length=15, blank=True)\n    bio = models.TextField(blank=True)\n\n# settings.py\nAUTH_USER_MODEL = 'accounts.CustomUser'",
+		"header": "MODULE 3 — ABSTRACTUSER",
+		"header_icon": "👤",
+		"slide_num": "5 / 8"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Auth", "text": "Django gives you a User model out of the box. Username, email, password." },
+			{ "name": "Student", "text": "That's enough, right?" },
+			{ "name": "Professor Auth", "text": "For a tutorial? Yes. For a real app? [color=#f0c674]Never.[/color]" },
+			{ "name": "Professor Auth", "text": "You'll need phone numbers, profile photos, bios, roles." },
+			{ "name": "Professor Auth", "text": "That's why we use [color=#f0c674]AbstractUser[/color]. You inherit everything Django gives you, then add your own fields on top." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	# ─── Challenge: AbstractUser ─────────────────────────
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"auth_abstract_user", "Create a Custom User Model", "django", "models.py",
+			[],
+			["Extend AbstractUser and add a 'phone' field, then register it in settings.py.", "Why: The default User model cannot be modified after the first migration. AbstractUser lets you define custom fields from the start."],
+			"Type the model and settings...",
+			[],
+			"✅ CustomUser model created with phone field!\n  AUTH_USER_MODEL set correctly.",
+			"Error: Ensure you inherit from AbstractUser and set AUTH_USER_MODEL.",
+			[
+				"In models.py: class CustomUser(AbstractUser) with phone field.",
+				"In settings.py: AUTH_USER_MODEL = 'accounts.CustomUser'"
+			]
+		)
+		ch_data["files"] = {
+			"models.py": "from django.contrib.auth.models import AbstractUser\nfrom django.db import models\n\n# TODO: Create a CustomUser that inherits from AbstractUser\n# Add a 'phone' CharField with max_length=15\nclass CustomUser(\n    phone = \n",
+			"settings.py": "# ... other settings ...\n\n# TODO: Tell Django to use your custom user model\n# Format: 'app_name.ModelName'\nAUTH_USER_MODEL = \n"
+		}
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file", "urls.py": "file"}, "accounts": {"__init__.py": "file", "models.py": "file", "admin.py": "file", "views.py": "file"}, "manage.py": "file"}
+		ch_data["active_file"] = "models.py"
+		ch_data["expected_answers"] = {
+			"models.py": [
+				"class CustomUser(AbstractUser):\n    phone = models.CharField(max_length=15",
+				"class CustomUser(AbstractUser):\n    phone = models.CharField(max_length=15, blank=True)"
+			],
+			"settings.py": [
+				"AUTH_USER_MODEL = 'accounts.CustomUser'",
+				"AUTH_USER_MODEL = \"accounts.CustomUser\""
+			]
+		}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Auth", "text": "In [color=#f0c674]models.py[/color], inherit from AbstractUser and add a phone field." },
+				{ "name": "Professor Auth", "text": "In [color=#f0c674]settings.py[/color], point AUTH_USER_MODEL to your new model." }
+			])
+			await dialogue_box.dialogue_finished
+
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Auth", "text": "Good. Your user model is now extensible." },
+				{ "name": "Professor Auth", "text": "One critical rule: [color=#f0c674]set AUTH_USER_MODEL before your first migration[/color]. Changing it later is extremely painful." }
+			])
+			await dialogue_box.dialogue_finished
+
+# ══════════════════════════════════════════════════════════════════════
+#  MODULE 4 — Password Hashing & Security
+# ══════════════════════════════════════════════════════════════════════
+
+func _play_module_4_password_hashing(skip_ide: bool):
+	dialogue_box = _get_dialogue_box()
+	_before_teaching_slides()
+
+	_show_teaching_slide({
+		"icon": "🔒",
+		"title": "Password Hashing",
+		"subtitle": "Why you NEVER store raw passwords",
+		"bullets": [
+			"Storing passwords in plain text is a [b]security catastrophe[/b].",
+			"Django automatically [b]hashes[/b] passwords using PBKDF2 + SHA256.",
+			"[b]set_password()[/b] hashes the password before saving.",
+			"[b]check_password()[/b] compares a raw input against the stored hash."
+		],
+		"code": "user = User.objects.create_user(\n    username='alice',\n    password='secret123'  # Hashed automatically!\n)\n\n# Manual hashing:\nuser.set_password('new_password')\nuser.save()\n\n# Checking:\nuser.check_password('secret123')  # True",
+		"header": "MODULE 4 — PASSWORD SECURITY",
+		"header_icon": "🔒",
+		"slide_num": "7 / 8"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Auth", "text": "If I hacked your database right now, could I see everyone's password?" },
+			{ "name": "Student", "text": "I... hope not?" },
+			{ "name": "Professor Auth", "text": "If you stored them as plain text, [color=#f0c674]yes[/color]. Every single one." },
+			{ "name": "Professor Auth", "text": "Django prevents this by [color=#f0c674]hashing[/color] every password automatically." },
+			{ "name": "Professor Auth", "text": "Even the database admin cannot reverse the hash. That's the point." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"auth_set_password", "Hash a Password", "python", "views.py",
+			["from django.contrib.auth import get_user_model", "", "User = get_user_model()", "user = User.objects.get(username='alice')", "", "# TODO: Change alice's password to 'new_secure_pass'", "# Use the method that automatically hashes it", ""],
+			["Use set_password() to securely change a user's password.", "Why: set_password() runs the raw string through Django's hashing algorithm (PBKDF2 + SHA256) before storing it, ensuring no plaintext password ever touches the database."],
+			"Type the method call...",
+			[
+				"user.set_password('new_secure_pass')",
+				"user.set_password(\"new_secure_pass\")"
+			],
+			"✅ Password updated!\n  Hash: pbkdf2_sha256$260000$...\n  Raw password is NEVER stored.",
+			"Error: Don't assign password directly. Use set_password().",
+			[
+				"Use the set_password method on the user object.",
+				"Type: user.set_password('new_secure_pass')"
+			]
+		)
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file", "urls.py": "file"}, "accounts": {"__init__.py": "file", "models.py": "file", "views.py": "file"}, "manage.py": "file"}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Auth", "text": "Change Alice's password using [color=#f0c674]set_password()[/color]." },
+				{ "name": "Professor Auth", "text": "Type: [color=#f0c674]user.set_password('new_secure_pass')[/color]" }
+			])
+			await dialogue_box.dialogue_finished
+
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Auth", "text": "Done. The password is hashed. Nobody — not even you — can read it." },
+				{ "name": "Professor Auth", "text": "Authentication. Permissions. Custom users. Password security." },
+				{ "name": "Professor Auth", "text": "Your app is now [color=#f0c674]production-grade secure[/color]." }
+			])
+			await dialogue_box.dialogue_finished
+
+
+
 #  HELPERS — Identical to Professor Otek / Query / View pattern
 # ══════════════════════════════════════════════════════════════════════
 
@@ -487,8 +684,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -505,7 +700,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -953,6 +1148,8 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var line_label = RichTextLabel.new()
 		line_label.bbcode_enabled = true
@@ -964,6 +1161,15 @@ func _refresh_log_content():
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
 		var name_color = "#a3c4f3" if speaker == "Professor Auth" else "#c8e6c9"
+		if challenge_active and (
+			text.find("\n") != -1
+			or text.find("authenticate(") != -1
+			or text.find("login(") != -1
+			or text.find("logout(") != -1
+			or text.find("=") != -1
+			or text.find("request") != -1
+		):
+			text = "[REDACTED - solve the challenge first!]"
 
 		line_label.text = "[color=" + name_color + "][b]" + speaker + ":[/b][/color] [color=#d4d4d8]" + text + "[/color]"
 		log_content.add_child(line_label)

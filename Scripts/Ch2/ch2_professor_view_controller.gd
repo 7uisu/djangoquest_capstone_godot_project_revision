@@ -153,6 +153,11 @@ func _start_lesson_sequence():
 		await _play_module_4_static_files(DEBUG_SKIP_IDE)
 		if character_data:
 			character_data.ch2_y2s1_current_module = 4
+
+	if current_module <= 4:
+		await _play_module_5_generic_views(DEBUG_SKIP_IDE)
+		if character_data:
+			character_data.ch2_y2s1_current_module = 5
 	
 	# ─── All modules done ─────────────────────────────────────────
 	
@@ -163,6 +168,11 @@ func _start_lesson_sequence():
 		_challenge_canvas.queue_free()
 	_challenge_canvas = null
 	_challenge_ui = null
+	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
 	
 	await get_tree().create_timer(0.3).timeout
 	
@@ -189,6 +199,14 @@ func _start_lesson_sequence():
 		player.block_ui_input = false
 	
 	_cutscene_running = false
+
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
 
 	if qm:
 		qm.show_quest()
@@ -222,8 +240,11 @@ func _await_challenge_done(ui) -> void:
 	# We must wait for it to actually appear before we can dismiss it.
 	while not ui.results_overlay.visible:
 		await get_tree().create_timer(0.1).timeout
-	# Let the player see the "Challenge Solved!" screen briefly
-	await get_tree().create_timer(1.5).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -301,18 +322,14 @@ venv\\Scripts\\activate  # Windows",
 		var ch_data = _make_challenge(
 			"view_venv", "Create a Virtual Environment", "python", "terminal.py",
 			["# Create a new virtual environment called 'venv'", "# Use the built-in python module"],
-			["Type the command to create a venv named 'venv'"],
+			["Type the command to create a venv named 'venv'", "Why: Virtual environments isolate your project's packages so they don't conflict with other Python projects on your computer."],
 			"Type your command here...",
 			[
 				"python -m venv venv",
 				"python3 -m venv venv",
 				"py -m venv venv"
 			],
-			"✅ Virtual environment 'venv' created successfully!
-  venv/
-  ├── bin/
-  ├── include/
-  └── lib/",
+			"✅ Virtual environment 'venv' created successfully!",
 			"CommandError: invalid command — use python -m venv <name>",
 			[
 				"The command uses the venv module: python -m venv",
@@ -320,6 +337,8 @@ venv\\Scripts\\activate  # Windows",
 				"Type: python -m venv venv"
 			]
 		)
+		ch_data["project_tree"] = {}
+		ch_data["project_tree_on_success"] = {"venv": {}}
 		
 		ui.load_challenge(ch_data)
 		_show_challenge_canvas()
@@ -327,8 +346,9 @@ venv\\Scripts\\activate  # Windows",
 		
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Create a virtual environment called [color=#f0c674]venv[/color]." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]python -m venv venv[/color]" }
+				{ "name": "Student", "text": "The command is 'python -m venv venv'? Why 'venv' twice?" },
+				{ "name": "Professor View", "text": "The first is the built-in module. The second is the folder name. You could name that folder 'apple', but naming it 'venv' is the universal standard." },
+				{ "name": "Professor View", "text": "Create it. Type: [color=#f0c674]python -m venv venv[/color]" }
 			])
 			await dialogue_box.dialogue_finished
 		
@@ -355,7 +375,7 @@ venv\\Scripts\\activate  # Windows",
 			"On Windows: [b]venv\\Scripts\\activate[/b]",
 			"Your terminal prompt will change to show [b](venv)[/b] when active."
 		],
-		"code": "source venv/bin/activate    # macOS/Linux\nvenv\\Scripts\\activate       # Windows\n\n(venv) $   ← You'll see this prefix",
+		"code": "venv\\Scripts\\activate       # Windows\nsource venv/bin/activate    # macOS/Linux\n\n(venv) C:\\Users\\hansu\\...\\DjangoQuest-Backend>   ← You'll see this prefix",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
 		"slide_num": "2 / 15"
@@ -377,28 +397,30 @@ venv\\Scripts\\activate  # Windows",
 		var ui_act = await _ensure_challenge_ui()
 		var ch_data_act = _make_challenge(
 			"view_activate_venv", "Activate the Virtual Environment", "python", "terminal.py",
-			["# Your virtual environment 'venv' has been created", "# Now activate it (macOS/Linux command)"],
-			["Type the command to activate the venv"],
+			["# Your virtual environment 'venv' has been created", "# Now activate it (Windows command)"],
+			["Type the command to activate the venv", "Why: Activating the environment ensures that any packages you install or run are contained within this specific sandbox."],
 			"Type your command here...",
 			[
-				"source venv/bin/activate",
-				"source ./venv/bin/activate"
+				"venv\\Scripts\\activate",
+				".\\venv\\Scripts\\activate",
+				"venv/Scripts/activate"
 			],
-			"✅ Virtual environment activated!\n  (venv) $ _\n  All pip installs will now go into venv/",
-			"CommandError: invalid activation command — use source venv/bin/activate",
+			"✅ Virtual environment activated!\n  (venv) C:\\Users\\hansu\\Documents\\Capstone\\DjangoQuest-Backend> _\n  All pip installs will now go into venv/",
+			"CommandError: invalid activation command — use venv\\Scripts\\activate",
 			[
-				"Use the source command to run the activate script",
-				"The path is: venv/bin/activate",
-				"Type: source venv/bin/activate"
+				"Run the activate script located in the Scripts folder",
+				"The path is: venv\\Scripts\\activate",
+				"Type: venv\\Scripts\\activate"
 			]
 		)
+		ch_data_act["project_tree"] = {"venv": {}}
 		ui_act.load_challenge(ch_data_act)
 		_show_challenge_canvas()
 		ui_act.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
 				{ "name": "Professor View", "text": "Activate the virtual environment." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]source venv/bin/activate[/color]" }
+				{ "name": "Professor View", "text": "Type: [color=#f0c674]venv\\Scripts\\activate[/color]" }
 			])
 			await dialogue_box.dialogue_finished
 		ui_act.lock_typing(false)
@@ -448,7 +470,7 @@ venv\\Scripts\\activate  # Windows",
 		var ch_data = _make_challenge(
 			"view_pip_django", "Install Django", "python", "terminal.py",
 			["# Install the Django framework using pip", "# Make sure your venv is activated first!"],
-			["Type the pip command to install Django"],
+			["Type the pip command to install Django", "Why: pip is Python's package manager. Installing Django gives you the framework needed to build powerful web applications."],
 			"Type your command here...",
 			[
 				"pip install django",
@@ -464,6 +486,7 @@ venv\\Scripts\\activate  # Windows",
 				"Type: pip install django"
 			]
 		)
+		ch_data["project_tree"] = {"venv": {}}
 		ui.load_challenge(ch_data)
 		_show_challenge_canvas()
 		ui.lock_typing(true)
@@ -520,18 +543,13 @@ venv\\Scripts\\activate  # Windows",
 		var ch_data = _make_challenge(
 			"view_startproject", "Create a Django Project", "python", "terminal.py",
 			["# Create a new Django project called 'mysite'"],
-			["Type the command to create a Django project named 'mysite'"],
+			["Type the command to create a Django project named 'mysite'", "Why: django-admin creates the foundational folder structure and settings files required for every Django app."],
 			"Type your command here...",
 			[
 				"django-admin startproject mysite",
 				"django-admin startproject mysite ."
 			],
-			"✅ Project 'mysite' created successfully!
-  mysite/
-  ├── manage.py
-  └── mysite/
-      ├── settings.py
-	  └── urls.py",
+			"✅ Project 'mysite' created successfully!",
 			"CommandError: invalid command — use django-admin startproject <name>",
 			[
 				"The command starts with: django-admin",
@@ -539,17 +557,61 @@ venv\\Scripts\\activate  # Windows",
 				"Type: django-admin startproject mysite"
 			]
 		)
+		ch_data["project_tree"] = {"venv": {}}
+		ch_data["project_tree_on_success"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
 		ui.load_challenge(ch_data)
 		_show_challenge_canvas()
 		ui.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
 				{ "name": "Professor View", "text": "Create a new Django project called [color=#f0c674]mysite[/color]." },
+				{ "name": "Student", "text": "Do we have to name it 'mysite'?" },
+				{ "name": "Professor View", "text": "No, you can name the project anything. But 'mysite' is standard convention for learning." },
 				{ "name": "Professor View", "text": "Type: [color=#f0c674]django-admin startproject mysite[/color]" }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
 		await _await_challenge_done(ui)
+
+	# ─── Coding Challenge 1.1: cd mysite ─────────────────────────────
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"view_cd_mysite", "Navigate to Project Folder", "python", "terminal.py",
+			["# Navigate into your newly created project directory!"],
+			["Type the command to change directories into 'mysite'", "Why: manage.py exists only inside the 'mysite' folder. You can't use it if you are not inside the correct folder."],
+			"Type your command here...",
+			[
+				"cd mysite",
+				"cd ./mysite",
+				"cd mysite/"
+			],
+			"✅ Changed directory to mysite/",
+			"CommandError: invalid command — use cd <name>",
+			[
+				"The command to change directory is: cd",
+				"Type: cd mysite"
+			]
+		)
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
+		ch_data["active_dir"] = "websites"
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Before you can run any commands, you must enter the project." },
+				{ "name": "Professor View", "text": "Type: [color=#f0c674]cd mysite[/color]" }
+			])
+			await dialogue_box.dialogue_finished
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Good. You are now inside the project directory where [color=#f0c674]manage.py[/color] lives." }
+			])
+			await dialogue_box.dialogue_finished
 
 	_before_teaching_slides()
 
@@ -564,8 +626,7 @@ venv\\Scripts\\activate  # Windows",
 			"[b]runserver[/b] — starts the development server",
 			"[b]startapp[/b] — creates a new app inside the project"
 		],
-		"code": "python manage.py migrate
-python manage.py runserver",
+		"code": "python manage.py migrate\npython manage.py runserver",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
 		"slide_num": "3 / 15"
@@ -589,7 +650,7 @@ python manage.py runserver",
 		var ch_data = _make_challenge(
 			"view_migrate", "Migrate Database", "python", "terminal.py",
 			["# Apply the initial database migrations"],
-			["Type the manage.py command to migrate the database"],
+			["Type the manage.py command to migrate the database", "Why: 'migrate' prepares the default database tables needed by Django for things like users and sessions."],
 			"Type your command here...",
 			[
 				"python manage.py migrate",
@@ -607,6 +668,7 @@ Running migrations:
 				"Type: python manage.py migrate"
 			]
 		)
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
 		ui.load_challenge(ch_data)
 		_show_challenge_canvas()
 		ui.lock_typing(true)
@@ -632,7 +694,7 @@ Running migrations:
 		var ch_data2 = _make_challenge(
 			"view_runserver", "Start the Server", "python", "terminal.py",
 			["# Start the Django development server"],
-			["Type the command to start the server"],
+			["Type the command to start the server", "Why: The dev server runs your code locally on port 8000 so you can test your app in the browser."],
 			"Type your command here...",
 			[
 				"python manage.py runserver",
@@ -646,6 +708,7 @@ Running migrations:
 				"Type: python manage.py runserver"
 			]
 		)
+		ch_data2["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
 		ui.load_challenge(ch_data2)
 		_show_challenge_canvas()
 		ui.lock_typing(true)
@@ -691,31 +754,30 @@ Running migrations:
 		var ch_data = _make_challenge(
 			"view_startapp", "Create a Django App", "python", "terminal.py",
 			["# Create a new app called 'blog' inside your project"],
-			["Type the command to create a Django app named 'blog'"],
+			["Type the command to create a Django app named 'blog'", "Why: Projects are built out of smaller apps (like 'store' or 'blog') to keep code organized and modular."],
 			"Type your command here...",
 			[
 				"python manage.py startapp blog",
 				"python3 manage.py startapp blog",
 				"py manage.py startapp blog"
 			],
-			"✅ App 'blog' created successfully!
-  blog/
-  ├── views.py
-  ├── models.py
-  ├── admin.py
-  └── apps.py",
+			"✅ App 'blog' created successfully!",
 			"CommandError: invalid command — use python manage.py startapp <name>",
 			[
 				"The command uses manage.py: python manage.py",
 				"Type: python manage.py startapp blog"
 			]
 		)
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
+		ch_data["project_tree_on_success"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "templates": {"home.html": "file", "base.html": "file", "book_list.html": "file", "book_form.html": "file"}, "static": {"css": {"style.css": "file"}}}, "manage.py": "file"}
 		ui.load_challenge(ch_data)
 		_show_challenge_canvas()
 		ui.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
 				{ "name": "Professor View", "text": "Create an app called [color=#f0c674]blog[/color] using manage.py." },
+				{ "name": "Student", "text": "And just like 'mysite', I assume we could name this app whatever feature we are building? Like 'store' or 'users'?" },
+				{ "name": "Professor View", "text": "Exactly. Whatever feature it will hold. For this module, we build a blog." },
 				{ "name": "Professor View", "text": "Type: [color=#f0c674]python manage.py startapp blog[/color]" }
 			])
 			await dialogue_box.dialogue_finished
@@ -760,7 +822,7 @@ Running migrations:
 		var ch_data = _make_challenge(
 			"view_register_app", "Register Your App", "python", "settings.py",
 			["INSTALLED_APPS = [", "    'django.contrib.admin',", "    'django.contrib.auth',", "    'django.contrib.contenttypes',", "    # Add your app name below as a string:", "    "],
-			["Add 'blog' to the INSTALLED_APPS list"],
+			["Add 'blog' to the INSTALLED_APPS list", "Why: Django won't recognize your new app until it is explicitly registered in the project's central settings file."],
 			"Type the app name as a string...",
 			[
 				"'blog',",
@@ -775,6 +837,7 @@ Running migrations:
 				"Type: 'blog'"
 			]
 		)
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "templates": {"home.html": "file", "base.html": "file", "book_list.html": "file", "book_form.html": "file"}, "static": {"css": {"style.css": "file"}}}, "manage.py": "file"}
 		ui.load_challenge(ch_data)
 		_show_challenge_canvas()
 		ui.lock_typing(true)
@@ -888,35 +951,57 @@ func _play_module_2_views_routing(skip_ide: bool):
 	
 	var ui = await _ensure_challenge_ui()
 	var ch_data = _make_challenge(
-		"view_urlpath", "Define a URL Route", "python", "urls.py",
+		"view_urlpath", "Connect URLs, Views & Templates", "django", "urls.py",
 		["from django.urls import path", "from . import views", "", "urlpatterns = [", "    # Add a path for 'home/' that calls views.home", "]"],
-		["Add a path() entry that maps 'home/' to views.home"],
+		["In urls.py — add the URL route using path()", "In views.py — write the return statement", "In templates/home.html — add your HTML heading", "Why: This represents the core Django flow (MTV). The URL routes traffic, the View processes it, and the Template displays the result."],
 		"Type your code here...",
+		[],   # replaced by per-file dict below
+		"✅ All 3 files connected!\n  urls.py → views.home → home.html\n  Your first Django page is live!",
+		"ImproperlyConfigured: Check all 3 files — each tab needs the correct code!",
 		[
-			"path('home/', views.home)",
-			"path('home/',views.home)",
-			"path(\"home/\", views.home)",
-			"path('home/', views.home, name='home')",
-			"path(\"home/\", views.home, name=\"home\")"
-		],
-		"✅ URL pattern registered!\n  /home/ → views.home",
-		"ImproperlyConfigured: URL pattern error — check your path() syntax!",
-		[
-			"Use the path() function: path('url/', views.function)",
-			"The URL is 'home/' and the view is views.home",
-			"Type: path('home/', views.home)"
+			"urls.py needs: path('home/', views.home)",
+			"views.py needs: return HttpResponse('Welcome!')",
+			"home.html needs an <h1> heading"
 		]
 	)
+	ch_data["files"] = {
+		"urls.py": "from django.urls import path\nfrom . import views\n\nurlpatterns = [\n    # Add a path for 'home/' that calls views.home\n]",
+		"views.py": "from django.http import HttpResponse\n\ndef home(request):\n    # Return an HttpResponse with 'Welcome!'\n    ",
+		"templates/home.html": "<!-- Add a heading that says Welcome! -->\n"
+	}
+	ch_data["active_file"] = "urls.py"
+	ch_data["starter_code"] = ""
+	# Per-file expected answers (dict = multi-tab-edit mode)
+	ch_data["expected_answers"] = {
+		"urls.py": [
+			"    path('home/', views.home)",
+			"    path('home/',views.home)",
+			"    path(\"home/\", views.home)",
+			"    path('home/', views.home, name='home')",
+			"    path(\"home/\", views.home, name=\"home\")"
+		],
+		"views.py": [
+			"    return HttpResponse('Welcome!')",
+			"    return HttpResponse(\"Welcome!\")"
+		],
+		"templates/home.html": [
+			"<h1>Welcome!</h1>",
+			"<h1>Welcome! </h1>"
+		]
+	}
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "templates": {"home.html": "file", "base.html": "file", "book_list.html": "file", "book_form.html": "file"}, "static": {"css": {"style.css": "file"}}}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor View", "text": "Define a URL route for [color=#f0c674]'home/'[/color]." },
-			{ "name": "Professor View", "text": "Use [color=#f0c674]path()[/color] to connect it to [color=#f0c674]views.home[/color]." },
-			{ "name": "Professor View", "text": "Type: [color=#f0c674]path('home/', views.home)[/color]" }
+			{ "name": "Professor View", "text": "This time you're editing [color=#f0c674]all three files[/color]." },
+			{ "name": "Professor View", "text": "In [color=#f0c674]urls.py[/color]: add [color=#f0c674]path('home/', views.home)[/color]" },
+			{ "name": "Professor View", "text": "In [color=#f0c674]views.py[/color]: add [color=#f0c674]return HttpResponse('Welcome!')[/color]" },
+			{ "name": "Professor View", "text": "In [color=#f0c674]templates/home.html[/color]: add [color=#f0c674]<h1>Welcome!</h1>[/color]" },
+			{ "name": "Professor View", "text": "Switch between tabs to edit each file. All three must be correct." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -1006,33 +1091,57 @@ func _play_module_3_templates(skip_ide: bool):
 	
 	var ui = await _ensure_challenge_ui()
 	var ch_data = _make_challenge(
-		"view_template", "Render a Template Variable", "html", "home.html",
+		"view_template", "Connect View, Template & URL", "django", "templates/home.html",
 		["<html>", "<body>", "  <h1>Welcome!</h1>", "  <!-- Display the user's name below -->", "  <p>Hello, </p>", "</body>", "</html>"],
-		["Insert {{ user.name }} to display the user's name"],
+		["In views.py — add the render() return", "In templates/home.html — insert {{ user.name }}", "In urls.py — add the URL path", "Why: The context dictionary is how backend data is injected dynamically into frontend HTML templates."],
 		"Type your code here...",
+		[],   # replaced by per-file dict below
+		"✅ Template rendered!\n  Hello, Alice!\n  All 3 files working together!",
+		"TemplateSyntaxError: Check all 3 files — each needs the correct code!",
 		[
+			"views.py needs: return render(request, 'home.html', context)",
+			"home.html needs: {{ user.name }}",
+			"urls.py needs: path('home/', views.home)"
+		]
+	)
+	ch_data["files"] = {
+		"views.py": "from django.shortcuts import render\n\ndef home(request):\n    context = {'user': {'name': 'Alice'}}\n    # Return the rendered template with context\n    ",
+		"templates/home.html": "<html>\n<body>\n  <h1>Welcome!</h1>\n  <!-- Display the user's name below -->\n  <p>Hello, </p>\n</body>\n</html>",
+		"urls.py": "from django.urls import path\nfrom . import views\n\nurlpatterns = [\n    # Add a path for 'home/' that calls views.home\n]"
+	}
+	ch_data["active_file"] = "views.py"
+	ch_data["starter_code"] = ""
+	# Per-file expected answers (dict = multi-tab-edit mode)
+	ch_data["expected_answers"] = {
+		"views.py": [
+			"    return render(request, 'home.html', context)",
+			"    return render(request, \"home.html\", context)"
+		],
+		"templates/home.html": [
 			"{{ user.name }}",
 			"{{user.name}}",
 			"{{ user.name}}"
 		],
-		"✅ Template rendered!\n  Hello, Alice!",
-		"TemplateSyntaxError: invalid variable — use {{ variable }} syntax!",
-		[
-			"Django template variables use double curly braces: {{ }}",
-			"The variable name is: user.name",
-			"Type: {{ user.name }}"
+		"urls.py": [
+			"    path('home/', views.home)",
+			"    path('home/', views.home, name='home')",
+			"    path(\"home/\", views.home)",
+			"    path(\"home/\", views.home, name=\"home\")"
 		]
-	)
+	}
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "templates": {"home.html": "file", "base.html": "file", "book_list.html": "file", "book_form.html": "file"}, "static": {"css": {"style.css": "file"}}}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor View", "text": "Insert the user's name into the template." },
-			{ "name": "Professor View", "text": "Use Django's template syntax: [color=#f0c674]{{ user.name }}[/color]" },
-			{ "name": "Professor View", "text": "Double curly braces. That's how you inject data into HTML." }
+			{ "name": "Professor View", "text": "Now connect [color=#f0c674]all three files[/color] again — this time with templates." },
+			{ "name": "Professor View", "text": "In [color=#f0c674]views.py[/color]: return [color=#f0c674]render(request, 'home.html', context)[/color]" },
+			{ "name": "Professor View", "text": "In [color=#f0c674]templates/home.html[/color]: insert [color=#f0c674]{{ user.name }}[/color] after 'Hello, '" },
+			{ "name": "Professor View", "text": "In [color=#f0c674]urls.py[/color]: add [color=#f0c674]path('home/', views.home)[/color]" },
+			{ "name": "Professor View", "text": "Switch tabs and complete all three. That's how Django connects everything." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -1123,7 +1232,7 @@ func _play_module_4_static_files(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"view_static", "Load Static Files", "html", "base.html",
 		["<!-- Load Django's static file system -->", "", "<html>", "<head>", "    <title>My Blog</title>", "</head>"],
-		["Add the {% load static %} tag at the very top of the template"],
+		["Inspect `settings.py` for STATIC_URL", "Open `templates/base.html`", "Add `{% load static %}` at the very top", "Why: Static files like CSS and images are never served automatically. They must be explicitly loaded in templates."],
 		"Type your code here...",
 		[
 			"{% load static %}",
@@ -1138,7 +1247,15 @@ func _play_module_4_static_files(skip_ide: bool):
 			"Type: {% load static %}"
 		]
 	)
+	ch_data["files"] = {
+		"templates/base.html": "<!-- Load Django's static file system -->\n\n<html>\n<head>\n    <title>My Blog</title>\n    <link rel=\"stylesheet\" href=\"{% static 'css/style.css' %}\">\n</head>\n<body>\n    <h1>Blog</h1>\n</body>\n</html>",
+		"settings.py": "STATIC_URL = '/static/'\nSTATICFILES_DIRS = [BASE_DIR / 'static']",
+		"static/css/style.css": "body {\n    font-family: Arial, sans-serif;\n    background: #111827;\n    color: #f9fafb;\n}"
+	}
+	ch_data["active_file"] = "templates/base.html"
+	ch_data["starter_code"] = ""
 	
+	ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "blog": {"__init__.py": "file", "admin.py": "file", "apps.py": "file", "models.py": "file", "tests.py": "file", "views.py": "file", "templates": {"home.html": "file", "base.html": "file", "book_list.html": "file", "book_form.html": "file"}, "static": {"css": {"style.css": "file"}}}, "manage.py": "file"}
 	ui.load_challenge(ch_data)
 	_show_challenge_canvas()
 	ui.lock_typing(true)
@@ -1175,8 +1292,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -1193,7 +1308,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -1661,6 +1776,8 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var line_label = RichTextLabel.new()
 		line_label.bbcode_enabled = true
@@ -1672,6 +1789,15 @@ func _refresh_log_content():
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
 		var name_color = "#a3c4f3" if speaker == "Professor View" else "#c8e6c9"
+		if challenge_active and (
+			text.find("\n") != -1
+			or text.find("def ") != -1
+			or text.find("render(") != -1
+			or text.find("HttpResponse") != -1
+			or text.find("=") != -1
+			or text.find("request") != -1
+		):
+			text = "[REDACTED - solve the challenge first!]"
 
 		line_label.text = "[color=" + name_color + "][b]" + speaker + ":[/b][/color] [color=#d4d4d8]" + text + "[/color]"
 		log_content.add_child(line_label)
@@ -1687,3 +1813,220 @@ func _on_slide_glossary_clicked(meta) -> void:
 	var popup = GLOSSARY_POPUP_SCENE.new()
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  MODULE 5 — Generic Views (Class-Based Architecture)
+# ══════════════════════════════════════════════════════════════════════
+
+func _play_module_5_generic_views(skip_ide: bool):
+	dialogue_box = _get_dialogue_box()
+	_before_teaching_slides()
+
+	# ─── Slide: ListView ───
+	_show_teaching_slide({
+		"icon": "🏭",
+		"title": "Class-Based Generic Views",
+		"subtitle": "The CRUD Factories",
+		"bullets": [
+			"[b]C.R.U.D.[/b] stands for Create, Read, Update, Delete. It is the blood of the web.",
+			"Function-Based Views require you to write repetitive CRUD SQL logic manually.",
+			"Django provides [b]Class-Based Generic Views[/b] to automate this.",
+			"A [b]ListView[/b] automatically queries all objects and passes them to a template."
+		],
+		"code": "from django.views.generic import ListView\n\nclass BookListView(ListView):\n    model = Book\n    template_name = 'book_list.html'",
+		"header": "MODULE 5 — CRUD & GENERIC VIEWS",
+		"header_icon": "🗃️",
+		"slide_num": "9 / 12"
+	})
+	
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor View", "text": "Listen closely. The web is built entirely on C.R.U.D." },
+			{ "name": "Professor View", "text": "Instead of writing function after function to pull data, Django provides [color=#f0c674]Class-Based Views (CBV)[/color]." }
+		])
+		await dialogue_box.dialogue_finished
+	
+	await get_tree().create_timer(0.3).timeout
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	# ─── Challenge 1: ListView ───
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"view_generic_list", "Generic ListView (Read All)", "django", "views.py",
+			[],
+			["Use ListView to display all Books, route it with as_view(), and render object_list.", "Why: Because Django's ORM and Views are heavily abstracted for speed of development."],
+			"Type the class-based components...",
+			[],
+			"✅ Success! ListView successfully routed and rendered.",
+			"Error: Ensure you hit all 3 files. Use BookListView in urls, and object_list in the template.",
+			[
+				"In views.py: inherit from ListView and set 'model = Book'.",
+				"In urls.py: use BookListView.as_view().",
+				"In book_list.html: loop using {% for book in object_list %}."
+			]
+		)
+		ch_data["files"] = {
+			"views.py": "from django.views.generic import ListView\nfrom .models import Book\n\n# TODO: Create a BookListView that inherits from ListView\nclass BookListView(\n    model = \n    template_name = 'book_list.html'\n",
+			"urls.py": "from django.urls import path\nfrom .views import BookListView\n\nurlpatterns = [\n    # TODO: Add the path for BookListView using .as_view()\n    path('books/', \n]\n",
+			"templates/book_list.html": "<h1>All Books</h1>\n<ul>\n    <!-- TODO: Generic Views automatically inject a variable called 'object_list' -->\n    <!-- Loop through object_list and print book.title! -->\n    {% for book in    %}\n        <li>{{ book.title }}</li>\n    {% endfor %}\n</ul>"
+		}
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "settings.py": "file", "urls.py": "file"}, "app": {"__init__.py": "file", "models.py": "file", "urls.py": "file", "views.py": "file"}, "templates": {"book_list.html": "file"}, "manage.py": "file"}
+		ch_data["active_file"] = "views.py"
+		ch_data["expected_answers"] = {
+			"views.py": [
+				"class BookListView(ListView):\n    model = Book"
+			],
+			"urls.py": [
+				"path('books/', BookListView.as_view()"
+			],
+			"templates/book_list.html": [
+				"{% for book in object_list %}"
+			]
+		}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+		
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Let's build the R in CRUD. Read All." },
+				{ "name": "Professor View", "text": "In views.py, finish the [color=#f0c674]ListView[/color] class." },
+				{ "name": "Professor View", "text": "In urls.py, use [color=#f0c674].as_view()[/color] to route it. In book_list.html, loop through [color=#f0c674]object_list[/color]." }
+			])
+			await dialogue_box.dialogue_finished
+		
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+	# ─── Slide: DetailView ───
+	_before_teaching_slides()
+	_show_teaching_slide({
+		"icon": "🔍",
+		"title": "DetailView",
+		"subtitle": "Read a single object",
+		"bullets": [
+			"[b]DetailView[/b] is used to view a specific item (like a single user profile or specific book).",
+			"To do this, the URL must pass a Primary Key ([b]pk[/b]) or Slug to the view.",
+			"The view intercepts the [b]<int:pk>[/b] from the URL, automatically fetches the database item, and injects it into the template as [color=#f0c674]object[/color]."
+		],
+		"code": "from django.views.generic import DetailView\n\nclass BookDetailView(DetailView):\n    model = Book\n    # Automatically looks for book_detail.html and passes 'object'",
+		"header": "MODULE 5 — CRUD & GENERIC VIEWS",
+		"header_icon": "🗃️",
+		"slide_num": "10 / 12"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor View", "text": "A list is useless if we cannot drill down into specific items." },
+			{ "name": "Professor View", "text": "This is where [color=#f0c674]DetailView[/color] comes in." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	# ─── Challenge 2: DetailView ───
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"view_generic_detail", "Generic DetailView (Read Single)", "django", "urls.py",
+			[],
+			["Use an integer parameter in the URL route to pass the Primary Key to the DetailView.", "Why: DetailView inherently relies on URL parameters to safely query the exact database record requested."],
+			"Type the URL routing...",
+			[],
+			"✅ Success! DetailView successfully routed via Primary Key.",
+			"Error: Use <int:pk> in the URL path, and BookDetailView.as_view().",
+			[
+				"In urls.py: path('book/<int:pk>/', BookDetailView.as_view(), name='book-detail')"
+			]
+		)
+		ch_data["files"] = {
+			"urls.py": "from django.urls import path\nfrom .views import BookDetailView\n\nurlpatterns = [\n    # TODO: Route to BookDetailView.as_view(). Pass an integer 'pk' in the URL!\n    path('book/          /',                            , name='book-detail')\n]\n",
+			"views.py": "from django.views.generic import DetailView\nfrom .models import Book\n\nclass BookDetailView(DetailView):\n    model = Book\n    template_name = 'book_detail.html'\n"
+		}
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "settings.py": "file", "urls.py": "file"}, "app": {"__init__.py": "file", "models.py": "file", "urls.py": "file", "views.py": "file"}, "manage.py": "file"}
+		ch_data["active_file"] = "urls.py"
+		ch_data["expected_answers"] = {
+			"urls.py": [
+				"path('book/<int:pk>/', BookDetailView.as_view(), name='book-detail')"
+			]
+		}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+		
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "I have written the DetailView class for you." },
+				{ "name": "Professor View", "text": "I need you to open [color=#f0c674]urls.py[/color] and properly map the [color=#f0c674]<int:pk>[/color] URL parameter to [color=#f0c674]BookDetailView.as_view()[/color]." }
+			])
+			await dialogue_box.dialogue_finished
+		
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+	# ─── Slide: Create/Update/Delete ───
+	_before_teaching_slides()
+	_show_teaching_slide({
+		"icon": "🏗️",
+		"title": "Create, Update, Delete",
+		"subtitle": "Writing data directly to the Database.",
+		"bullets": [
+			"[b]CreateView / UpdateView[/b]: These automatically generate an HTML Form based on the model's fields, save data on POST, and redirect.",
+			"You must specify [color=#f0c674]fields = ['title', 'author'][/color] and a [color=#f0c674]success_url[/color].",
+			"[b]DeleteView[/b]: Automatically asks for confirmation and deletes the database record."
+		],
+		"code": "from django.views.generic import CreateView\n\nclass BookCreateView(CreateView):\n    model = Book\n    fields = ['title', 'author']\n    success_url = '/books/'",
+		"header": "MODULE 5 — CRUD & GENERIC VIEWS",
+		"header_icon": "🗃️",
+		"slide_num": "11 / 12"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor View", "text": "We can read. Now we must alter." },
+			{ "name": "Professor View", "text": "CreateView and UpdateView are incredibly aggressive shortcuts. They literally generate HTML forms for you." }
+		])
+		await dialogue_box.dialogue_finished
+	await get_tree().create_timer(0.3).timeout
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	# ─── Challenge 3: CreateView ───
+	if not skip_ide:
+		var ui = await _ensure_challenge_ui()
+		var ch_data = _make_challenge(
+			"view_generic_create", "Generic CreateView (Create Data)", "django", "views.py",
+			[],
+			["Use CreateView to orchestrate form creation and redirection.", "Why: Without specifying fields and success_url, CreateView does not know what data to permit or where to send the user after saving."],
+			"Type the missing variables...",
+			[],
+			"✅ Success! C.R.U.D is fully complete.",
+			"Error: Specify 'fields' as a list containing 'name', and reverse_lazy for the success_url.",
+			[
+				"In views.py: fields = ['name']",
+				"In views.py: success_url = reverse_lazy('books')"
+			]
+		)
+		ch_data["files"] = {
+			"views.py": "from django.views.generic import CreateView\nfrom django.urls import reverse_lazy\nfrom .models import Book\n\nclass BookCreateView(CreateView):\n    model = Book\n    # TODO: We only want users to input the 'name' field\n    fields = \n    # TODO: Redirect them back to the /books/ URL upon creation\n    success_url = \n\nclass BookDeleteView(DeleteView):\n    model = Book\n    success_url = reverse_lazy('books')\n"
+		}
+		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "settings.py": "file", "urls.py": "file"}, "app": {"__init__.py": "file", "models.py": "file", "urls.py": "file", "views.py": "file"}, "manage.py": "file"}
+		ch_data["active_file"] = "views.py"
+		ch_data["expected_answers"] = {
+			"views.py": [
+				"    fields = ['name']\n    # TODO: Redirect them back to the /books/ URL upon creation\n    success_url = reverse_lazy('books')",
+				"    fields = [\"name\"]\n    # TODO: Redirect them back to the /books/ URL upon creation\n    success_url = reverse_lazy(\"books\")"
+			]
+		}
+		ui.load_challenge(ch_data)
+		_show_challenge_canvas()
+		ui.lock_typing(true)
+		
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Declare the required components to validate and lock our [color=#f0c674]CreateView[/color]." },
+				{ "name": "Professor View", "text": "Set [color=#f0c674]fields[/color] to an array containing 'name', and use [color=#f0c674]reverse_lazy('books')[/color] to route them upon success." }
+			])
+			await dialogue_box.dialogue_finished
+		
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)

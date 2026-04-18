@@ -173,7 +173,7 @@ static var python_challenges: Array = [
 			"It should print 'Hello, World!' to the console",
 			"Use the print() function",
 		],
-		"hint": "The syntax is: print('your text here')",
+		"hint": "Use Python's text-output function with your message inside parentheses and quotation marks.",
 		"code_lines": [
 			"# Write your code below",
 			"",
@@ -203,7 +203,7 @@ static var python_challenges: Array = [
 			"Assign it the value 'DjangoQuest'",
 			"Use a single equals sign (=) for assignment",
 		],
-		"hint": "The syntax is: variable_name = 'value'",
+		"hint": "Create the variable with an equals sign and store the project name as a string value.",
 		"code_lines": [
 			"# Create a variable below",
 			"",
@@ -478,7 +478,7 @@ static var html_challenges: Array = [
 			"Use the <p> tag",
 			"Include the opening AND closing tag",
 		],
-		"hint": "Paragraphs look like: <p>text</p>",
+		"hint": "A paragraph needs both an opening tag and a matching closing tag around the text.",
 		"code_lines": [
 			"<body>",
 			"  <h1>About</h1>",
@@ -510,7 +510,7 @@ static var html_challenges: Array = [
 			"Use the h1 tag",
 			"Don't forget the closing tag!",
 		],
-		"hint": "HTML headings look like: <h1>text</h1>",
+		"hint": "Use a level-one heading element with both opening and closing tags around the word.",
 		"code_lines": [
 			"<body>",
 			"  <!-- Write your heading below -->",
@@ -787,7 +787,7 @@ static var css_challenges: Array = [
 			"Use the font-size property",
 			"Don't forget the units and semicolon!",
 		],
-		"hint": "The syntax is: font-size: 16px;",
+		"hint": "Use the font-size property with a pixel value and finish the declaration with a semicolon.",
 		"code_lines": [
 			"p {",
 			"    color: black;",
@@ -820,7 +820,7 @@ static var css_challenges: Array = [
 			"Use the 'color' property",
 			"Don't forget the semicolon!",
 		],
-		"hint": "The syntax is: color: red;",
+		"hint": "Use the text color property, assign it the color name, and end the declaration cleanly.",
 		"code_lines": [
 			"p {",
 			"    /* Write your property here */",
@@ -1099,7 +1099,7 @@ static var django_challenges: Array = [
 			"It should point to views.about",
 			"Give it the name 'about'",
 		],
-		"hint": "path('route/', views.function, name='name')",
+		"hint": "Use Django's URL helper with the route, the view function reference, and a name keyword.",
 		"code_lines": [
 			"from django.urls import path",
 			"from . import views",
@@ -1136,7 +1136,7 @@ static var django_challenges: Array = [
 			"It comes from the django.http module",
 			"Use the 'from ... import ...' syntax",
 		],
-		"hint": "The syntax is: from django.http import HttpResponse",
+		"hint": "Import the response class from Django's HTTP module using Python's from-import pattern.",
 		"code_lines": [
 			"# Write the import statement below",
 			"",
@@ -1168,7 +1168,7 @@ static var django_challenges: Array = [
 			"Name it 'venv'",
 			"Use the python -m venv command",
 		],
-		"hint": "The command is: python -m venv <name>",
+		"hint": "Use Python's module-running flag to create a virtual environment and name it venv.",
 		"code_lines": [
 			"$ # Create a virtual environment",
 			"$ # Type the command below",
@@ -1199,7 +1199,7 @@ static var django_challenges: Array = [
 			"Name it 'myproject'",
 			"Use django-admin startproject",
 		],
-		"hint": "The command is: django-admin startproject <name>",
+		"hint": "Use Django's project creation command followed by the project name.",
 		"code_lines": [
 			"(venv) $ # Virtual env is active",
 			"(venv) $ pip install django  # Already done",
@@ -1229,7 +1229,7 @@ static var django_challenges: Array = [
 			"Use python manage.py",
 			"The command to apply migrations is 'migrate'",
 		],
-		"hint": "The command is: python manage.py migrate",
+		"hint": "Run the Django management command that applies pending migrations to the database.",
 		"code_lines": [
 			"(venv) $ cd myproject",
 			"(venv) $ # Apply database migrations",
@@ -1260,7 +1260,7 @@ static var django_challenges: Array = [
 			"Use python manage.py",
 			"The command is 'createsuperuser'",
 		],
-		"hint": "The command is: python manage.py createsuperuser",
+		"hint": "Use the Django management command that creates an admin account with full permissions.",
 		"code_lines": [
 			"(venv) $ # Create an admin account",
 			"(venv) $ # So you can access /admin",
@@ -1291,7 +1291,7 @@ static var django_challenges: Array = [
 			"Use python manage.py",
 			"The command is 'runserver'",
 		],
-		"hint": "The command is: python manage.py runserver",
+		"hint": "Use the Django management command that starts the local development server.",
 		"code_lines": [
 			"(venv) $ # Start the dev server",
 			"(venv) $ # So we can see our site!",

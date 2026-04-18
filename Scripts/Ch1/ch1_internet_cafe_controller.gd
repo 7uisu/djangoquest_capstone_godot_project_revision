@@ -194,7 +194,7 @@ func _start_cutscene():
 	
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_IDE = false
+	var DEBUG_SKIP_IDE = true
 	if DEBUG_SKIP_IDE:
 		await _play_completion_sequence(pname)
 		return

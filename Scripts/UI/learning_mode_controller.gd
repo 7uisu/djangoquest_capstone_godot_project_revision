@@ -5,14 +5,35 @@ extends Control
 
 const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
 const PROFESSOR_SELECT_SCENE = preload("res://Scenes/UI/learning_professor_select.tscn")
+const LEARNING_USB_QUANTITY: int = 100
 
 @onready var character_data = get_node("/root/CharacterData")
 
 var dialogue_box = null
+var current_professor_select = null
 
 func _ready():
+	_grant_learning_mode_skip_items()
 	# Show intro explanation when learning mode starts
 	_show_learning_intro()
+
+func _grant_learning_mode_skip_items():
+	var inv = get_node_or_null("/root/InventoryManager")
+	if inv == null:
+		return
+
+	var current_qty = inv.get_item_quantity(CodingItems.ENCRYPTED_DRIVE)
+	if current_qty >= LEARNING_USB_QUANTITY:
+		return
+
+	var grant_amount = LEARNING_USB_QUANTITY - current_qty
+	inv.add_item(
+		CodingItems.ENCRYPTED_DRIVE,
+		"Encrypted Drive",
+		"Learning Mode bonus USB: instantly solves coding challenges so you can skip ahead.",
+		CodingItems.get_icon(CodingItems.ENCRYPTED_DRIVE),
+		grant_amount
+	)
 
 func _show_learning_intro():
 	if character_data and character_data.has_seen_learning_mode_intro:
@@ -39,30 +60,60 @@ func _show_learning_intro():
 		{"name": "DjangoQuest", "text": "Ready to start learning? Choose your professor!"}
 	]
 	
+	# Show the professor selector in the background before the dialogue
+	_show_professor_selection()
+	show_professor_selector_disabled()
+	
 	if dialogue_box:
 		dialogue_box.start(intro_lines)
 		await dialogue_box.dialogue_finished
 	
-	# After intro, show professor selection
-	_show_professor_selection()
+	# After intro, enable the professor selection buttons
+	enable_professor_selector()
 
 func _show_professor_selection():
-	var professor_select = PROFESSOR_SELECT_SCENE.instantiate()
-	add_child(professor_select)
-	
-	# Connect signals from professor selection
-	professor_select.professor_selected.connect(_on_professor_selected)
-	professor_select.back_pressed.connect(_on_back_pressed)
+	if current_professor_select == null:
+		current_professor_select = PROFESSOR_SELECT_SCENE.instantiate()
+		add_child(current_professor_select)
+		current_professor_select.professor_selected.connect(_on_professor_selected)
+		current_professor_select.back_pressed.connect(_on_back_pressed)
+	else:
+		current_professor_select.visible = true
+		current_professor_select.process_mode = Node.PROCESS_MODE_INHERIT
 
 func _on_professor_selected(professor_name: String):
 	print("LearningModeController: Professor selected: ", professor_name)
 	
-	# Remove professor selection UI
-	if has_node("LearningProfessorSelect"):
-		get_node("LearningProfessorSelect").queue_free()
+	show_professor_selector_disabled()
 	
-	# Launch the appropriate professor controller
-	_launch_professor_lessons(professor_name)
+	var prof_title = "Professor " + professor_name.capitalize()
+	if professor_name == "rest":
+		prof_title = "Professor REST"
+		
+	dialogue_box = _get_dialogue_box()
+	if dialogue_box:
+		if dialogue_box.choice_selected.is_connected(_on_start_lesson_choice):
+			dialogue_box.choice_selected.disconnect(_on_start_lesson_choice)
+			
+		dialogue_box.choice_selected.connect(_on_start_lesson_choice.bind(professor_name), CONNECT_ONE_SHOT)
+		
+		var lines = [{
+			"name": "DjangoQuest",
+			"text": "Start the lesson with [color=#f0c674]" + prof_title + "[/color]?",
+			"choices": ["Yes, start lesson", "No, go back"]
+		}]
+		dialogue_box.start(lines)
+
+func _on_start_lesson_choice(choice_index: int, professor_name: String):
+	if choice_index == 0:
+		# Hide professor selection UI
+		if is_instance_valid(current_professor_select):
+			current_professor_select.visible = false
+		
+		# Launch the appropriate professor controller
+		_launch_professor_lessons(professor_name)
+	else:
+		enable_professor_selector()
 
 func _on_back_pressed():
 	# Return to main menu
@@ -160,3 +211,12 @@ func _get_dialogue_box():
 	var instance = DIALOGUE_BOX_SCENE.instantiate()
 	root.add_child(instance)
 	return instance
+
+func show_professor_selector_disabled():
+	if is_instance_valid(current_professor_select):
+		current_professor_select.visible = true
+		current_professor_select.process_mode = Node.PROCESS_MODE_DISABLED
+
+func enable_professor_selector():
+	if is_instance_valid(current_professor_select):
+		current_professor_select.process_mode = Node.PROCESS_MODE_INHERIT

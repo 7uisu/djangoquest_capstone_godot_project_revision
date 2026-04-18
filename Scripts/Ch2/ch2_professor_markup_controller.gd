@@ -162,6 +162,11 @@ func _start_lesson_sequence():
 	_challenge_canvas = null
 	_challenge_ui = null
 	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
+	
 	await get_tree().create_timer(0.3).timeout
 	
 	# Completion dialogue
@@ -188,6 +193,14 @@ func _start_lesson_sequence():
 	
 	_cutscene_running = false
 
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
+
 	if qm:
 		qm.show_quest()
 		if qm.has_method("refresh_college_quest"):
@@ -212,6 +225,23 @@ func _transition_from_teaching_to_ide(skip_ide: bool) -> void:
 	await get_tree().process_frame
 	_hide_fullscreen_image()
 
+
+func _show_challenge_canvas() -> void:
+	if _challenge_canvas and is_instance_valid(_challenge_canvas):
+		_challenge_canvas.visible = true
+
+func _await_challenge_done(ui) -> void:
+	while not ui.is_completed:
+		await get_tree().create_timer(0.1).timeout
+	while not ui.results_overlay.visible:
+		await get_tree().create_timer(0.1).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
+	ui.results_overlay.visible = false
+	ui.lock_typing(true)
 
 func _ensure_challenge_ui() -> Node:
 	if _challenge_ui and is_instance_valid(_challenge_ui):
@@ -311,7 +341,7 @@ func _play_module_1_web_basics(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"markup_web_basics", "Write an HTTP Request", "http", "request.txt",
 		["# Write the HTTP method to request a homepage", "# Format: METHOD /path/ HTTP/1.1"],
-		["Write a GET request for the /home/ path"],
+		["Write a GET request for the /home/ path", "Why: HTTP GET is the fundamental method that all browsers use to retrieve web pages from servers."],
 		"Type your request here...",
 		["GET /home/ HTTP/1.1", "GET /home/ HTTP/1.1 "],
 		"200 OK — Page loaded successfully!",
@@ -322,6 +352,7 @@ func _play_module_1_web_basics(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"request.txt": "file", "index.html": "file", "style.css": "file", "layout.css": "file", "responsive.css": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -335,12 +366,7 @@ func _play_module_1_web_basics(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -424,7 +450,7 @@ func _play_module_2_html(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"markup_html", "Write HTML Tags", "html", "index.html",
 		["<!DOCTYPE html>", "<html>", "<head><title>My Page</title></head>", "", "<!-- Add the body, heading, and paragraph tags below -->", "</html>"],
-		["Add <body>, <h1>Hello</h1>, and <p>World</p> tags"],
+		["Add <body>, <h1>Hello</h1>, and <p>World</p> tags", "Why: HTML provides the core structure of the web. Headings and paragraphs define the semantic meaning of the text."],
 		"Type your HTML here...",
 		[
 			"<body><h1>Hello</h1><p>World</p></body>",
@@ -439,6 +465,7 @@ func _play_module_2_html(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"request.txt": "file", "index.html": "file", "style.css": "file", "layout.css": "file", "responsive.css": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -452,12 +479,7 @@ func _play_module_2_html(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -536,7 +558,7 @@ func _play_module_3_css(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"markup_css", "Style a Box", "css", "style.css",
 		["/* Style the div to have proper spacing */", ".box {", "", "    /* Add margin and padding below */", "", "}"],
-		["Add margin: 20px; and padding: 10px; to the box"],
+		["Add margin: 20px; and padding: 10px; to the box", "Why: CSS controls visual layout. The Box Model (margins and padding) determines how elements are spaced."],
 		"Type your CSS here...",
 		[
 			"margin: 20px;\n    padding: 10px;",
@@ -552,6 +574,7 @@ func _play_module_3_css(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"request.txt": "file", "index.html": "file", "style.css": "file", "layout.css": "file", "responsive.css": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -565,12 +588,7 @@ func _play_module_3_css(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -648,7 +666,7 @@ func _play_module_4_flexbox(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"markup_flexbox", "Center with Flexbox", "css", "layout.css",
 		["/* Center the items in this container */", ".container {", "", "    /* Make this a flex container and center items */", "", "}"],
-		["Add display: flex; and justify-content: center;"],
+		["Add display: flex; and justify-content: center;", "Why: Flexbox is a modern CSS layout module that allows you to easily align and distribute elements dynamically."],
 		"Type your CSS here...",
 		[
 			"display: flex;\n    justify-content: center;",
@@ -664,6 +682,7 @@ func _play_module_4_flexbox(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"request.txt": "file", "index.html": "file", "style.css": "file", "layout.css": "file", "responsive.css": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -677,12 +696,7 @@ func _play_module_4_flexbox(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -760,7 +774,7 @@ func _play_module_5_responsiveness(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"markup_responsive", "Write a Media Query", "css", "responsive.css",
 		["/* Make the layout responsive for small screens */", "", "/* Write a media query for screens 600px or smaller */"],
-		["Write a media query for max-width: 600px"],
+		["Write a media query for max-width: 600px", "Why: Media queries allow your website to adapt its CSS responsively so it looks good on both phones and desktops."],
 		"Type your CSS here...",
 		[
 			"@media (max-width: 600px) { }",
@@ -778,6 +792,7 @@ func _play_module_5_responsiveness(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"request.txt": "file", "index.html": "file", "style.css": "file", "layout.css": "file", "responsive.css": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -791,12 +806,7 @@ func _play_module_5_responsiveness(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -817,8 +827,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -835,7 +843,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -1317,6 +1325,8 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var line_label = RichTextLabel.new()
 		line_label.bbcode_enabled = true
@@ -1328,6 +1338,15 @@ func _refresh_log_content():
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
 		var name_color = "#a3c4f3" if speaker == "Professor Markup" else "#c8e6c9"
+		if challenge_active and (
+			text.find("\n") != -1
+			or text.find("<") != -1
+			or text.find(">") != -1
+			or text.find("{") != -1
+			or text.find("}") != -1
+			or text.find(":") != -1
+		):
+			text = "[REDACTED - solve the challenge first!]"
 
 		line_label.text = "[color=" + name_color + "][b]" + speaker + ":[/b][/color] [color=#d4d4d8]" + text + "[/color]"
 		log_content.add_child(line_label)

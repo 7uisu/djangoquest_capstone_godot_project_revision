@@ -214,6 +214,7 @@ text = " 💻 TERMINAL"
 [node name="TerminalScroll" type="ScrollContainer" parent="IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="TerminalOutput" type="RichTextLabel" parent="IDEScreen/MainContent/CodePanel/CodeVBox/TerminalStrip/TerminalVBox/TerminalScroll"]
 layout_mode = 2
@@ -222,6 +223,7 @@ size_flags_vertical = 3
 bbcode_enabled = true
 fit_content = true
 scroll_active = true
+autowrap_mode = 2
 
 ; ─── BOTTOM BAR ───
 

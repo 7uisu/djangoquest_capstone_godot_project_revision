@@ -292,8 +292,8 @@ func _on_delete_save_response(result: int, response_code: int, _headers: PackedS
 
 # ─── Code Checking (Judge0 + Gemini) ────────────────────────────────────────
 
-func check_code(code: String, language: String, challenge_id: String, 
-				expected_answers: Array, expected_output: String = ""):
+func check_code(code: Variant, language: String, challenge_id: String, 
+				expected_answers: Variant, expected_output: String = ""):
 	var http = HTTPRequest.new()
 	http.timeout = 60  # Gemini + Judge0 can take a few seconds
 	add_child(http)
@@ -346,4 +346,50 @@ func _on_check_code_response(result: int, response_code: int, _headers: PackedSt
 		"ai_hint": json.get("ai_hint", ""),
 		"judge0_output": json.get("judge0_output", ""),
 	})
+
+
+# ─── AI Evaluator Minigame ───────────────────────────────────────────────────
+
+signal ai_evaluated(result_dict)
+
+func check_ai_evaluator(challenge_type: String, student_answer: String, context: String):
+	var http = HTTPRequest.new()
+	http.timeout = 60
+	add_child(http)
+	http.request_completed.connect(_on_ai_evaluator_response.bind(http))
+
+	var body = JSON.stringify({
+		"challenge_type": challenge_type,
+		"student_answer": student_answer,
+		"context": context,
+	})
+	var headers = ["Content-Type: application/json"]
+	
+	var url = BASE_URL + "/api/game/ai-evaluator/"
+	print("[ApiManager] check_ai_evaluator -> POST %s" % url)
+
+	var error = http.request(url, headers, HTTPClient.METHOD_POST, body)
+
+	if error != OK:
+		print("[ApiManager] ❌ HTTPRequest.request() failed with error: %s" % str(error))
+		emit_signal("ai_evaluated", {"success": false, "feedback": "Network error connecting to AI backend."})
+		http.queue_free()
+
+func _on_ai_evaluator_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+	http.queue_free()
+	
+	if result != HTTPRequest.RESULT_SUCCESS:
+		emit_signal("ai_evaluated", {"success": false, "feedback": "Failed to reach AI evaluator endpoint."})
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json == null:
+		emit_signal("ai_evaluated", {"success": false, "feedback": "Corrupted response geometry from AI endpoint."})
+		return
+
+	emit_signal("ai_evaluated", {
+		"success": json.get("success", false),
+		"feedback": json.get("feedback", "No feedback provided by AI.")
+	})
+
 

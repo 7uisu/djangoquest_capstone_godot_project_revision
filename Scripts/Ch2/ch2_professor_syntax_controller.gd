@@ -158,6 +158,11 @@ func _start_lesson_sequence():
 	_challenge_canvas = null
 	_challenge_ui = null
 	
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
+			parent_node.show_professor_selector_disabled()
+	
 	await get_tree().create_timer(0.3).timeout
 	
 	# Completion dialogue
@@ -184,6 +189,14 @@ func _start_lesson_sequence():
 	
 	_cutscene_running = false
 
+	# ─── Scene Transition ─────────────────────────────────────────
+	if is_learning_mode:
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("enable_professor_selector"):
+			parent_node.enable_professor_selector()
+		queue_free()
+		return
+
 	if qm:
 		qm.show_quest()
 		if qm.has_method("refresh_college_quest"):
@@ -205,6 +218,23 @@ func _transition_from_teaching_to_ide(skip_ide: bool) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_hide_fullscreen_image()
+
+func _show_challenge_canvas() -> void:
+	if _challenge_canvas and is_instance_valid(_challenge_canvas):
+		_challenge_canvas.visible = true
+
+func _await_challenge_done(ui) -> void:
+	while not ui.is_completed:
+		await get_tree().create_timer(0.1).timeout
+	while not ui.results_overlay.visible:
+		await get_tree().create_timer(0.1).timeout
+	# Show the continue button and wait for the player to click it
+	ui.continue_button.visible = true
+	ui.continue_button.text = "Next ▸"
+	await ui.continue_button.pressed
+	ui.continue_button.visible = false
+	ui.results_overlay.visible = false
+	ui.lock_typing(true)
 
 func _ensure_challenge_ui() -> Node:
 	if _challenge_ui and is_instance_valid(_challenge_ui):
@@ -305,7 +335,7 @@ func _play_module_1_python_basics(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"syntax_loops", "Write a For Loop", "python", "loops.py",
 		["# Write a for loop that prints 0 to 4", "# Use range() to generate the numbers"],
-		["Write a for loop using range(5) that prints each number"],
+		["Write a for loop using range(5) that prints each number", "Why: Loops automate repetitive tasks, allowing you to process lists or run code multiple times instantly."],
 		"Type your code here...",
 		[
 			"for i in range(5):\n    print(i)",
@@ -321,6 +351,7 @@ func _play_module_1_python_basics(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"loops.py": "file", "student.py": "file", "api_call.py": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -334,12 +365,7 @@ func _play_module_1_python_basics(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -428,7 +454,7 @@ func _play_module_2_oop(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"syntax_oop", "Create a Class", "python", "student.py",
 		["# Create a Student class with a constructor", "# The constructor should accept 'name' as a parameter"],
-		["Define class Student with __init__(self, name) that stores self.name"],
+		["Define class Student with __init__(self, name) that stores self.name", "Why: Classes act as blueprints. They let you create objects that bundle data and behavior, which is how Django builds its structures."],
 		"Type your code here...",
 		[
 			"class Student:\n    def __init__(self, name):\n        self.name = name",
@@ -445,6 +471,7 @@ func _play_module_2_oop(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"loops.py": "file", "student.py": "file", "api_call.py": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -458,12 +485,7 @@ func _play_module_2_oop(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -545,7 +567,7 @@ func _play_module_3_http_requests(skip_ide: bool):
 	var ch_data = _make_challenge(
 		"syntax_requests", "Make an HTTP Request", "python", "api_call.py",
 		["import requests", "", "# Make a GET request to the URL below", "# URL: 'https://api.example.com/data'"],
-		["Write a GET request using requests.get() with the given URL"],
+		["Write a GET request using requests.get() with the given URL", "Why: Making HTTP requests allows your code to talk to APIs and other servers to retrieve live data over the web."],
 		"Type your code here...",
 		[
 			"response = requests.get('https://api.example.com/data')",
@@ -562,6 +584,7 @@ func _play_module_3_http_requests(skip_ide: bool):
 		]
 	)
 	
+	ch_data["project_tree"] = {"loops.py": "file", "student.py": "file", "api_call.py": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
 	
@@ -575,12 +598,7 @@ func _play_module_3_http_requests(skip_ide: bool):
 	
 	ui.lock_typing(false)
 	
-	while not ui.is_completed:
-		await get_tree().create_timer(0.1).timeout
-	
-	await get_tree().create_timer(0.5).timeout
-	ui.results_overlay.visible = false
-	ui.lock_typing(true)
+	await _await_challenge_done(ui)
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -602,8 +620,6 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 	progressive_hints: Array = []) -> Dictionary:
 	
 	var base_hint = progressive_hints[0] if progressive_hints.size() > 0 else "Read the professor's instructions carefully."
-	var exact_answer = expected_answers[0] if expected_answers.size() > 0 else ""
-	var final_hint = base_hint + "\n\n[color=#5c6370]If you're really stuck, here's the exact code:[/color]\n[color=#98c379]" + exact_answer + "[/color]"
 
 	return {
 		"id": id,
@@ -620,7 +636,7 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"progressive_hints": progressive_hints,
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
-		"hint": final_hint,
+		"hint": base_hint,
 		"timed": false
 	}
 
@@ -1088,6 +1104,8 @@ func _refresh_log_content():
 	for child in log_content.get_children():
 		child.queue_free()
 
+	var challenge_active = _challenge_ui and is_instance_valid(_challenge_ui) and bool(_challenge_ui.get("_challenge_active"))
+
 	for entry in _dialogue_log:
 		var line_label = RichTextLabel.new()
 		line_label.bbcode_enabled = true
@@ -1099,6 +1117,15 @@ func _refresh_log_content():
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
 		var name_color = "#a3c4f3" if speaker == "Professor Syntax" else "#c8e6c9"
+		if challenge_active and (
+			text.find("\n") != -1
+			or text.find("def ") != -1
+			or text.find("return ") != -1
+			or text.find("print(") != -1
+			or text.find("=") != -1
+			or text.find(":") != -1
+		):
+			text = "[REDACTED - solve the challenge first!]"
 
 		line_label.text = "[color=" + name_color + "][b]" + speaker + ":[/b][/color] [color=#d4d4d8]" + text + "[/color]"
 		log_content.add_child(line_label)
