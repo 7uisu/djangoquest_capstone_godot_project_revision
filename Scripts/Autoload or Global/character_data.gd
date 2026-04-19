@@ -36,6 +36,12 @@ var ch2_y3mid_current_module: int = 0          # 0-1 (which module player is on)
 # Challenges completed counter (for teacher dashboard tracking)
 var challenges_completed: int = 0
 
+# Currency system
+var credits: int = 0
+
+# Tracks which ChallengeNPCs have been defeated (one-time rewards)
+var defeated_challenge_npcs: Array = []
+
 # Level unlock tracking (index 0 = level 1, etc.)
 const LEVEL_COUNT = 4
 var unlocked_levels: Array[bool] = [true, false, false, false]
@@ -73,6 +79,8 @@ func reset_data():
 	ch2_y3mid_teaching_done = false
 	ch2_y3mid_current_module = 0
 	challenges_completed = 0
+	credits = 0
+	defeated_challenge_npcs = []
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 	picked_up_items = []
@@ -120,6 +128,8 @@ func to_save_dict() -> Dictionary:
 		"ch2_y3mid_current_module": ch2_y3mid_current_module,
 		# Tracking
 		"challenges_completed": challenges_completed,
+		"credits": credits,
+		"defeated_challenge_npcs": defeated_challenge_npcs,
 		# Unlocks
 		"unlocked_level_1": unlocked_levels[0],
 		"unlocked_level_2": unlocked_levels[1],
@@ -166,6 +176,8 @@ func from_save_dict(data: Dictionary):
 	ch2_y3mid_current_module = int(data.get("ch2_y3mid_current_module", 0))
 	# Tracking
 	challenges_completed = int(data.get("challenges_completed", 0))
+	credits = int(data.get("credits", 0))
+	defeated_challenge_npcs = data.get("defeated_challenge_npcs", [])
 	# Unlocks
 	unlocked_levels = [
 		data.get("unlocked_level_1", true),
@@ -254,3 +266,26 @@ func _ready():
 		ch2_y3s1_teaching_done = true
 		ch2_y3s2_teaching_done = true
 		print("DEBUG: All professors prior to REST skipped (Y1S1 -> Y3S2 done).")
+
+# ─── Currency Helpers ────────────────────────────────────────────────────────
+
+func add_credits(amount: int) -> void:
+	credits += amount
+	print("Credits: +%d (total: %d)" % [amount, credits])
+
+func spend_credits(amount: int) -> bool:
+	if credits >= amount:
+		credits -= amount
+		print("Credits: -%d (total: %d)" % [amount, credits])
+		return true
+	return false
+
+func get_credits() -> int:
+	return credits
+
+func is_npc_defeated(npc_id: String) -> bool:
+	return npc_id in defeated_challenge_npcs
+
+func mark_npc_defeated(npc_id: String) -> void:
+	if npc_id not in defeated_challenge_npcs:
+		defeated_challenge_npcs.append(npc_id)

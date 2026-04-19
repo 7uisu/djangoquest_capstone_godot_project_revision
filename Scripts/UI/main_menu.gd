@@ -115,7 +115,7 @@ func _on_quit_pressed():
 	)
 
 func _on_testing_pressed():
-	get_tree().change_scene_to_file("res://Scenes/Ch1/school_map_npc_challenges_testing.tscn")
+	get_tree().change_scene_to_file("res://Scenes/Ch3/Shop and NPC Testing/main_office_3_floor_map_testing_shop_and_npc_challenges.tscn")
 
 func _on_enroll_pressed():
 	var popup = EnrollPopupScene.instantiate()

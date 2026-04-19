@@ -23,6 +23,7 @@ const ITEMS = {
 		"usable_on": ["debug"],
 		"consumable": false,
 		"pickup_quantity": 1,
+		"price": 50,
 	},
 	WANSTER_ENERGY: {
 		"id": WANSTER_ENERGY,
@@ -33,6 +34,7 @@ const ITEMS = {
 		"usable_on": ["predict_output"],
 		"consumable": true,
 		"pickup_quantity": 3,
+		"price": 75,
 	},
 	SYNTAX_GLASSES: {
 		"id": SYNTAX_GLASSES,
@@ -43,6 +45,7 @@ const ITEMS = {
 		"usable_on": ["debug", "follow_steps", "predict_output"],
 		"consumable": true,
 		"pickup_quantity": 3,
+		"price": 100,
 	},
 	OS_PREMIUM: {
 		"id": OS_PREMIUM,
@@ -53,6 +56,7 @@ const ITEMS = {
 		"usable_on": ["free_type", "terminal"],
 		"consumable": true,
 		"pickup_quantity": 3,
+		"price": 150,
 	},
 	ENCRYPTED_DRIVE: {
 		"id": ENCRYPTED_DRIVE,
@@ -63,6 +67,7 @@ const ITEMS = {
 		"usable_on": ["debug", "follow_steps", "predict_output", "free_type", "terminal"],
 		"consumable": true,
 		"pickup_quantity": 1,
+		"price": 500,
 	},
 }
 

@@ -741,6 +741,34 @@ func _create_taskbar() -> PanelContainer:
 	os_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hbox.add_child(os_label)
 
+	# Credit display
+	var credit_hbox = HBoxContainer.new()
+	credit_hbox.add_theme_constant_override("separation", 4)
+	hbox.add_child(credit_hbox)
+
+	var credit_icon = TextureRect.new()
+	credit_icon.custom_minimum_size = Vector2(14, 14)
+	credit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	credit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	var cred_tex = load("res://Textures/School Textures/Items/Interactable/CreditCard-32x32.png")
+	if cred_tex:
+		credit_icon.texture = cred_tex
+	credit_hbox.add_child(credit_icon)
+
+	var cred_label = Label.new()
+	var cd = get_node_or_null("/root/CharacterData")
+	cred_label.text = str(cd.get_credits()) if cd else "0"
+	cred_label.add_theme_font_size_override("font_size", 10)
+	cred_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	credit_hbox.add_child(cred_label)
+
+	# Spacer
+	var cred_spacer = Label.new()
+	cred_spacer.text = "  |  "
+	cred_spacer.add_theme_font_size_override("font_size", 10)
+	cred_spacer.add_theme_color_override("font_color", Color(0.35, 0.38, 0.45))
+	hbox.add_child(cred_spacer)
+
 	# Status icons
 	var status = Label.new()
 	status.text = "🔋 98%  |  📶  |  "
