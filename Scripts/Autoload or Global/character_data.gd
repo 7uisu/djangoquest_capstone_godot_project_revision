@@ -81,6 +81,15 @@ var ch2_y2s2_ai_otm_skipped: bool = false    # One-to-Many challenge auto-skippe
 var ch2_y2s2_ai_mtm_skipped: bool = false    # Many-to-Many challenge auto-skipped
 var ch2_y2s2_ai_fully_offline: bool = false  # TRUE = all AI was down, full offline run
 
+# ─── Learning Mode Grading ───────────────────────────────────────────────────
+var learning_mode_grades: Dictionary = {}
+
+func update_learning_mode_grade(professor_id: String, new_grade: float) -> void:
+	# Only keep the best (lowest numerical) grade
+	if not learning_mode_grades.has(professor_id) or new_grade < learning_mode_grades[professor_id]:
+		learning_mode_grades[professor_id] = new_grade
+		print("CharacterData: Saved new best learning mode grade for ", professor_id, " -> ", new_grade)
+
 # ─── Retake Loop Guard ───────────────────────────────────────────────────────
 # If a retake happens while all three are already flagged as skipped,
 # the skips are cleared so the player gets a fresh chance on the next run.
@@ -100,7 +109,7 @@ func get_ai_skip_count_y2s2() -> int:
 	return count
 
 
-# Y3S1 — Professor Otek (Forms & Security)
+# Y3S1 — Professor Token (Forms & Security)
 var ch2_y3s1_retake_count: int = 0
 var ch2_y3s1_wrong_attempts: int = 0
 var ch2_y3s1_hints_used: int = 0
@@ -247,6 +256,7 @@ func to_save_dict() -> Dictionary:
 		"challenges_completed": challenges_completed,
 		"credits": credits,
 		"defeated_challenge_npcs": defeated_challenge_npcs,
+		"learning_mode_grades": learning_mode_grades,
 		# Unlocks
 		"unlocked_level_1": unlocked_levels[0],
 		"unlocked_level_2": unlocked_levels[1],
@@ -308,6 +318,7 @@ func from_save_dict(data: Dictionary):
 	ch2_y2s2_ai_mtm_skipped = data.get("ch2_y2s2_ai_mtm_skipped", false)
 	ch2_y2s2_ai_fully_offline = data.get("ch2_y2s2_ai_fully_offline", false)
 	# Tracking
+	learning_mode_grades = data.get("learning_mode_grades", {})
 	challenges_completed = int(data.get("challenges_completed", 0))
 	credits = int(data.get("credits", 0))
 	defeated_challenge_npcs = data.get("defeated_challenge_npcs", [])
@@ -390,8 +401,10 @@ func unlock_book(level_number: int):
 # --- Debug skip functionality ---
 # --- Make it false after testing ---
 @export var DEBUG_SKIP_TO_REST_PROFESSOR: bool = false
+@export var DEBUG_SKIP_TO_AUTH_PROFESSOR: bool = false
+@export var DEBUG_SKIP_TO_TOKEN_PROFESSOR: bool = false
 @export var DEBUG_SKIP_TO_VIEW_PROFESSOR: bool = false
-@export var DEBUG_SKIP_TO_QUERY_PROFESSOR: bool = true
+@export var DEBUG_SKIP_TO_QUERY_PROFESSOR: bool = false
 
 func _ready():
 	apply_debug_skips()
@@ -399,12 +412,40 @@ func _ready():
 func apply_debug_skips():
 	if DEBUG_SKIP_TO_REST_PROFESSOR:
 		ch2_y1s1_teaching_done = true
+		ch2_y1s1_final_grade = 1.50
 		ch2_y1s2_teaching_done = true
-		ch2_y2s1_teaching_done = false
-		ch2_y2s2_teaching_done = false
-		ch2_y3s1_teaching_done = false
-		ch2_y3s2_teaching_done = false
-		print("DEBUG: All professors prior to REST skipped (Y1S1 -> Y3S2 done).")
+		ch2_y1s2_final_grade = 2.25
+		ch2_y2s1_teaching_done = true
+		ch2_y2s1_final_grade = 1.75
+		ch2_y2s2_teaching_done = true
+		ch2_y2s2_final_grade = 2.25
+		ch2_y3s1_teaching_done = true
+		ch2_y3s1_final_grade = 2.75
+		ch2_y3s2_teaching_done = true
+		ch2_y3s2_final_grade = 2.00
+		print("DEBUG: All professors prior to REST skipped (Y1S1 -> Y3S2 done with mock grades).")
+	elif DEBUG_SKIP_TO_AUTH_PROFESSOR:
+		ch2_y1s1_teaching_done = true
+		ch2_y1s1_final_grade = 1.50
+		ch2_y1s2_teaching_done = true
+		ch2_y1s2_final_grade = 2.25
+		ch2_y2s1_teaching_done = true
+		ch2_y2s1_final_grade = 1.75
+		ch2_y2s2_teaching_done = true
+		ch2_y2s2_final_grade = 2.25
+		ch2_y3s1_teaching_done = true
+		ch2_y3s1_final_grade = 2.75
+		print("DEBUG: Skipped to Professor Auth. Mock grades injected.")
+	elif DEBUG_SKIP_TO_TOKEN_PROFESSOR:
+		ch2_y1s1_teaching_done = true
+		ch2_y1s1_final_grade = 1.50
+		ch2_y1s2_teaching_done = true
+		ch2_y1s2_final_grade = 2.25
+		ch2_y2s1_teaching_done = true
+		ch2_y2s1_final_grade = 1.75
+		ch2_y2s2_teaching_done = true
+		ch2_y2s2_final_grade = 2.25
+		print("DEBUG: Skipped to Professor Token. Mock grades injected.")
 	elif DEBUG_SKIP_TO_VIEW_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s1_final_grade = 1.50

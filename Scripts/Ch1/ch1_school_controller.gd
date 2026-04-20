@@ -451,7 +451,7 @@ func _start_bubble_on(npc: Node2D, bubble_scene: PackedScene, lines: Array):
 func _show_quiz():
 	# ─── DEBUG SKIP QUIZ ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_QUIZ = true
+	var DEBUG_SKIP_QUIZ = false
 	if DEBUG_SKIP_QUIZ:
 		_on_quiz_completed(3)
 		return

@@ -300,7 +300,7 @@ func _start_lesson_sequence():
 	await get_tree().create_timer(0.3).timeout
 	
 	# Evaluate Grade
-	if not is_learning_mode and not DEBUG_SKIP_IDE:
+	if not DEBUG_SKIP_IDE:
 		character_data.ch2_y2s2_wrong_attempts = _session_wrong_attempts
 		character_data.ch2_y2s2_hints_used = _session_hints_used
 		var grade_result = await _evaluate_and_finalize_grade()
@@ -441,7 +441,7 @@ func _play_module_1_models(skip_ide: bool):
 		"code": "class Student(models.Model):\n    name = models.CharField(max_length=100)\n    grade = models.CharField(max_length=2)",
 		"header": "MODULE 1 — MODELS & MIGRATIONS",
 		"header_icon": "🗃️",
-		"slide_num": "1 / 8"
+		"slide_num": "1 / 10"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -469,7 +469,7 @@ func _play_module_1_models(skip_ide: bool):
 		"code": "python manage.py makemigrations\npython manage.py migrate",
 		"header": "MODULE 1 — MODELS & MIGRATIONS",
 		"header_icon": "🗃️",
-		"slide_num": "2 / 8"
+		"slide_num": "2 / 10"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -836,7 +836,7 @@ func _play_module_2_orm(skip_ide: bool):
 		"code": "# Get ALL students\nstudents = Student.objects.all()\n\n# Get ONE student by ID\nstudent = Student.objects.get(id=1)",
 		"header": "MODULE 2 — THE ORM",
 		"header_icon": "🔎",
-		"slide_num": "3 / 8",
+		"slide_num": "5 / 10",
 		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
@@ -864,7 +864,7 @@ func _play_module_2_orm(skip_ide: bool):
 		"code": "# Get students with grade 'A'\nhonor_roll = Student.objects.filter(grade='A')\n\n# Chain filters\nseniors = Student.objects.filter(grade='A', year=4)",
 		"header": "MODULE 2 — THE ORM",
 		"header_icon": "🔎",
-		"slide_num": "4 / 8",
+		"slide_num": "6 / 10",
 		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
@@ -946,7 +946,7 @@ func _play_module_3_admin(skip_ide: bool):
 		],
 		"header": "MODULE 3 — ADMIN PANEL",
 		"header_icon": "🛠️",
-		"slide_num": "5 / 8",
+		"slide_num": "7 / 10",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -974,7 +974,7 @@ func _play_module_3_admin(skip_ide: bool):
 		"code": "# admin.py\nfrom django.contrib import admin\nfrom .models import Student\n\nadmin.site.register(Student)",
 		"header": "MODULE 3 — ADMIN PANEL",
 		"header_icon": "🛠️",
-		"slide_num": "6 / 8",
+		"slide_num": "8 / 10",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -1053,7 +1053,7 @@ func _play_module_4_mvt(skip_ide: bool):
 		],
 		"header": "MODULE 4 — MVT FLOW",
 		"header_icon": "🔁",
-		"slide_num": "7 / 8",
+		"slide_num": "9 / 10",
 		"reference": "Source: Master Django MVT Architecture"
 	})
 	if dialogue_box:
@@ -1080,7 +1080,7 @@ func _play_module_4_mvt(skip_ide: bool):
 		"code": "def student_list(request):\n    students = Student.objects.all()\n    return render(request, 'list.html', {'students': students})",
 		"header": "MODULE 4 — MVT FLOW",
 		"header_icon": "🔁",
-		"slide_num": "8 / 8",
+		"slide_num": "10 / 10",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -1674,10 +1674,18 @@ func _on_hint_used() -> void:
 	print("[DEBUG] Prof Query: Hint used #", _session_hints_used, "! Added to raw grade: +", deduction_hint_used, " (Total added: ", minus_grade, ")")
 
 func _evaluate_and_finalize_grade() -> String:
-	if is_learning_mode:
-		return "learning"
 
 	var final_grade = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("query", final_grade)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Query", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(final_grade) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
 	character_data.ch2_y2s2_final_grade = final_grade
 
 	print("--- DEBUG QUERY GRADE EVALUATION ---")
@@ -1696,6 +1704,7 @@ func _evaluate_and_finalize_grade() -> String:
 				{ "name": "Professor Query", "text": "These aren't just topics. They're the data backbone of every Django application." }
 			])
 			await dialogue_box.dialogue_finished
+		await _autosave_progress()
 		return "pass"
 
 	elif GradeCalculator.is_inc(final_grade):
@@ -1724,6 +1733,7 @@ func _evaluate_and_finalize_grade() -> String:
 					{ "name": "Professor Query", "text": "Review your data structures before the next semester." }
 				])
 				await dialogue_box.dialogue_finished
+			await _autosave_progress()
 			return "inc_pass"
 		else:
 			character_data.ch2_y2s2_final_grade = 5.0
@@ -1742,6 +1752,7 @@ func _evaluate_and_finalize_grade() -> String:
 					inc_fail_lines.append({ "name": "Professor Query", "text": "[color=#e5c07b]Note:[/color] The AI evaluation system was fully offline this run. On your next attempt, those exercises will reset and you will get a fresh chance to complete them if the server is back up." })
 				dialogue_box.start(inc_fail_lines)
 				await dialogue_box.dialogue_finished
+			await _autosave_progress()
 			return "inc_fail"
 
 	else:
@@ -1762,6 +1773,7 @@ func _evaluate_and_finalize_grade() -> String:
 				fail_lines.append({ "name": "Professor Query", "text": "[color=#e5c07b]Note:[/color] " + str(n) + " of the 3 relationship exercises were auto-skipped due to connection issues. Your teacher has been notified. These will persist on your record but will not loop — you can re-attempt them on the next run if the server is up." })
 			dialogue_box.start(fail_lines)
 			await dialogue_box.dialogue_finished
+		await _autosave_progress()
 		return "fail"
 
 func _dispatch_rewards() -> void:
@@ -1820,6 +1832,42 @@ func _launch_removal_exam() -> bool:
 	
 	canvas.queue_free()
 	return passed
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════

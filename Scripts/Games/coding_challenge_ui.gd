@@ -28,6 +28,7 @@ var _free_hints_revealed: int = 0     # how many free hints are visible in Overf
 var MAX_FREE_HINTS: int = 3         # maximum free hints per challenge
 var _challenge_active: bool = false   # true while player is working on a challenge (for log censoring)
 var _premium_hint_button: Button = null
+var _reveal_hint_button: Button = null
 var why_button: Button = null
 var why_overlay: PanelContainer = null
 var why_text_label: RichTextLabel = null
@@ -1166,10 +1167,10 @@ func _on_time_up():
 func _update_overflow_button_label():
 	var hints_array = _get_hints_array()
 	var total = min(hints_array.size(), MAX_FREE_HINTS)
-	if _free_hints_revealed >= total:
-		overflow_stack_button.text = "📚 OverflowStack (Hint) [%d/%d]" % [total, total]
-	else:
-		overflow_stack_button.text = "📚 OverflowStack (Hint) [%d/%d]" % [_free_hints_revealed, total]
+	var remaining = total - min(_free_hints_revealed, total)
+	var free_str = "[Free: %d/%d]" % [remaining, total]
+	var ai_str = "[AI: 0/1]" if _ai_hint_used else "[AI: 1/1]"
+	overflow_stack_button.text = "📚 OverflowStack %s %s" % [free_str, ai_str]
 
 func _get_hints_array() -> Array:
 	var hints_array: Array = current_challenge.get("progressive_hints", [])
@@ -1193,12 +1194,6 @@ func _on_why_btn_pressed():
 
 func _on_overflow_stack_btn_pressed():
 	_play_click()
-	# Reveal one more free hint each time the button is pressed
-	var hints_array = _get_hints_array()
-	var total = min(hints_array.size(), MAX_FREE_HINTS)
-	if _free_hints_revealed < total:
-		_free_hints_revealed += 1
-		emit_signal("hint_used")
 	_update_overflow_button_label()
 	_show_overflow_stack()
 
@@ -1291,6 +1286,53 @@ func _ensure_premium_hint_button() -> Button:
 	stack_vbox.add_child(_premium_hint_button)
 	stack_vbox.move_child(_premium_hint_button, stack_user.get_index())
 	return _premium_hint_button
+
+func _ensure_reveal_hint_button() -> Button:
+	if _reveal_hint_button and is_instance_valid(_reveal_hint_button):
+		return _reveal_hint_button
+
+	var stack_vbox = overflow_overlay.get_node_or_null("StackVBox")
+	if stack_vbox == null:
+		return null
+
+	_reveal_hint_button = Button.new()
+	_reveal_hint_button.text = "Reveal Next Free Hint (-0.5 points)"
+	_reveal_hint_button.custom_minimum_size = Vector2(0, 34)
+	_reveal_hint_button.add_theme_font_size_override("font_size", 12)
+	_reveal_hint_button.pressed.connect(_on_reveal_hint_pressed)
+
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color("28a745")
+	btn_style.border_color = Color("218838")
+	btn_style.set_border_width_all(1)
+	btn_style.set_corner_radius_all(4)
+	btn_style.set_content_margin_all(6)
+	_reveal_hint_button.add_theme_stylebox_override("normal", btn_style)
+	_reveal_hint_button.add_theme_color_override("font_color", Color("ffffff"))
+
+	var hover_style = btn_style.duplicate()
+	hover_style.bg_color = Color("218838")
+	_reveal_hint_button.add_theme_stylebox_override("hover", hover_style)
+
+	var disabled_style = btn_style.duplicate()
+	disabled_style.bg_color = Color("5b6470")
+	disabled_style.border_color = Color("444b54")
+	_reveal_hint_button.add_theme_stylebox_override("disabled", disabled_style)
+	_reveal_hint_button.add_theme_color_override("font_disabled_color", Color("d7dce2"))
+
+	stack_vbox.add_child(_reveal_hint_button)
+	stack_vbox.move_child(_reveal_hint_button, stack_user.get_index())
+	return _reveal_hint_button
+
+func _on_reveal_hint_pressed():
+	_play_click()
+	var hints_array = _get_hints_array()
+	var total = min(hints_array.size(), MAX_FREE_HINTS)
+	if _free_hints_revealed < total:
+		_free_hints_revealed += 1
+		emit_signal("hint_used")
+	_update_overflow_button_label()
+	_show_overflow_stack()
 
 func _on_premium_hint_pressed():
 	_play_click()
@@ -1928,11 +1970,21 @@ func _show_overflow_stack():
 	stack_answer.text = "\n\n".join(thread_lines)
 	stack_answer.add_theme_font_size_override("normal_font_size", 13)
 
+	var reveal_button = _ensure_reveal_hint_button()
+	if reveal_button:
+		reveal_button.visible = true
+		if _free_hints_revealed >= total_free_hints:
+			reveal_button.disabled = true
+			reveal_button.text = "No More Free Hints"
+		else:
+			reveal_button.disabled = false
+			reveal_button.text = "Reveal Next Free Hint (-0.5 points)"
+
 	var premium_button = _ensure_premium_hint_button()
 	if premium_button:
 		premium_button.visible = true
 		premium_button.disabled = _ai_hint_used
-		premium_button.text = "Premium AI Hint Used" if _ai_hint_used else "Use Premium AI Hint"
+		premium_button.text = "Premium AI Hint Used" if _ai_hint_used else "Use Premium AI Hint (-0.5 points)"
 
 	# User
 	stack_user.text = "answered by " + OVERFLOW_USERS[randi() % OVERFLOW_USERS.size()]

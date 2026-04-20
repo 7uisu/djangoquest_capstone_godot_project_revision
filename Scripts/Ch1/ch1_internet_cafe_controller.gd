@@ -194,7 +194,7 @@ func _start_cutscene():
 	
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_IDE = true
+	var DEBUG_SKIP_IDE = false
 	if DEBUG_SKIP_IDE:
 		await _play_completion_sequence(pname)
 		return
@@ -221,7 +221,7 @@ func _start_cutscene():
 	if ui.continue_button.pressed.is_connected(ui._on_continue_pressed):
 		ui.continue_button.pressed.disconnect(ui._on_continue_pressed)
 	ui.close_button.visible = false
-	ui.continue_button.visible = false
+	ui.continue_button.visible = true # Explicitly keep this on for the popup constraints
 
 	# Add the 📜 Log button to the IDE
 	_create_log_button(canvas_layer)
@@ -268,8 +268,8 @@ func _start_cutscene():
 	while not ui.is_completed:
 		await get_tree().create_timer(0.1).timeout
 
-	# Player got it right! Show praise dialogue ON TOP of the IDE
-	await get_tree().create_timer(0.5).timeout
+	# Wait for the player to press "Next" on the results overlay
+	await ui.continue_button.pressed
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -314,7 +314,7 @@ func _start_cutscene():
 	while not ui.is_completed:
 		await get_tree().create_timer(0.1).timeout
 
-	await get_tree().create_timer(0.5).timeout
+	await ui.continue_button.pressed
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
@@ -359,7 +359,7 @@ func _start_cutscene():
 	while not ui.is_completed:
 		await get_tree().create_timer(0.1).timeout
 
-	await get_tree().create_timer(0.5).timeout
+	await ui.continue_button.pressed
 	ui.results_overlay.visible = false
 
 	if dialogue_box:

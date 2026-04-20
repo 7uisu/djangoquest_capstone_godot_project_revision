@@ -3,6 +3,7 @@
 extends CanvasLayer
 
 var is_open: bool = false
+var is_saving: bool = false
 var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "quest_log", "settings"
 
 # ─── Root Nodes ──────────────────────────────────────────────────────────────
@@ -46,6 +47,7 @@ func open():
 	_show_desktop()
 
 func close():
+	if is_saving: return
 	is_open = false
 	visible = false
 	get_tree().paused = false
@@ -750,9 +752,65 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 	else:
 		vbox.add_child(_create_locked_prof_card("Professor Query — Models, ORM & Databases"))
 
-	vbox.add_child(_create_locked_prof_card("Professor Otek — Forms & Security"))
-	vbox.add_child(_create_locked_prof_card("Professor Auth — Authentication & CRUD"))
-	vbox.add_child(_create_locked_prof_card("Professor REST — APIs & Modern Systems"))
+	if cd and (cd.get("ch2_y3s1_teaching_done") or float(cd.get("ch2_y3s1_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor Token — Forms & Security",
+			float(cd.ch2_y3s1_final_grade),
+			int(cd.ch2_y3s1_retake_count),
+			bool(cd.ch2_y3s1_removal_passed),
+			bool(cd.ch2_y3s1_removal_passed) or float(cd.ch2_y3s1_final_grade) <= 3.0
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor Token — Forms & Security"))
+	if cd and (cd.get("ch2_y3s2_teaching_done") or float(cd.get("ch2_y3s2_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor Auth — Authentication & CRUD",
+			float(cd.ch2_y3s2_final_grade),
+			int(cd.ch2_y3s2_retake_count),
+			bool(cd.ch2_y3s2_removal_passed),
+			bool(cd.ch2_y3s2_removal_passed) or float(cd.ch2_y3s2_final_grade) <= 3.0
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor Auth — Authentication & CRUD"))
+	if cd and (cd.get("ch2_y3mid_teaching_done") or float(cd.get("ch2_y3mid_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor REST — APIs & Modern Systems",
+			float(cd.ch2_y3mid_final_grade),
+			int(cd.ch2_y3mid_retake_count),
+			bool(cd.ch2_y3mid_removal_passed),
+			bool(cd.ch2_y3mid_removal_passed) or float(cd.ch2_y3mid_final_grade) <= 3.0
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor REST — APIs & Modern Systems"))
+
+	# ─── Learning Mode Sandbox Grades ──────────────────────────────────────────
+	if cd and cd.get("learning_mode_grades") and not cd.learning_mode_grades.is_empty():
+		var lm_sep = HSeparator.new()
+		var lm_sep_style = StyleBoxLine.new()
+		lm_sep_style.color = Color(0.25, 0.45, 0.65, 0.5)
+		lm_sep_style.thickness = 2
+		lm_sep.add_theme_stylebox_override("separator", lm_sep_style)
+		vbox.add_child(lm_sep)
+
+		var lm_header = Label.new()
+		lm_header.text = "📚 Learning Mode Sandbox Grades"
+		lm_header.add_theme_font_size_override("font_size", 16)
+		lm_header.add_theme_color_override("font_color", Color(0.3, 0.75, 0.9))
+		vbox.add_child(lm_header)
+
+		for prof_key in cd.learning_mode_grades.keys():
+			var grade = float(cd.learning_mode_grades[prof_key])
+			var is_passing = grade <= 3.0
+			var prof_display = prof_key.capitalize()
+			
+			var card = _create_active_prof_card(
+				"Professor " + prof_display + " (Sandbox)",
+				grade,
+				0,			# Sandbox doesn't track retakes over time
+				false,		# No removal exams in sandbox
+				is_passing
+			)
+			vbox.add_child(card)
 
 func _calculate_gwa() -> String:
 	var cd = get_node_or_null("/root/CharacterData")
@@ -775,6 +833,18 @@ func _calculate_gwa() -> String:
 
 	if cd.get("ch2_y2s2_teaching_done"):
 		total_grades += float(cd.ch2_y2s2_final_grade)
+		count += 1
+
+	if cd.get("ch2_y3s1_teaching_done"):
+		total_grades += float(cd.ch2_y3s1_final_grade)
+		count += 1
+
+	if cd.get("ch2_y3s2_teaching_done"):
+		total_grades += float(cd.ch2_y3s2_final_grade)
+		count += 1
+
+	if cd.get("ch2_y3mid_teaching_done"):
+		total_grades += float(cd.ch2_y3mid_final_grade)
 		count += 1
 
 	if count == 0:
@@ -1087,6 +1157,8 @@ func _create_taskbar() -> PanelContainer:
 	return bar
 
 func _on_save_pressed(btn: Button, exit_btn: Button = null):
+	if is_saving: return
+	is_saving = true
 	btn.text = "⏳ Saving..."
 	btn.disabled = true
 	if exit_btn:
@@ -1104,6 +1176,7 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 		btn.disabled = false
 		if exit_btn:
 			exit_btn.disabled = false
+		is_saving = false
 	else:
 		btn.text = "❌ Error"
 		await get_tree().create_timer(2.0).timeout
@@ -1111,6 +1184,7 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 		btn.disabled = false
 		if exit_btn:
 			exit_btn.disabled = false
+		is_saving = false
 
 func _on_main_menu_pressed():
 	CustomConfirm.prompt(

@@ -239,7 +239,7 @@ func _start_lesson_sequence():
 			parent_node.show_professor_selector_disabled()
 	
 	# ─── Grade Evaluation (normal mode, IDE was used) ────────────
-	if not is_learning_mode and not DEBUG_SKIP_IDE:
+	if not DEBUG_SKIP_IDE:
 		character_data.ch2_y1s1_wrong_attempts = _session_wrong_attempts
 		character_data.ch2_y1s1_hints_used = _session_hints_used
 		var grade_result = await _evaluate_and_finalize_grade()
@@ -927,6 +927,16 @@ func _play_module_5_responsiveness(skip_ide: bool):
 
 func _evaluate_and_finalize_grade() -> String:
 	var raw = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+	
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("markup", raw)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Markup", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(raw) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
 	character_data.ch2_y1s1_final_grade = raw
 	
 	print("--- DEBUG NORMAL GRADE EVALUATION ---")
@@ -942,6 +952,8 @@ func _evaluate_and_finalize_grade() -> String:
 				{ "name": "Professor Markup", "text": "I've tallied your scores. You got a %s. You passed!" % GradeCalculator.grade_to_label(raw) }
 			])
 			await dialogue_box.dialogue_finished
+		character_data.ch2_y1s1_teaching_done = true
+		await _autosave_progress()
 		return "pass"
 		
 	elif GradeCalculator.is_inc(raw):
@@ -961,6 +973,8 @@ func _evaluate_and_finalize_grade() -> String:
 					{ "name": "Professor Markup", "text": "You passed the removal exam! Your final grade is 3.0." }
 				])
 				await dialogue_box.dialogue_finished
+			character_data.ch2_y1s1_teaching_done = true
+			await _autosave_progress()
 			return "inc_pass"
 		else:
 			character_data.ch2_y1s1_final_grade = 5.0
@@ -974,6 +988,7 @@ func _evaluate_and_finalize_grade() -> String:
 				])
 				await dialogue_box.dialogue_finished
 			# Ensure IDE resources and states are cleared
+			await _autosave_progress()
 			return "inc_fail"
 			
 	else:
@@ -986,6 +1001,7 @@ func _evaluate_and_finalize_grade() -> String:
 				{ "name": "Professor Markup", "text": "You will have to completely retake this module." }
 			])
 			await dialogue_box.dialogue_finished
+		await _autosave_progress()
 		return "fail"
 
 func _launch_removal_exam() -> bool:
@@ -1009,6 +1025,42 @@ func _launch_removal_exam() -> bool:
 	
 	canvas.queue_free()
 	return passed
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)
+
 
 func _make_challenge(id: String, title: String, topic: String, file_name: String,
 	code_lines: Array, mission_steps: Array, placeholder: String,

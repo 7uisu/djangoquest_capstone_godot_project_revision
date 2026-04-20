@@ -32,6 +32,34 @@ var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
 
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
+
+const deduction_wrong_attempt: float = 0.25
+const deduction_hint_used: float = 0.50
+const removal_pass_score: int = 3
+
+var reward_credits_retake_0: int = 300
+var reward_credits_retake_1: int = 250
+var reward_credits_retake_2: int = 200
+var reward_credits_retake_3: int = 150
+var reward_credits_retake_4_plus: int = 100
+
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
+
+var retake_dialogues: Array = [
+	[],
+	[{ "name": "Professor Auth", "text": "Your authentication module failed. We go again." }],
+	[
+		{ "name": "Professor Auth", "text": "Another failure. You're leaving security holes." },
+		{ "name": "Professor Auth", "text": "Focus carefully this time." }
+	],
+	[
+		{ "name": "Professor Auth", "text": "Without security, your entire system means nothing." },
+		{ "name": "Professor Auth", "text": "Let's secure this app once more." }
+	]
+]
+
 # ── Interaction Handler ───────────────────────────────────────────────
 
 func _on_professor_interacted():
@@ -52,6 +80,65 @@ func _on_professor_interacted():
 		_start_lesson_sequence()
 		return
 	
+	# Check INC loop state
+	if character_data and character_data.get("ch2_y3s2_inc_triggered"):
+		_cutscene_running = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Auth", "text": "You still have an INC (4.0) unresolved." },
+				{ "name": "Professor Auth", "text": "Take the removal exam now." }
+			])
+			await dialogue_box.dialogue_finished
+			
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y3s2_removal_passed = true
+			character_data.ch2_y3s2_teaching_done = true
+			character_data.ch2_y3s2_inc_triggered = false
+			character_data.ch2_y3s2_final_grade = 3.0
+			_dispatch_rewards()
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Auth", "text": "You passed. Grade finalized at [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor Auth", "text": "Do not let unauthorized users access my class again." }
+				])
+				await dialogue_box.dialogue_finished
+		else:
+			character_data.ch2_y3s2_removal_passed = false
+			character_data.ch2_y3s2_teaching_done = false
+			character_data.ch2_y3s2_inc_triggered = false
+			character_data.ch2_y3s2_retake_count += 1
+			character_data.ch2_y3s2_current_module = 0
+			character_data.ch2_y3s2_final_grade = 5.0
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Auth", "text": "You failed the removal exam. Grade is [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor Auth", "text": "You must retake my class from the beginning." }
+				])
+				await dialogue_box.dialogue_finished
+		
+		if player:
+			player.can_move = true
+			player.can_interact = true
+		_cutscene_running = false
+		return
+
+	# ── Retake dialogue ───────────────────────────────────────────
+	if dialogue_box and character_data:
+		var retake_count = character_data.get("ch2_y3s2_retake_count")
+		if retake_count and retake_count > 0:
+			var dialogue_index = min(retake_count, retake_dialogues.size() - 1)
+			if dialogue_index >= 0 and dialogue_index < retake_dialogues.size():
+				var dialogue_lines = retake_dialogues[dialogue_index]
+				if dialogue_lines.size() > 0:
+					dialogue_box.start(dialogue_lines)
+					await dialogue_box.dialogue_finished
+	
 	# ── Gate: Must complete Y1S1, Y1S2, Y2S1, Y2S2, AND Y3S1 first ──
 	var has_markup = character_data and character_data.ch2_y1s1_teaching_done
 	var has_syntax = character_data and character_data.ch2_y1s2_teaching_done
@@ -63,7 +150,7 @@ func _on_professor_interacted():
 		if dialogue_box:
 			dialogue_box.start([
 				{ "name": "Professor Auth", "text": "You're not authorized for this class yet." },
-				{ "name": "Professor Auth", "text": "Complete all previous courses first — including [color=#f0c674]Professor Otek's[/color] Forms & Security class." },
+				{ "name": "Professor Auth", "text": "Complete all previous courses first — including [color=#f0c674]Professor Token's[/color] Forms & Security class." },
 				{ "name": "Professor Auth", "text": "Access denied. Come back when you've passed every prerequisite." }
 			])
 		return
@@ -125,6 +212,9 @@ func _start_lesson_sequence():
 	if character_data:
 		current_module = character_data.ch2_y3s2_current_module
 	
+	_session_wrong_attempts = 0
+	_session_hints_used = 0
+	
 	if is_learning_mode:
 		current_module = 0
 	
@@ -175,16 +265,30 @@ func _start_lesson_sequence():
 	
 	await get_tree().create_timer(0.3).timeout
 	
-	# Completion dialogue
-	dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start([
-			{ "name": "Professor Auth", "text": "You made it through." },
-			{ "name": "Professor Auth", "text": "You now understand [color=#f0c674]user authentication[/color] and [color=#f0c674]permission-based access control[/color]." },
-			{ "name": "Professor Auth", "text": "Without these, anyone can do anything. That's not a system — that's chaos." },
-			{ "name": "Professor Auth", "text": "Year 3 complete. You're ready for the final year." }
-		])
-		await dialogue_box.dialogue_finished
+	# Evaluate Grade
+	if not DEBUG_SKIP_IDE:
+		character_data.ch2_y3s2_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y3s2_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			return
+			
+	if is_learning_mode or DEBUG_SKIP_IDE:
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Auth", "text": "You made it through." },
+				{ "name": "Professor Auth", "text": "You now understand [color=#f0c674]user authentication[/color] and [color=#f0c674]permission-based access control[/color]." },
+				{ "name": "Professor Auth", "text": "Without these, anyone can do anything. That's not a system — that's chaos." },
+				{ "name": "Professor Auth", "text": "Year 3 complete. You're ready for the final year." }
+			])
+			await dialogue_box.dialogue_finished
 	
 	# Mark complete
 	if character_data and not is_learning_mode:
@@ -209,8 +313,8 @@ func _start_lesson_sequence():
 
 	if qm:
 		qm.show_quest()
-		if qm.has_method("refresh_college_quest"):
-			qm.refresh_college_quest()
+		if qm.has_method("refresh_college_2nd_floor_quest"):
+			qm.refresh_college_2nd_floor_quest()
 
 # ── Teaching slides (Ch1-style) + lazy IDE ────────────────────────────
 
@@ -263,6 +367,12 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
+	
+	if not _challenge_ui.is_connected("challenge_failed", Callable(self, "_on_wrong_attempt")):
+		_challenge_ui.connect("challenge_failed", Callable(self, "_on_wrong_attempt"))
+	if not _challenge_ui.is_connected("hint_used", Callable(self, "_on_hint_used")):
+		_challenge_ui.connect("hint_used", Callable(self, "_on_hint_used"))
+		
 	await get_tree().process_frame
 	if _challenge_ui.continue_button.pressed.is_connected(_challenge_ui._on_continue_pressed):
 		_challenge_ui.continue_button.pressed.disconnect(_challenge_ui._on_continue_pressed)
@@ -297,7 +407,7 @@ func _play_module_1_authentication(skip_ide: bool):
 		],
 		"header": "MODULE 1 — AUTHENTICATION",
 		"header_icon": "🔑",
-		"slide_num": "1 / 4",
+		"slide_num": "1 / 8",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -326,7 +436,7 @@ func _play_module_1_authentication(skip_ide: bool):
 		"code": "from django.contrib.auth import authenticate, login\n\ndef login_view(request):\n    user = authenticate(\n        request,\n        username='alice',\n        password='secret123'\n    )\n    if user is not None:\n        login(request, user)",
 		"header": "MODULE 1 — AUTHENTICATION",
 		"header_icon": "🔑",
-		"slide_num": "2 / 4",
+		"slide_num": "2 / 8",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -415,7 +525,7 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 		"code": "def edit_post(request, post_id):\n    post = Post.objects.get(id=post_id)\n    if request.user == post.owner:\n        # Allow editing\n    else:\n        # Deny access",
 		"header": "MODULE 2 — CRUD & PERMISSIONS",
 		"header_icon": "🔒",
-		"slide_num": "3 / 4",
+		"slide_num": "3 / 8",
 		"reference": "Source: Django for Professionals (Vincent, 2022)"
 	})
 	if dialogue_box:
@@ -443,7 +553,7 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 		"code": "if request.user == post.owner:\n    post.delete()\n    messages.success(request, 'Deleted!')\nelse:\n    messages.error(request, 'Permission denied.')",
 		"header": "MODULE 2 — CRUD & PERMISSIONS",
 		"header_icon": "🔒",
-		"slide_num": "4 / 4",
+		"slide_num": "4 / 8",
 		"reference": "Source: Django for Professionals (Vincent, 2022)"
 	})
 	if dialogue_box:
@@ -505,7 +615,7 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 			{ "name": "Professor Auth", "text": "Well done." },
 			{ "name": "Professor Auth", "text": "Your app now knows [color=#f0c674]who[/color] users are and [color=#f0c674]what[/color] they're allowed to do." },
 			{ "name": "Professor Auth", "text": "Authentication plus permissions. That's the security layer every real app needs." },
-			{ "name": "Professor Auth", "text": "Year 3 is complete. You've earned your place." }
+			{ "name": "Professor Auth", "text": "But what if you need more than just a username and password? Let's find out." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -680,7 +790,7 @@ func _play_module_4_password_hashing(skip_ide: bool):
 
 
 
-#  HELPERS — Identical to Professor Otek / Query / View pattern
+#  HELPERS — Identical to Professor Token / Query / View pattern
 # ══════════════════════════════════════════════════════════════════════
 
 func _make_challenge(id: String, title: String, topic: String, file_name: String,
@@ -1190,3 +1300,205 @@ func _on_slide_glossary_clicked(meta) -> void:
 	var popup = GLOSSARY_POPUP_SCENE.new()
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+# ── Grade Evaluation & Backend ───────────────────────────────────────
+
+func _on_wrong_attempt() -> void:
+	_session_wrong_attempts += 1
+	var minus_grade = _session_wrong_attempts * deduction_wrong_attempt
+	print("[DEBUG] Prof Auth: Wrong attempt #", _session_wrong_attempts, "! Added to raw grade: +", deduction_wrong_attempt, " (Total added: ", minus_grade, ")")
+
+func _on_hint_used() -> void:
+	_session_hints_used += 1
+	var minus_grade = _session_hints_used * deduction_hint_used
+	print("[DEBUG] Prof Auth: Hint used #", _session_hints_used, "! Added to raw grade: +", deduction_hint_used, " (Total added: ", minus_grade, ")")
+
+func _evaluate_and_finalize_grade() -> String:
+
+	var final_grade = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("auth", final_grade)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Auth", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(final_grade) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
+	if character_data:
+		character_data.ch2_y3s2_final_grade = final_grade
+
+	print("--- DEBUG AUTH GRADE EVALUATION ---")
+	print("Wrong Attempts: ", _session_wrong_attempts, " | Hints Used: ", _session_hints_used)
+	print("Raw Computed Grade: ", final_grade, " (", GradeCalculator.grade_to_label(final_grade), ")")
+	print("------------------------------------")
+
+	dialogue_box = _get_dialogue_box()
+
+	if GradeCalculator.is_passing(final_grade):
+		if character_data:
+			character_data.ch2_y3s2_teaching_done = true
+		_dispatch_rewards()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Auth", "text": "Authentication tight. Authorization valid. Final grade: [color=#f0c674]" + GradeCalculator.grade_to_label(final_grade) + "[/color]." },
+				{ "name": "Professor Auth", "text": "You are now building secure systems." }
+			])
+			await dialogue_box.dialogue_finished
+		await _autosave_progress()
+		return "pass"
+
+	elif GradeCalculator.is_inc(final_grade):
+		if character_data:
+			character_data.ch2_y3s2_inc_triggered = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Auth", "text": "Your system is leaking unauthorized access." },
+				{ "name": "Professor Auth", "text": "You are receiving an INC (4.0)." },
+				{ "name": "Professor Auth", "text": "Take the removal exam now to prove you understand user authentication." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var passed = await _launch_removal_exam()
+		if passed:
+			if character_data:
+				character_data.ch2_y3s2_final_grade = 3.0
+				character_data.ch2_y3s2_removal_passed = true
+				character_data.ch2_y3s2_teaching_done = true
+				character_data.ch2_y3s2_inc_triggered = false
+			_dispatch_rewards()
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Auth", "text": "You passed the removal exam. Final grade: [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor Auth", "text": "Don't ignore permissions next time." }
+				])
+				await dialogue_box.dialogue_finished
+			await _autosave_progress()
+			return "inc_pass"
+		else:
+			if character_data:
+				character_data.ch2_y3s2_final_grade = 5.0
+				character_data.ch2_y3s2_removal_passed = false
+				character_data.ch2_y3s2_teaching_done = false
+				character_data.ch2_y3s2_inc_triggered = false
+				character_data.ch2_y3s2_retake_count += 1
+				character_data.ch2_y3s2_current_module = 0
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Auth", "text": "You failed the removal exam. Final grade: [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor Auth", "text": "You must retake my class." }
+				])
+				await dialogue_box.dialogue_finished
+			await _autosave_progress()
+			return "inc_fail"
+
+	else:
+		if character_data:
+			character_data.ch2_y3s2_final_grade = 5.0
+			character_data.ch2_y3s2_retake_count += 1
+			character_data.ch2_y3s2_current_module = 0
+			character_data.ch2_y3s2_teaching_done = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Auth", "text": "Unacceptable security risk. Final grade: [color=#f0c674]5.0 (FAILED)[/color]." },
+				{ "name": "Professor Auth", "text": "Start over." }
+			])
+			await dialogue_box.dialogue_finished
+		await _autosave_progress()
+		return "fail"
+
+func _dispatch_rewards() -> void:
+	if not character_data: return
+	var retake = character_data.ch2_y3s2_retake_count
+	var credits_reward = 0
+	match retake:
+		0: credits_reward = reward_credits_retake_0
+		1: credits_reward = reward_credits_retake_1
+		2: credits_reward = reward_credits_retake_2
+		3: credits_reward = reward_credits_retake_3
+		_: credits_reward = reward_credits_retake_4_plus
+	character_data.add_credits(credits_reward)
+	print("ProfAuthController: Dispatched %d credits for retake %d" % [credits_reward, retake])
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+
+	var quiz_instance = REMOVAL_QUIZ_SCENE.instantiate()
+	quiz_instance.pass_score = removal_pass_score
+	quiz_instance.quiz_count = 5
+	
+	quiz_instance.all_questions = [
+		{
+			"question": "Which function is used in Django to verify a username and password against the database?",
+			"options": ["A) verify_user()", "B) check_login()", "C) authenticate()", "D) check_password()"],
+			"correct": 2
+		},
+		{
+			"question": "Which decorator prevents unauthorized users from accessing a specific view?",
+			"options": ["A) @user_auth_needed", "B) @login_required", "C) @auth_only", "D) @require_user"],
+			"correct": 1
+		},
+		{
+			"question": "To prove user ownership, what comparison is standard in Django views?",
+			"options": ["A) request.user == object.owner", "B) request.admin == True", "C) session.user == True", "D) user.is_authenticated()"],
+			"correct": 0
+		},
+		{
+			"question": "Which class should you inherit from to extend the default Django User model with custom fields?",
+			"options": ["A) CustomUser", "B) AbstractUser", "C) BaseAuthUser", "D) UserExtension"],
+			"correct": 1
+		},
+		{
+			"question": "Which function safely hashes a plaintext password before saving it to the database?",
+			"options": ["A) encrypt_password()", "B) hash_string()", "C) encode()", "D) set_password()"],
+			"correct": 3
+		}
+	]
+	
+	canvas.add_child(quiz_instance)
+	var score = await quiz_instance.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	canvas.queue_free()
+	return passed
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)

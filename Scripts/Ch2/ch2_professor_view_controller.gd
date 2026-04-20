@@ -40,7 +40,7 @@ var _session_hints_used: int = 0
 # ── Grade Evaluation Config ───────────────────────────────────────────
 @export var deduction_wrong_attempt: float = 0.25
 @export var deduction_hint_used: float = 0.50
-@export var removal_pass_score: int = 2
+@export var removal_pass_score: int = 3
 
 var reward_credits_retake_0: int = 100
 var reward_credits_retake_1: int = 90
@@ -219,7 +219,7 @@ func _start_lesson_sequence():
 	await get_tree().create_timer(0.3).timeout
 	
 	# Mark complete / Evaluate Grade
-	if not is_learning_mode and not DEBUG_SKIP_IDE:
+	if not DEBUG_SKIP_IDE:
 		character_data.ch2_y2s1_wrong_attempts = _session_wrong_attempts
 		character_data.ch2_y2s1_hints_used = _session_hints_used
 		var grade_result = await _evaluate_and_finalize_grade()
@@ -2101,8 +2101,6 @@ func _play_module_5_generic_views(skip_ide: bool):
 # ── Grade Evaluation & Backend ───────────────────────────────────────
 
 func _evaluate_and_finalize_grade() -> String:
-	if is_learning_mode:
-		return "learning"
 		
 	var grade_calc = get_node_or_null("/root/GradeCalculator")
 	if not grade_calc:
@@ -2111,6 +2109,15 @@ func _evaluate_and_finalize_grade() -> String:
 		
 	var final_grade = grade_calc.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
 	
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("view", final_grade)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor View", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(final_grade) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
 	character_data.ch2_y2s1_final_grade = final_grade
 	print("Professor View - Final Grade: ", final_grade)
 	
@@ -2143,6 +2150,7 @@ func _evaluate_and_finalize_grade() -> String:
 					{ "name": "Professor View", "text": "Do better next semester." }
 				])
 				await dialogue_box.dialogue_finished
+			await _autosave_progress()
 			return "inc_pass"
 		else:
 			character_data.ch2_y2s1_removal_passed = false
@@ -2157,6 +2165,7 @@ func _evaluate_and_finalize_grade() -> String:
 					{ "name": "Professor View", "text": "You must retake the entire chapter." }
 				])
 				await dialogue_box.dialogue_finished
+			await _autosave_progress()
 			return "inc_fail"
 	elif final_grade == 5.0:
 		character_data.ch2_y2s1_teaching_done = false
@@ -2175,6 +2184,7 @@ func _evaluate_and_finalize_grade() -> String:
 				{ "name": "Professor View", "text": "You must retake the entire chapter from the beginning." }
 			])
 			await dialogue_box.dialogue_finished
+		await _autosave_progress()
 		return "fail"
 	else:
 		# Passing condition
@@ -2193,6 +2203,7 @@ func _evaluate_and_finalize_grade() -> String:
 				{ "name": "Professor View", "text": "Keep your project structured." }
 			])
 			await dialogue_box.dialogue_finished
+		await _autosave_progress()
 		return "passed"
 
 func _dispatch_rewards(grade: float) -> void:
@@ -2269,3 +2280,38 @@ func _launch_removal_exam() -> bool:
 	canvas.queue_free()
 	
 	return passed
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)

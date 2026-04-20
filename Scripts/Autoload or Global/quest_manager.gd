@@ -178,7 +178,7 @@ func refresh_college_quest() -> void:
 	elif not cd.ch2_y2s2_teaching_done:
 		set_quest("ch2:_database_models", "Find Professor Query to learn about databases and ORMs.", "NPCMaleCollegeProf03")
 	elif not cd.ch2_y3s1_teaching_done:
-		set_quest("ch2:_finding_otek", "Head to the 2nd Floor to meet Professor Otek.", ["CollegeStairsLeft", "CollegeStairsRight"])
+		set_quest("ch2:_finding_token", "Head to the 2nd Floor to meet Professor Token.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s2_teaching_done:
 		set_quest("ch2:_finding_auth", "Head to the 2nd Floor to meet Professor Auth.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3mid_teaching_done:
@@ -201,7 +201,7 @@ func refresh_college_2nd_floor_quest() -> void:
 	if not (cd.ch2_y1s1_teaching_done and cd.ch2_y1s2_teaching_done and cd.ch2_y2s1_teaching_done and cd.ch2_y2s2_teaching_done):
 		set_quest("ch2:_missing_prerequisites", "Return to the 1st Floor and finish your earlier modules first.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s1_teaching_done:
-		set_quest("ch2:_deployment_basics", "Speak with Professor Otek about deploying your website.", "NPCMaleCollegeProf04")
+		set_quest("ch2:_deployment_basics", "Speak with Professor Token about deploying your website.", "NPCMaleCollegeProf04")
 	elif not cd.ch2_y3s2_teaching_done:
 		set_quest("ch2:_user_authentication", "Find Professor Auth to learn how to secure your app.", "NPCFemaleCollegeProf02")
 	elif not cd.ch2_y3mid_teaching_done:

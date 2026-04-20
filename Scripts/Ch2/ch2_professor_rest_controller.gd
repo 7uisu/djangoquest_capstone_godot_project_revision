@@ -32,6 +32,35 @@ var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
 
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
+
+const deduction_wrong_attempt: float = 0.25
+const deduction_hint_used: float = 0.50
+const removal_pass_score: int = 3
+
+var reward_credits_retake_0: int = 300
+var reward_credits_retake_1: int = 250
+var reward_credits_retake_2: int = 200
+var reward_credits_retake_3: int = 150
+var reward_credits_retake_4_plus: int = 100
+
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
+
+var retake_dialogues: Array = [
+	[],
+	[{ "name": "Professor REST", "text": "Back for another try. Let's cover APIs again." }],
+	[
+		{ "name": "Professor REST", "text": "Two attempts. You're struggling with Token Authentication." },
+		{ "name": "Professor REST", "text": "Pay close attention this time." }
+	],
+	[
+		{ "name": "Professor REST", "text": "Systems engineering requires persistence." },
+		{ "name": "Professor REST", "text": "Let's secure this API one more time." }
+	]
+]
+
+
 # ── Interaction Handler ───────────────────────────────────────────────
 
 func _on_professor_interacted():
@@ -51,6 +80,66 @@ func _on_professor_interacted():
 		_cutscene_running = true
 		_start_lesson_sequence()
 		return
+	
+	# Check INC loop state
+	if character_data and character_data.get("ch2_y3mid_inc_triggered"):
+		_cutscene_running = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor REST", "text": "You still have an INC (4.0) unresolved." },
+				{ "name": "Professor REST", "text": "Take the removal exam now." }
+			])
+			await dialogue_box.dialogue_finished
+			
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y3mid_removal_passed = true
+			character_data.ch2_y3mid_teaching_done = true
+			character_data.ch2_y3mid_inc_triggered = false
+			character_data.ch2_y3mid_final_grade = 3.0
+			_dispatch_rewards()
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor REST", "text": "You passed. Grade finalized at [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor REST", "text": "Do not fail me again." }
+				])
+				await dialogue_box.dialogue_finished
+		else:
+			character_data.ch2_y3mid_removal_passed = false
+			character_data.ch2_y3mid_teaching_done = false
+			character_data.ch2_y3mid_inc_triggered = false
+			character_data.ch2_y3mid_retake_count += 1
+			character_data.ch2_y3mid_current_module = 0
+			character_data.ch2_y3mid_final_grade = 5.0
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor REST", "text": "You failed the removal exam. Grade is [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor REST", "text": "You must retake my class from the beginning." }
+				])
+				await dialogue_box.dialogue_finished
+		
+		if player:
+			player.can_move = true
+			player.can_interact = true
+		_cutscene_running = false
+		return
+
+	# ── Retake dialogue ───────────────────────────────────────────
+	if dialogue_box and character_data:
+		var retake_count = character_data.get("ch2_y3mid_retake_count")
+		if retake_count > 0:
+			var dialogue_index = min(retake_count, retake_dialogues.size() - 1)
+			if dialogue_index >= 0 and dialogue_index < retake_dialogues.size():
+				var dialogue_lines = retake_dialogues[dialogue_index]
+				if dialogue_lines.size() > 0:
+					dialogue_box.start(dialogue_lines)
+					await dialogue_box.dialogue_finished
+
 	
 	# ── Gate: Must complete ALL previous semesters (Y1S1 through Y3S2) ──
 	var has_markup = character_data and character_data.ch2_y1s1_teaching_done
@@ -126,6 +215,9 @@ func _start_lesson_sequence():
 	if character_data:
 		current_module = character_data.ch2_y3mid_current_module
 	
+	_session_wrong_attempts = 0
+	_session_hints_used = 0
+	
 	if is_learning_mode:
 		current_module = 0
 	
@@ -171,17 +263,31 @@ func _start_lesson_sequence():
 	
 	await get_tree().create_timer(0.3).timeout
 	
-	# Completion dialogue
-	dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start([
-			{ "name": "Professor REST", "text": "That's it. You've completed the midyear." },
-			{ "name": "Professor REST", "text": "You now understand [color=#f0c674]APIs[/color], [color=#f0c674]serializers[/color], and [color=#f0c674]token-based authentication[/color]." },
-			{ "name": "Professor REST", "text": "Your Django app no longer just renders HTML. It serves [color=#f0c674]data[/color] to anything that asks for it." },
-			{ "name": "Professor REST", "text": "Modern systems don't return pages. They return JSON. And now, so does yours." },
-			{ "name": "Professor REST", "text": "Year 3 is done. Prepare yourself for the capstone." }
-		])
-		await dialogue_box.dialogue_finished
+	# Evaluate Grade
+	if not DEBUG_SKIP_IDE:
+		character_data.ch2_y3mid_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y3mid_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			return
+			
+	if is_learning_mode or DEBUG_SKIP_IDE:
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor REST", "text": "That's it. You've completed the midyear." },
+				{ "name": "Professor REST", "text": "You now understand [color=#f0c674]APIs[/color], [color=#f0c674]serializers[/color], and [color=#f0c674]token-based authentication[/color]." },
+				{ "name": "Professor REST", "text": "Your Django app no longer just renders HTML. It serves [color=#f0c674]data[/color] to anything that asks for it." },
+				{ "name": "Professor REST", "text": "Modern systems don't return pages. They return JSON. And now, so does yours." },
+				{ "name": "Professor REST", "text": "Year 3 is done. Prepare yourself for the capstone." }
+			])
+			await dialogue_box.dialogue_finished
 	
 	# Mark complete
 	if character_data and not is_learning_mode:
@@ -260,6 +366,12 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
+	
+	if not _challenge_ui.is_connected("challenge_failed", Callable(self, "_on_wrong_attempt")):
+		_challenge_ui.connect("challenge_failed", Callable(self, "_on_wrong_attempt"))
+	if not _challenge_ui.is_connected("hint_used", Callable(self, "_on_hint_used")):
+		_challenge_ui.connect("hint_used", Callable(self, "_on_hint_used"))
+		
 	await get_tree().process_frame
 	if _challenge_ui.continue_button.pressed.is_connected(_challenge_ui._on_continue_pressed):
 		_challenge_ui.continue_button.pressed.disconnect(_challenge_ui._on_continue_pressed)
@@ -1113,3 +1225,205 @@ func _on_slide_glossary_clicked(meta) -> void:
 	var popup = GLOSSARY_POPUP_SCENE.new()
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+# ── Grade Evaluation & Backend ───────────────────────────────────────
+
+func _on_wrong_attempt() -> void:
+	_session_wrong_attempts += 1
+	var minus_grade = _session_wrong_attempts * deduction_wrong_attempt
+	print("[DEBUG] Prof REST: Wrong attempt #", _session_wrong_attempts, "! Added to raw grade: +", deduction_wrong_attempt, " (Total added: ", minus_grade, ")")
+
+func _on_hint_used() -> void:
+	_session_hints_used += 1
+	var minus_grade = _session_hints_used * deduction_hint_used
+	print("[DEBUG] Prof REST: Hint used #", _session_hints_used, "! Added to raw grade: +", deduction_hint_used, " (Total added: ", minus_grade, ")")
+
+func _evaluate_and_finalize_grade() -> String:
+
+	var final_grade = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("rest", final_grade)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor REST", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(final_grade) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
+	if character_data:
+		character_data.ch2_y3mid_final_grade = final_grade
+
+	print("--- DEBUG REST GRADE EVALUATION ---")
+	print("Wrong Attempts: ", _session_wrong_attempts, " | Hints Used: ", _session_hints_used)
+	print("Raw Computed Grade: ", final_grade, " (", GradeCalculator.grade_to_label(final_grade), ")")
+	print("------------------------------------")
+
+	dialogue_box = _get_dialogue_box()
+
+	if GradeCalculator.is_passing(final_grade):
+		if character_data:
+			character_data.ch2_y3mid_teaching_done = true
+		_dispatch_rewards()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor REST", "text": "Your API is serving data flawlessly. Final grade: [color=#f0c674]" + GradeCalculator.grade_to_label(final_grade) + "[/color]." },
+				{ "name": "Professor REST", "text": "You are now building systems, not just simple websites." }
+			])
+			await dialogue_box.dialogue_finished
+		await _autosave_progress()
+		return "pass"
+
+	elif GradeCalculator.is_inc(final_grade):
+		if character_data:
+			character_data.ch2_y3mid_inc_triggered = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor REST", "text": "Your endpoints are bleeding unauthorized data." },
+				{ "name": "Professor REST", "text": "You are receiving an INC (4.0)." },
+				{ "name": "Professor REST", "text": "Take the removal exam now. Prove you didn't just copy-paste your serializers." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var passed = await _launch_removal_exam()
+		if passed:
+			if character_data:
+				character_data.ch2_y3mid_final_grade = 3.0
+				character_data.ch2_y3mid_removal_passed = true
+				character_data.ch2_y3mid_teaching_done = true
+				character_data.ch2_y3mid_inc_triggered = false
+			_dispatch_rewards()
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor REST", "text": "You passed the removal exam. Final grade: [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor REST", "text": "Don't let your security slip like that again." }
+				])
+				await dialogue_box.dialogue_finished
+			await _autosave_progress()
+			return "inc_pass"
+		else:
+			if character_data:
+				character_data.ch2_y3mid_final_grade = 5.0
+				character_data.ch2_y3mid_removal_passed = false
+				character_data.ch2_y3mid_teaching_done = false
+				character_data.ch2_y3mid_inc_triggered = false
+				character_data.ch2_y3mid_retake_count += 1
+				character_data.ch2_y3mid_current_module = 0
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor REST", "text": "You failed the removal exam. Final grade: [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor REST", "text": "You must retake my class from the beginning." }
+				])
+				await dialogue_box.dialogue_finished
+			await _autosave_progress()
+			return "inc_fail"
+
+	else:
+		if character_data:
+			character_data.ch2_y3mid_final_grade = 5.0
+			character_data.ch2_y3mid_retake_count += 1
+			character_data.ch2_y3mid_current_module = 0
+			character_data.ch2_y3mid_teaching_done = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor REST", "text": "Your API is fundamentally broken. Final grade: [color=#f0c674]5.0 (FAILED)[/color]." },
+				{ "name": "Professor REST", "text": "You must retake all modules from the beginning." }
+			])
+			await dialogue_box.dialogue_finished
+		await _autosave_progress()
+		return "fail"
+
+func _dispatch_rewards() -> void:
+	if not character_data: return
+	var retake = character_data.ch2_y3mid_retake_count
+	var credits_reward = 0
+	match retake:
+		0: credits_reward = reward_credits_retake_0
+		1: credits_reward = reward_credits_retake_1
+		2: credits_reward = reward_credits_retake_2
+		3: credits_reward = reward_credits_retake_3
+		_: credits_reward = reward_credits_retake_4_plus
+	character_data.add_credits(credits_reward)
+	print("ProfRESTController: Dispatched %d credits for retake %d" % [credits_reward, retake])
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+
+	var quiz_instance = REMOVAL_QUIZ_SCENE.instantiate()
+	quiz_instance.pass_score = removal_pass_score
+	quiz_instance.quiz_count = 5
+	
+	quiz_instance.all_questions = [
+		{
+			"question": "What is the standard format for sending raw structured data over an API?",
+			"options": ["A) XML", "B) JSON", "C) HTML", "D) CSV"],
+			"correct": 1
+		},
+		{
+			"question": "Which Django REST Framework class converts Models into JSON and back?",
+			"options": ["A) JSONConverter", "B) Objectifier", "C) ModelSerializer", "D) TokenAuthenticator"],
+			"correct": 2
+		},
+		{
+			"question": "What is the primary method used to secure a stateless API without using session cookies?",
+			"options": ["A) TokenAuthentication", "B) Form Validation", "C) Database Locks", "D) CSRF Tokens"],
+			"correct": 0
+		},
+		{
+			"question": "Which DRF class handles List, Retrieve, Create, Update, and Delete in a single class?",
+			"options": ["A) APIView", "B) GenericAPI", "C) DetailView", "D) ModelViewSet"],
+			"correct": 3
+		},
+		{
+			"question": "Which DRF feature auto-generates all URLs for a ModelViewSet?",
+			"options": ["A) urls.py", "B) LinkResolver", "C) Object Mapper", "D) Router"],
+			"correct": 3
+		}
+	]
+	
+	canvas.add_child(quiz_instance)
+	var score = await quiz_instance.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	canvas.queue_free()
+	return passed
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)

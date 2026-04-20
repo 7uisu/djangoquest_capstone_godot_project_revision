@@ -40,7 +40,7 @@ var _original_dialogue_layer: int = 10
 # ── Grade Evaluation Config ───────────────────────────────────────────
 @export var deduction_wrong_attempt: float = 0.25
 @export var deduction_hint_used: float = 0.50
-@export var removal_pass_score: int = 2
+@export var removal_pass_score: int = 3
 
 var reward_credits_retake_0: int = 100
 var reward_credits_retake_1: int = 90
@@ -202,7 +202,7 @@ func _start_lesson_sequence():
 			parent_node.show_professor_selector_disabled()
 	
 		# ─── Grade Evaluation (normal mode, IDE was used) ────────────
-	if not is_learning_mode and not DEBUG_SKIP_IDE:
+	if not DEBUG_SKIP_IDE:
 		character_data.ch2_y1s2_wrong_attempts = _session_wrong_attempts
 		character_data.ch2_y1s2_hints_used = _session_hints_used
 		var grade_result = await _evaluate_and_finalize_grade()
@@ -1215,6 +1215,16 @@ func _evaluate_and_finalize_grade() -> String:
 	var GradeCalculator = load("res://Scripts/Autoload or Global/grade_calculator.gd")
 	var raw = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
 	
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("syntax", raw)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Syntax", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(raw) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
+	
 	character_data.ch2_y1s2_wrong_attempts += _session_wrong_attempts
 	character_data.ch2_y1s2_hints_used += _session_hints_used
 	character_data.ch2_y1s2_final_grade = raw
@@ -1239,6 +1249,7 @@ func _evaluate_and_finalize_grade() -> String:
 			qm.show_quest()
 			if qm.has_method("refresh_college_quest"):
 				qm.refresh_college_quest()
+		await _autosave_progress()
 		return "pass"
 
 	elif GradeCalculator.is_inc(raw):
@@ -1263,6 +1274,8 @@ func _evaluate_and_finalize_grade() -> String:
 					{ "name": "Professor Syntax", "text": "Barely acceptable, but you may proceed." }
 				])
 				await dialogue_box.dialogue_finished
+			character_data.ch2_y1s2_teaching_done = true
+			await _autosave_progress()
 			return "inc_pass"
 		else:
 			character_data.ch2_y1s2_retake_count += 1
@@ -1275,6 +1288,7 @@ func _evaluate_and_finalize_grade() -> String:
 					{ "name": "Professor Syntax", "text": "You will retake this semester. Goodbye." }
 				])
 				await dialogue_box.dialogue_finished
+			await _autosave_progress()
 			return "inc_fail"
 
 	else:
@@ -1289,6 +1303,7 @@ func _evaluate_and_finalize_grade() -> String:
 				{ "name": "Professor Syntax", "text": "You have failed Semester 2. You will have to retake these lessons." }
 			])
 			await dialogue_box.dialogue_finished
+		await _autosave_progress()
 		return "fail"
 
 func _launch_removal_exam() -> bool:
@@ -1354,3 +1369,38 @@ func _dispatch_rewards():
 		print("ProfSyntax: Dispatched ", credits_earned, " credits for retake count: ", retakes)
 	else:
 		print("ProfSyntax: No credits dispatched (retakes >= 3)")
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)

@@ -1,5 +1,5 @@
 # ch2_professor_token_controller.gd — Year 3 Semester 1 Professor Controller
-# Manages the teach-code-teach-code flow for Professor Otek (Forms & Security)
+# Manages the teach-code-teach-code flow for Professor Token (Forms & Security)
 # Wired to NPCMaleCollegeProf04 via college_map_manager.gd
 #
 # Flow:
@@ -33,6 +33,34 @@ var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
 
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
+
+const deduction_wrong_attempt: float = 0.25
+const deduction_hint_used: float = 0.50
+const removal_pass_score: int = 3
+
+var reward_credits_retake_0: int = 300
+var reward_credits_retake_1: int = 250
+var reward_credits_retake_2: int = 200
+var reward_credits_retake_3: int = 150
+var reward_credits_retake_4_plus: int = 100
+
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
+
+var retake_dialogues: Array = [
+	[],
+	[{ "name": "Professor Token", "text": "Back again. Let's review Forms & Security from scratch." }],
+	[
+		{ "name": "Professor Token", "text": "Two attempts now." },
+		{ "name": "Professor Token", "text": "Pay closer attention to CSRF tokens and validation this time." }
+	],
+	[
+		{ "name": "Professor Token", "text": "A secure app requires persistence." },
+		{ "name": "Professor Token", "text": "Let's harden this system one more time." }
+	]
+]
+
 # ── Interaction Handler ───────────────────────────────────────────────
 
 func _on_professor_interacted():
@@ -53,6 +81,54 @@ func _on_professor_interacted():
 		_start_lesson_sequence()
 		return
 	
+	# Check INC loop state
+	if character_data and character_data.get("ch2_y3s1_inc_triggered"):
+		_cutscene_running = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Token", "text": "You still have an INC (4.0) unresolved." },
+				{ "name": "Professor Token", "text": "Take the removal exam now." }
+			])
+			await dialogue_box.dialogue_finished
+			
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y3s1_removal_passed = true
+			character_data.ch2_y3s1_teaching_done = true
+			character_data.ch2_y3s1_inc_triggered = false
+			character_data.ch2_y3s1_final_grade = 3.0
+			_dispatch_rewards()
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Token", "text": "You passed. Grade finalized at [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor Token", "text": "Do not fail me again." }
+				])
+				await dialogue_box.dialogue_finished
+		else:
+			character_data.ch2_y3s1_removal_passed = false
+			character_data.ch2_y3s1_teaching_done = false
+			character_data.ch2_y3s1_inc_triggered = false
+			character_data.ch2_y3s1_retake_count += 1
+			character_data.ch2_y3s1_current_module = 0
+			character_data.ch2_y3s1_final_grade = 5.0
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Token", "text": "You failed the removal exam. Grade is [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor Token", "text": "You must retake my class from the beginning." }
+				])
+				await dialogue_box.dialogue_finished
+		
+		if player:
+			player.can_move = true
+			player.can_interact = true
+		_cutscene_running = false
+		return
+	
 	# ── Gate: Must complete Y1S1, Y1S2, Y2S1, AND Y2S2 first ─────
 	var has_markup = character_data and character_data.ch2_y1s1_teaching_done
 	var has_syntax = character_data and character_data.ch2_y1s2_teaching_done
@@ -62,9 +138,9 @@ func _on_professor_interacted():
 	if not (has_markup and has_syntax and has_view and has_query):
 		if dialogue_box:
 			dialogue_box.start([
-				{ "name": "Professor Otek", "text": "Hold on. You're not cleared for this class." },
-				{ "name": "Professor Otek", "text": "You need to finish [color=#f0c674]Professor Markup[/color], [color=#f0c674]Professor Syntax[/color], [color=#f0c674]Professor View[/color], and [color=#f0c674]Professor Query[/color] first." },
-				{ "name": "Professor Otek", "text": "Security without foundations is reckless. Come back when you're ready." }
+				{ "name": "Professor Token", "text": "Hold on. You're not cleared for this class." },
+				{ "name": "Professor Token", "text": "You need to finish [color=#f0c674]Professor Markup[/color], [color=#f0c674]Professor Syntax[/color], [color=#f0c674]Professor View[/color], and [color=#f0c674]Professor Query[/color] first." },
+				{ "name": "Professor Token", "text": "Security without foundations is reckless. Come back when you're ready." }
 			])
 		return
 	
@@ -72,12 +148,22 @@ func _on_professor_interacted():
 	if character_data and character_data.ch2_y3s1_teaching_done:
 		if dialogue_box:
 			dialogue_box.start([
-				{ "name": "Professor Otek", "text": "You've completed all my lessons for this semester." },
-				{ "name": "Professor Otek", "text": "[color=#f0c674]Forms[/color], [color=#f0c674]CSRF protection[/color], [color=#f0c674]user messages[/color]. Your apps are safer now." },
-				{ "name": "Professor Otek", "text": "Don't ever ship a form without validation. Ever." }
+				{ "name": "Professor Token", "text": "You've completed all my lessons for this semester." },
+				{ "name": "Professor Token", "text": "[color=#f0c674]Forms[/color], [color=#f0c674]CSRF protection[/color], [color=#f0c674]user messages[/color]. Your apps are safer now." },
+				{ "name": "Professor Token", "text": "Don't ever ship a form without validation. Ever." }
 			])
 		return
 	
+	# ── Retake dialogue ───────────────────────────────────────────
+	if dialogue_box and character_data:
+		var retake_count = character_data.ch2_y3s1_retake_count
+		if retake_count > 0:
+			var dialogue_index = min(retake_count, retake_dialogues.size() - 1)
+			var dialogue_lines = retake_dialogues[dialogue_index]
+			if dialogue_lines.size() > 0:
+				dialogue_box.start(dialogue_lines)
+				await dialogue_box.dialogue_finished
+
 	# ── Lecture prompt ────────────────────────────────────────────
 	if dialogue_box:
 		var current_mod = 0
@@ -88,7 +174,7 @@ func _on_professor_interacted():
 		var mod_label = mod_names[current_mod] if current_mod < mod_names.size() else "the lesson"
 		
 		var lines = [{
-			"name": "Professor Otek",
+			"name": "Professor Token",
 			"text": "Ready for the lecture on " + mod_label + "?",
 			"choices": ["Yes", "Not yet"]
 		}]
@@ -124,6 +210,9 @@ func _start_lesson_sequence():
 	var current_module = 0
 	if character_data:
 		current_module = character_data.ch2_y3s1_current_module
+	
+	_session_wrong_attempts = 0
+	_session_hints_used = 0
 	
 	if is_learning_mode:
 		current_module = 0
@@ -170,16 +259,30 @@ func _start_lesson_sequence():
 	
 	await get_tree().create_timer(0.3).timeout
 	
-	# Completion dialogue
-	dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start([
-			{ "name": "Professor Otek", "text": "You survived the semester." },
-			{ "name": "Professor Otek", "text": "You now understand [color=#f0c674]form validation[/color], [color=#f0c674]CSRF protection[/color], and [color=#f0c674]user messaging[/color]." },
-			{ "name": "Professor Otek", "text": "These aren't optional features. They're the difference between a [color=#f0c674]secure app[/color] and a liability." },
-			{ "name": "Professor Otek", "text": "Semester complete. Stay vigilant." }
-		])
-		await dialogue_box.dialogue_finished
+	# Evaluate Grade
+	if not DEBUG_SKIP_IDE:
+		character_data.ch2_y3s1_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y3s1_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			return
+			
+	if is_learning_mode or DEBUG_SKIP_IDE:
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Token", "text": "You survived the semester." },
+				{ "name": "Professor Token", "text": "You now understand [color=#f0c674]form validation[/color], [color=#f0c674]CSRF protection[/color], and [color=#f0c674]user messaging[/color]." },
+				{ "name": "Professor Token", "text": "These aren't optional features. They're the difference between a [color=#f0c674]secure app[/color] and a liability." },
+				{ "name": "Professor Token", "text": "Semester complete. Stay vigilant." }
+			])
+			await dialogue_box.dialogue_finished
 	
 	# Mark complete
 	if character_data and not is_learning_mode:
@@ -204,8 +307,8 @@ func _start_lesson_sequence():
 
 	if qm:
 		qm.show_quest()
-		if qm.has_method("refresh_college_quest"):
-			qm.refresh_college_quest()
+		if qm.has_method("refresh_college_2nd_floor_quest"):
+			qm.refresh_college_2nd_floor_quest()
 
 # ── Teaching slides (Ch1-style) + lazy IDE ────────────────────────────
 
@@ -259,6 +362,12 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
+	
+	if not _challenge_ui.is_connected("challenge_failed", Callable(self, "_on_wrong_attempt")):
+		_challenge_ui.connect("challenge_failed", Callable(self, "_on_wrong_attempt"))
+	if not _challenge_ui.is_connected("hint_used", Callable(self, "_on_hint_used")):
+		_challenge_ui.connect("hint_used", Callable(self, "_on_hint_used"))
+		
 	await get_tree().process_frame
 	if _challenge_ui.continue_button.pressed.is_connected(_challenge_ui._on_continue_pressed):
 		_challenge_ui.continue_button.pressed.disconnect(_challenge_ui._on_continue_pressed)
@@ -299,13 +408,13 @@ func _play_module_1_forms(skip_ide: bool):
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Welcome to [color=#f0c674]Year 3[/color]. This is where your apps start dealing with the real world." },
-			{ "name": "Professor Otek", "text": "Users will input data. And they [color=#f0c674]will[/color] break your system." },
+			{ "name": "Professor Token", "text": "Welcome to [color=#f0c674]Year 3[/color]. This is where your apps start dealing with the real world." },
+			{ "name": "Professor Token", "text": "Users will input data. And they [color=#f0c674]will[/color] break your system." },
 			{ "name": "Student", "text": "Break it how?" },
-			{ "name": "Professor Otek", "text": "Invalid data. Malicious input. Empty fields where you expected values." },
-			{ "name": "Professor Otek", "text": "This is why we use [color=#f0c674]Forms[/color]. They validate everything before it touches your database." },
+			{ "name": "Professor Token", "text": "Invalid data. Malicious input. Empty fields where you expected values." },
+			{ "name": "Professor Token", "text": "This is why we use [color=#f0c674]Forms[/color]. They validate everything before it touches your database." },
 			{ "name": "Student", "text": "So Django checks the data for us?" },
-			{ "name": "Professor Otek", "text": "If you use it properly. A [color=#f0c674]ModelForm[/color] connects directly to your Model." }
+			{ "name": "Professor Token", "text": "If you use it properly. A [color=#f0c674]ModelForm[/color] connects directly to your Model." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.2).timeout
@@ -329,12 +438,12 @@ func _play_module_1_forms(skip_ide: bool):
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "The key to a [color=#f0c674]ModelForm[/color] is the inner [color=#f0c674]class Meta[/color]." },
-			{ "name": "Professor Otek", "text": "Inside Meta, you specify the [color=#f0c674]model[/color] and the [color=#f0c674]fields[/color] you want." },
+			{ "name": "Professor Token", "text": "The key to a [color=#f0c674]ModelForm[/color] is the inner [color=#f0c674]class Meta[/color]." },
+			{ "name": "Professor Token", "text": "Inside Meta, you specify the [color=#f0c674]model[/color] and the [color=#f0c674]fields[/color] you want." },
 			{ "name": "Student", "text": "So we don't have to define each form field manually?" },
-			{ "name": "Professor Otek", "text": "Exactly. Django reads your Model and builds the form for you." },
-			{ "name": "Professor Otek", "text": "Less code, fewer mistakes. That's the Django way." },
-			{ "name": "Professor Otek", "text": "Now define one yourself." }
+			{ "name": "Professor Token", "text": "Exactly. Django reads your Model and builds the form for you." },
+			{ "name": "Professor Token", "text": "Less code, fewer mistakes. That's the Django way." },
+			{ "name": "Professor Token", "text": "Now define one yourself." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -371,9 +480,9 @@ func _play_module_1_forms(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Define the [color=#f0c674]Meta[/color] class inside our StudentForm." },
-			{ "name": "Professor Otek", "text": "Set [color=#f0c674]model = Student[/color] and [color=#f0c674]fields = ['name', 'grade'][/color]." },
-			{ "name": "Professor Otek", "text": "Start with [color=#f0c674]class Meta:[/color] then define the model and fields inside it." }
+			{ "name": "Professor Token", "text": "Define the [color=#f0c674]Meta[/color] class inside our StudentForm." },
+			{ "name": "Professor Token", "text": "Set [color=#f0c674]model = Student[/color] and [color=#f0c674]fields = ['name', 'grade'][/color]." },
+			{ "name": "Professor Token", "text": "Start with [color=#f0c674]class Meta:[/color] then define the model and fields inside it." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -383,9 +492,9 @@ func _play_module_1_forms(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Good. Your form now maps directly to the database." },
-			{ "name": "Professor Otek", "text": "Django will validate every field before saving. No garbage gets through." },
-			{ "name": "Professor Otek", "text": "But validation alone isn't enough. We need to talk about [color=#f0c674]security[/color]." }
+			{ "name": "Professor Token", "text": "Good. Your form now maps directly to the database." },
+			{ "name": "Professor Token", "text": "Django will validate every field before saving. No garbage gets through." },
+			{ "name": "Professor Token", "text": "But validation alone isn't enough. We need to talk about [color=#f0c674]security[/color]." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -416,12 +525,12 @@ func _play_module_2_csrf(skip_ide: bool):
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Here's a question. How does your server know a form submission is [color=#f0c674]legitimate[/color]?" },
+			{ "name": "Professor Token", "text": "Here's a question. How does your server know a form submission is [color=#f0c674]legitimate[/color]?" },
 			{ "name": "Student", "text": "Because… the user clicked submit?" },
-			{ "name": "Professor Otek", "text": "Wrong. A malicious website can submit forms to YOUR server using YOUR user's session." },
-			{ "name": "Professor Otek", "text": "This is called a [color=#f0c674]CSRF attack[/color]. Cross-Site Request Forgery." },
+			{ "name": "Professor Token", "text": "Wrong. A malicious website can submit forms to YOUR server using YOUR user's session." },
+			{ "name": "Professor Token", "text": "This is called a [color=#f0c674]CSRF attack[/color]. Cross-Site Request Forgery." },
 			{ "name": "Student", "text": "That sounds terrifying." },
-			{ "name": "Professor Otek", "text": "It is. Which is why Django has built-in protection." }
+			{ "name": "Professor Token", "text": "It is. Which is why Django has built-in protection." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.2).timeout
@@ -445,12 +554,12 @@ func _play_module_2_csrf(skip_ide: bool):
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "The fix is simple. One line." },
-			{ "name": "Professor Otek", "text": "Add [color=#f0c674]{% csrf_token %}[/color] inside every POST form." },
+			{ "name": "Professor Token", "text": "The fix is simple. One line." },
+			{ "name": "Professor Token", "text": "Add [color=#f0c674]{% csrf_token %}[/color] inside every POST form." },
 			{ "name": "Student", "text": "That's it?" },
-			{ "name": "Professor Otek", "text": "That's it. But forget it, and your form is wide open." },
-			{ "name": "Professor Otek", "text": "[color=#f0c674]No token, no trust.[/color] Remember that." },
-			{ "name": "Professor Otek", "text": "Now add the token to a form." }
+			{ "name": "Professor Token", "text": "That's it. But forget it, and your form is wide open." },
+			{ "name": "Professor Token", "text": "[color=#f0c674]No token, no trust.[/color] Remember that." },
+			{ "name": "Professor Token", "text": "Now add the token to a form." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -489,8 +598,8 @@ func _play_module_2_csrf(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Add the [color=#f0c674]CSRF token[/color] to this POST form." },
-			{ "name": "Professor Otek", "text": "Type: [color=#f0c674]{% csrf_token %}[/color]" }
+			{ "name": "Professor Token", "text": "Add the [color=#f0c674]CSRF token[/color] to this POST form." },
+			{ "name": "Professor Token", "text": "Type: [color=#f0c674]{% csrf_token %}[/color]" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -500,9 +609,9 @@ func _play_module_2_csrf(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Good. Your form is now [color=#f0c674]protected[/color]." },
-			{ "name": "Professor Otek", "text": "Every POST form. Every time. No exceptions." },
-			{ "name": "Professor Otek", "text": "Now we need to talk about communicating [color=#f0c674]back[/color] to the user." }
+			{ "name": "Professor Token", "text": "Good. Your form is now [color=#f0c674]protected[/color]." },
+			{ "name": "Professor Token", "text": "Every POST form. Every time. No exceptions." },
+			{ "name": "Professor Token", "text": "Now we need to talk about communicating [color=#f0c674]back[/color] to the user." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -534,12 +643,12 @@ func _play_module_3_messages(skip_ide: bool):
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Your form works. It validates. It's secure." },
-			{ "name": "Professor Otek", "text": "But after a user submits data… what happens?" },
+			{ "name": "Professor Token", "text": "Your form works. It validates. It's secure." },
+			{ "name": "Professor Token", "text": "But after a user submits data… what happens?" },
 			{ "name": "Student", "text": "The page refreshes?" },
-			{ "name": "Professor Otek", "text": "And the user has [color=#f0c674]no idea[/color] if it worked or failed." },
-			{ "name": "Professor Otek", "text": "Systems must communicate clearly. That's what the [color=#f0c674]messages framework[/color] does." },
-			{ "name": "Professor Otek", "text": "Success. Error. Warning. Info. One line of code each." }
+			{ "name": "Professor Token", "text": "And the user has [color=#f0c674]no idea[/color] if it worked or failed." },
+			{ "name": "Professor Token", "text": "Systems must communicate clearly. That's what the [color=#f0c674]messages framework[/color] does." },
+			{ "name": "Professor Token", "text": "Success. Error. Warning. Info. One line of code each." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.2).timeout
@@ -563,11 +672,11 @@ func _play_module_3_messages(skip_ide: bool):
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "There are four types: [color=#f0c674]success[/color], [color=#f0c674]error[/color], [color=#f0c674]warning[/color], and [color=#f0c674]info[/color]." },
-			{ "name": "Professor Otek", "text": "Each carries a different meaning to the user." },
+			{ "name": "Professor Token", "text": "There are four types: [color=#f0c674]success[/color], [color=#f0c674]error[/color], [color=#f0c674]warning[/color], and [color=#f0c674]info[/color]." },
+			{ "name": "Professor Token", "text": "Each carries a different meaning to the user." },
 			{ "name": "Student", "text": "So we just call messages.success and it shows up?" },
-			{ "name": "Professor Otek", "text": "Yes. Django queues the message and delivers it on the next page render." },
-			{ "name": "Professor Otek", "text": "Now write one." }
+			{ "name": "Professor Token", "text": "Yes. Django queues the message and delivers it on the next page render." },
+			{ "name": "Professor Token", "text": "Now write one." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -606,8 +715,8 @@ func _play_module_3_messages(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Send a [color=#f0c674]success message[/color] to the user after saving." },
-			{ "name": "Professor Otek", "text": "Type: [color=#f0c674]messages.success(request, 'Saved!')[/color]" }
+			{ "name": "Professor Token", "text": "Send a [color=#f0c674]success message[/color] to the user after saving." },
+			{ "name": "Professor Token", "text": "Type: [color=#f0c674]messages.success(request, 'Saved!')[/color]" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -617,9 +726,9 @@ func _play_module_3_messages(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Otek", "text": "Well done." },
-			{ "name": "Professor Otek", "text": "Your apps can now [color=#f0c674]validate input[/color], [color=#f0c674]prevent attacks[/color], and [color=#f0c674]communicate with users[/color]." },
-			{ "name": "Professor Otek", "text": "That's all three pillars of this semester. You've earned your place in Year 3." }
+			{ "name": "Professor Token", "text": "Well done." },
+			{ "name": "Professor Token", "text": "Your apps can now [color=#f0c674]validate input[/color], [color=#f0c674]prevent attacks[/color], and [color=#f0c674]communicate with users[/color]." },
+			{ "name": "Professor Token", "text": "That's all three pillars of this semester. You've earned your place in Year 3." }
 		])
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
@@ -878,7 +987,7 @@ func _create_placeholder_panel() -> CenterContainer:
 	# ── Footer ──
 	var footer = Label.new()
 	footer.name = "Footer"
-	footer.text = "— Professor Otek's Lecture —"
+	footer.text = "— Professor Token's Lecture —"
 	footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	footer.add_theme_font_size_override("font_size", 12)
 	footer.add_theme_color_override("font_color", Color(0.40, 0.45, 0.58, 0.6))
@@ -1113,7 +1222,7 @@ func _refresh_log_content():
 
 		var speaker = entry.get("name", "???")
 		var text = entry.get("text", "")
-		var name_color = "#a3c4f3" if speaker == "Professor Otek" else "#c8e6c9"
+		var name_color = "#a3c4f3" if speaker == "Professor Token" else "#c8e6c9"
 		if challenge_active and (
 			text.find("\n") != -1
 			or text.find("{%") != -1
@@ -1138,3 +1247,205 @@ func _on_slide_glossary_clicked(meta) -> void:
 	var popup = GLOSSARY_POPUP_SCENE.new()
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+# ── Grade Evaluation & Backend ───────────────────────────────────────
+
+func _on_wrong_attempt() -> void:
+	_session_wrong_attempts += 1
+	var minus_grade = _session_wrong_attempts * deduction_wrong_attempt
+	print("[DEBUG] Prof Token: Wrong attempt #", _session_wrong_attempts, "! Added to raw grade: +", deduction_wrong_attempt, " (Total added: ", minus_grade, ")")
+
+func _on_hint_used() -> void:
+	_session_hints_used += 1
+	var minus_grade = _session_hints_used * deduction_hint_used
+	print("[DEBUG] Prof Token: Hint used #", _session_hints_used, "! Added to raw grade: +", deduction_hint_used, " (Total added: ", minus_grade, ")")
+
+func _evaluate_and_finalize_grade() -> String:
+
+	var final_grade = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+
+	if is_learning_mode:
+		character_data.update_learning_mode_grade("token", final_grade)
+		await _autosave_progress()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Token", "text": "Learning mode session complete. Grade is %s." % GradeCalculator.grade_to_label(final_grade) }
+			])
+			await dialogue_box.dialogue_finished
+		return "learning"
+	if character_data:
+		character_data.ch2_y3s1_final_grade = final_grade
+
+	print("--- DEBUG TOKEN GRADE EVALUATION ---")
+	print("Wrong Attempts: ", _session_wrong_attempts, " | Hints Used: ", _session_hints_used)
+	print("Raw Computed Grade: ", final_grade, " (", GradeCalculator.grade_to_label(final_grade), ")")
+	print("------------------------------------")
+
+	dialogue_box = _get_dialogue_box()
+
+	if GradeCalculator.is_passing(final_grade):
+		if character_data:
+			character_data.ch2_y3s1_teaching_done = true
+		_dispatch_rewards()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Token", "text": "Forms validate. CSRF tokens present. Final grade: [color=#f0c674]" + GradeCalculator.grade_to_label(final_grade) + "[/color]." },
+				{ "name": "Professor Token", "text": "These aren't optional features. They're the difference between a secure app and a liability." }
+			])
+			await dialogue_box.dialogue_finished
+		await _autosave_progress()
+		return "pass"
+
+	elif GradeCalculator.is_inc(final_grade):
+		if character_data:
+			character_data.ch2_y3s1_inc_triggered = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Token", "text": "Your endpoints are exposed. Your validation has holes." },
+				{ "name": "Professor Token", "text": "You are receiving an INC (4.0)." },
+				{ "name": "Professor Token", "text": "Take the removal exam now. Prove you understand security basics." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var passed = await _launch_removal_exam()
+		if passed:
+			if character_data:
+				character_data.ch2_y3s1_final_grade = 3.0
+				character_data.ch2_y3s1_removal_passed = true
+				character_data.ch2_y3s1_teaching_done = true
+				character_data.ch2_y3s1_inc_triggered = false
+			_dispatch_rewards()
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Token", "text": "You passed the removal exam. Final grade: [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor Token", "text": "Harden your defenses before next semester." }
+				])
+				await dialogue_box.dialogue_finished
+			await _autosave_progress()
+			return "inc_pass"
+		else:
+			if character_data:
+				character_data.ch2_y3s1_final_grade = 5.0
+				character_data.ch2_y3s1_removal_passed = false
+				character_data.ch2_y3s1_teaching_done = false
+				character_data.ch2_y3s1_inc_triggered = false
+				character_data.ch2_y3s1_retake_count += 1
+				character_data.ch2_y3s1_current_module = 0
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Token", "text": "You failed the removal exam. Final grade: [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor Token", "text": "You must retake my class from the beginning." }
+				])
+				await dialogue_box.dialogue_finished
+			await _autosave_progress()
+			return "inc_fail"
+
+	else:
+		if character_data:
+			character_data.ch2_y3s1_final_grade = 5.0
+			character_data.ch2_y3s1_retake_count += 1
+			character_data.ch2_y3s1_current_module = 0
+			character_data.ch2_y3s1_teaching_done = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Token", "text": "Your code is a massive security risk. Final grade: [color=#f0c674]5.0 (FAILED)[/color]." },
+				{ "name": "Professor Token", "text": "You must retake all modules from the beginning." }
+			])
+			await dialogue_box.dialogue_finished
+		await _autosave_progress()
+		return "fail"
+
+func _dispatch_rewards() -> void:
+	if not character_data: return
+	var retake = character_data.ch2_y3s1_retake_count
+	var credits_reward = 0
+	match retake:
+		0: credits_reward = reward_credits_retake_0
+		1: credits_reward = reward_credits_retake_1
+		2: credits_reward = reward_credits_retake_2
+		3: credits_reward = reward_credits_retake_3
+		_: credits_reward = reward_credits_retake_4_plus
+	character_data.add_credits(credits_reward)
+	print("ProfTokenController: Dispatched %d credits for retake %d" % [credits_reward, retake])
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+
+	var quiz_instance = REMOVAL_QUIZ_SCENE.instantiate()
+	quiz_instance.pass_score = removal_pass_score
+	quiz_instance.quiz_count = 5
+	
+	quiz_instance.all_questions = [
+		{
+			"question": "What class links a form directly to a database model in Django?",
+			"options": ["A) LinkedForm", "B) DatabaseForm", "C) ModelForm", "D) DataForm"],
+			"correct": 2
+		},
+		{
+			"question": "Which attribute inside the Meta class designates the exposed columns?",
+			"options": ["A) columns", "B) fields", "C) layout", "D) inputs"],
+			"correct": 1
+		},
+		{
+			"question": "How do you protect a POST form against Cross-Site Request Forgery in a template?",
+			"options": ["A) {% secure_form %}", "B) {{ csrf }}", "C) <csrf_protect>", "D) {% csrf_token %}"],
+			"correct": 3
+		},
+		{
+			"question": "What happens if you omit the CSRF token from a Django POST form?",
+			"options": ["A) HTTP 403 Forbidden Error", "B) Submits without issue", "C) Removes malicious data", "D) Shows terminal warning"],
+			"correct": 0
+		},
+		{
+			"question": "Which function is used to queue positive feedback in the built-in messages framework?",
+			"options": ["A) messages.info()", "B) messages.success()", "C) messages.positive()", "D) messages.alert()"],
+			"correct": 1
+		}
+	]
+	
+	canvas.add_child(quiz_instance)
+	var score = await quiz_instance.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	canvas.queue_free()
+	return passed
+
+func _autosave_progress():
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.save_game()
+
+	if player:
+		player.can_move = false
+		player.block_ui_input = true
+		player.set_physics_process(false)
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 100
+	var bg = ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.8)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var lbl = Label.new()
+	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	lbl.add_theme_font_size_override("font_size", 28)
+	canvas.add_child(bg)
+	canvas.add_child(lbl)
+	get_tree().current_scene.add_child(canvas)
+
+	await get_tree().create_timer(2.5).timeout
+
+	if is_instance_valid(canvas):
+		canvas.queue_free()
+
+	if player:
+		player.can_move = true
+		player.block_ui_input = false
+		player.set_physics_process(true)

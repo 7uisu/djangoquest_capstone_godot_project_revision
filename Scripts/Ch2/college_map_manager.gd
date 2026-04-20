@@ -175,12 +175,12 @@ func _setup_professor_token():
 	
 	# Update the NPC speaker name
 	if "speaker_name" in prof_npc:
-		prof_npc.speaker_name = "Professor Otek"
+		prof_npc.speaker_name = "Professor Token"
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_token_controller)
 	
-	print("CollegeMapManager: Professor Otek wired to NPCMaleCollegeProf04 successfully!")
+	print("CollegeMapManager: Professor Token wired to NPCMaleCollegeProf04 successfully!")
 
 func _setup_professor_auth():
 	# Find the 2nd female professor NPC (2nd floor)
