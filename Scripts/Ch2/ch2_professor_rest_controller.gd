@@ -252,6 +252,11 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_canvas.layer = 50
 	_challenge_canvas.name = "ChallengeCanvasLayer"
 	get_tree().current_scene.add_child(_challenge_canvas)
+	var dim_bg = ColorRect.new()
+	dim_bg.color = Color(0, 0, 0, 1.0)
+	dim_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_challenge_canvas.add_child(dim_bg)
+
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)

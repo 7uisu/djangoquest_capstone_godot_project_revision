@@ -33,6 +33,100 @@ var ch2_y3s2_current_module: int = 0           # 0-1 (which module player is on)
 var ch2_y3mid_teaching_done: bool = false      # Year 3 Midyear all modules complete
 var ch2_y3mid_current_module: int = 0          # 0-1 (which module player is on)
 
+# ─── Grade / Retake Tracking (per professor semester) ────────────────────────
+# Y1S1 — Professor Markup (HTML, CSS, Web Basics)
+var ch2_y1s1_retake_count: int = 0
+var ch2_y1s1_wrong_attempts: int = 0
+var ch2_y1s1_hints_used: int = 0
+var ch2_y1s1_final_grade: float = 0.0
+var ch2_y1s1_bonus_item_earned: bool = false
+var ch2_y1s1_inc_triggered: bool = false
+var ch2_y1s1_removal_passed: bool = false
+
+# Y1S2 — Professor Syntax (Python Core & OOP)
+var ch2_y1s2_retake_count: int = 0
+var ch2_y1s2_wrong_attempts: int = 0
+var ch2_y1s2_hints_used: int = 0
+var ch2_y1s2_final_grade: float = 0.0
+var ch2_y1s2_bonus_item_earned: bool = false
+var ch2_y1s2_inc_triggered: bool = false
+var ch2_y1s2_removal_passed: bool = false
+
+
+
+# Y2S1 — Professor View (Django Setup & Views)
+var ch2_y2s1_retake_count: int = 0
+var ch2_y2s1_wrong_attempts: int = 0
+var ch2_y2s1_hints_used: int = 0
+var ch2_y2s1_final_grade: float = 0.0
+var ch2_y2s1_bonus_item_earned: bool = false
+var ch2_y2s1_inc_triggered: bool = false
+var ch2_y2s1_removal_passed: bool = false
+
+# Y2S2 — Professor Query (Models, ORM & Databases)
+var ch2_y2s2_retake_count: int = 0
+var ch2_y2s2_wrong_attempts: int = 0
+var ch2_y2s2_hints_used: int = 0
+var ch2_y2s2_final_grade: float = 0.0
+var ch2_y2s2_bonus_item_earned: bool = false
+var ch2_y2s2_inc_triggered: bool = false
+var ch2_y2s2_removal_passed: bool = false
+
+# ─── AI Minigame Skip Tracking (Prof Query Module 1 — Relationship Architecture) ───
+# Tracks which of the three AI evaluator challenges were auto-skipped due to
+# connection failures. "true" = skipped (teacher dashboard will flag it).
+# These reset on each new full attempt (retake), NOT on individual challenge retries.
+var ch2_y2s2_ai_oto_skipped: bool = false    # One-to-One challenge auto-skipped
+var ch2_y2s2_ai_otm_skipped: bool = false    # One-to-Many challenge auto-skipped
+var ch2_y2s2_ai_mtm_skipped: bool = false    # Many-to-Many challenge auto-skipped
+var ch2_y2s2_ai_fully_offline: bool = false  # TRUE = all AI was down, full offline run
+
+# ─── Retake Loop Guard ───────────────────────────────────────────────────────
+# If a retake happens while all three are already flagged as skipped,
+# the skips are cleared so the player gets a fresh chance on the next run.
+# This prevents an infinite "skipped forever" loop.
+func reset_ai_skip_flags_y2s2() -> void:
+	ch2_y2s2_ai_oto_skipped = false
+	ch2_y2s2_ai_otm_skipped = false
+	ch2_y2s2_ai_mtm_skipped = false
+	ch2_y2s2_ai_fully_offline = false
+	print("CharacterData: AI skip flags for Y2S2 cleared (retake loop guard).")
+
+func get_ai_skip_count_y2s2() -> int:
+	var count = 0
+	if ch2_y2s2_ai_oto_skipped: count += 1
+	if ch2_y2s2_ai_otm_skipped: count += 1
+	if ch2_y2s2_ai_mtm_skipped: count += 1
+	return count
+
+
+# Y3S1 — Professor Otek (Forms & Security)
+var ch2_y3s1_retake_count: int = 0
+var ch2_y3s1_wrong_attempts: int = 0
+var ch2_y3s1_hints_used: int = 0
+var ch2_y3s1_final_grade: float = 0.0
+var ch2_y3s1_bonus_item_earned: bool = false
+var ch2_y3s1_inc_triggered: bool = false
+var ch2_y3s1_removal_passed: bool = false
+
+# Y3S2 — Professor Auth (Authentication & CRUD)
+var ch2_y3s2_retake_count: int = 0
+var ch2_y3s2_wrong_attempts: int = 0
+var ch2_y3s2_hints_used: int = 0
+var ch2_y3s2_final_grade: float = 0.0
+var ch2_y3s2_bonus_item_earned: bool = false
+var ch2_y3s2_inc_triggered: bool = false
+var ch2_y3s2_removal_passed: bool = false
+
+# Y3 Midyear — Professor REST (APIs & Modern Systems)
+var ch2_y3mid_retake_count: int = 0
+var ch2_y3mid_wrong_attempts: int = 0
+var ch2_y3mid_hints_used: int = 0
+var ch2_y3mid_final_grade: float = 0.0
+var ch2_y3mid_bonus_item_earned: bool = false
+var ch2_y3mid_inc_triggered: bool = false
+var ch2_y3mid_removal_passed: bool = false
+
 # Challenges completed counter (for teacher dashboard tracking)
 var challenges_completed: int = 0
 
@@ -78,6 +172,17 @@ func reset_data():
 	ch2_y3s2_current_module = 0
 	ch2_y3mid_teaching_done = false
 	ch2_y3mid_current_module = 0
+	# Grade / Retake tracking reset
+	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
+		set("ch2_%s_retake_count" % prefix, 0)
+		set("ch2_%s_wrong_attempts" % prefix, 0)
+		set("ch2_%s_hints_used" % prefix, 0)
+		set("ch2_%s_final_grade" % prefix, 0.0)
+		set("ch2_%s_bonus_item_earned" % prefix, false)
+		set("ch2_%s_inc_triggered" % prefix, false)
+		set("ch2_%s_removal_passed" % prefix, false)
+	# AI skip flags
+	reset_ai_skip_flags_y2s2()
 	challenges_completed = 0
 	credits = 0
 	defeated_challenge_npcs = []
@@ -96,7 +201,7 @@ func set_all_data(name: String, gender: String, ul1: bool, ul2: bool, ul3: bool,
 
 func to_save_dict() -> Dictionary:
 	"""Serialize all game progress state into a Dictionary for saving."""
-	return {
+	var d: Dictionary = {
 		"player_name": player_name,
 		"selected_gender": selected_gender,
 		"api_username": api_username,
@@ -126,6 +231,18 @@ func to_save_dict() -> Dictionary:
 		"ch2_y3s2_current_module": ch2_y3s2_current_module,
 		"ch2_y3mid_teaching_done": ch2_y3mid_teaching_done,
 		"ch2_y3mid_current_module": ch2_y3mid_current_module,
+	}
+	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
+		for suffix in ["retake_count", "wrong_attempts", "hints_used", "final_grade",
+			"bonus_item_earned", "inc_triggered", "removal_passed"]:
+			var key = "ch2_%s_%s" % [prefix, suffix]
+			d[key] = get(key)
+	# AI minigame skip flags (Y2S2)
+	d["ch2_y2s2_ai_oto_skipped"] = ch2_y2s2_ai_oto_skipped
+	d["ch2_y2s2_ai_otm_skipped"] = ch2_y2s2_ai_otm_skipped
+	d["ch2_y2s2_ai_mtm_skipped"] = ch2_y2s2_ai_mtm_skipped
+	d["ch2_y2s2_ai_fully_offline"] = ch2_y2s2_ai_fully_offline
+	d.merge({
 		# Tracking
 		"challenges_completed": challenges_completed,
 		"credits": credits,
@@ -141,7 +258,9 @@ func to_save_dict() -> Dictionary:
 		"unlocked_book_and_minigame_4": unlocked_books_and_minigames[3],
 		# Picked up world items
 		"picked_up_items": picked_up_items,
-	}
+	})
+	return d
+
 
 func from_save_dict(data: Dictionary):
 	"""Restore all game progress state from a saved Dictionary."""
@@ -174,6 +293,20 @@ func from_save_dict(data: Dictionary):
 	ch2_y3s2_current_module = int(data.get("ch2_y3s2_current_module", 0))
 	ch2_y3mid_teaching_done = data.get("ch2_y3mid_teaching_done", false)
 	ch2_y3mid_current_module = int(data.get("ch2_y3mid_current_module", 0))
+	# Grade / Retake tracking
+	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
+		set("ch2_%s_retake_count" % prefix, int(data.get("ch2_%s_retake_count" % prefix, 0)))
+		set("ch2_%s_wrong_attempts" % prefix, int(data.get("ch2_%s_wrong_attempts" % prefix, 0)))
+		set("ch2_%s_hints_used" % prefix, int(data.get("ch2_%s_hints_used" % prefix, 0)))
+		set("ch2_%s_final_grade" % prefix, float(data.get("ch2_%s_final_grade" % prefix, 0.0)))
+		set("ch2_%s_bonus_item_earned" % prefix, data.get("ch2_%s_bonus_item_earned" % prefix, false))
+		set("ch2_%s_inc_triggered" % prefix, data.get("ch2_%s_inc_triggered" % prefix, false))
+		set("ch2_%s_removal_passed" % prefix, data.get("ch2_%s_removal_passed" % prefix, false))
+	# AI skip flags
+	ch2_y2s2_ai_oto_skipped = data.get("ch2_y2s2_ai_oto_skipped", false)
+	ch2_y2s2_ai_otm_skipped = data.get("ch2_y2s2_ai_otm_skipped", false)
+	ch2_y2s2_ai_mtm_skipped = data.get("ch2_y2s2_ai_mtm_skipped", false)
+	ch2_y2s2_ai_fully_offline = data.get("ch2_y2s2_ai_fully_offline", false)
 	# Tracking
 	challenges_completed = int(data.get("challenges_completed", 0))
 	credits = int(data.get("credits", 0))
@@ -193,6 +326,7 @@ func from_save_dict(data: Dictionary):
 	]
 	# Picked up world items
 	picked_up_items = data.get("picked_up_items", [])
+	apply_debug_skips()
 
 # --- Convenience getters/setters for backward compatibility ---
 # These properties let existing code like `character_data.unlocked_level_2 = true` still work.
@@ -256,16 +390,35 @@ func unlock_book(level_number: int):
 # --- Debug skip functionality ---
 # --- Make it false after testing ---
 @export var DEBUG_SKIP_TO_REST_PROFESSOR: bool = false
+@export var DEBUG_SKIP_TO_VIEW_PROFESSOR: bool = false
+@export var DEBUG_SKIP_TO_QUERY_PROFESSOR: bool = true
 
 func _ready():
+	apply_debug_skips()
+
+func apply_debug_skips():
 	if DEBUG_SKIP_TO_REST_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s2_teaching_done = true
-		ch2_y2s1_teaching_done = true
-		ch2_y2s2_teaching_done = true
-		ch2_y3s1_teaching_done = true
-		ch2_y3s2_teaching_done = true
+		ch2_y2s1_teaching_done = false
+		ch2_y2s2_teaching_done = false
+		ch2_y3s1_teaching_done = false
+		ch2_y3s2_teaching_done = false
 		print("DEBUG: All professors prior to REST skipped (Y1S1 -> Y3S2 done).")
+	elif DEBUG_SKIP_TO_VIEW_PROFESSOR:
+		ch2_y1s1_teaching_done = true
+		ch2_y1s1_final_grade = 1.50
+		ch2_y1s2_teaching_done = true
+		ch2_y1s2_final_grade = 2.25
+		print("DEBUG: Skipped to Professor View. Mock grades injected.")
+	elif DEBUG_SKIP_TO_QUERY_PROFESSOR:
+		ch2_y1s1_teaching_done = true
+		ch2_y1s1_final_grade = 1.50
+		ch2_y1s2_teaching_done = true
+		ch2_y1s2_final_grade = 2.25
+		ch2_y2s1_teaching_done = true
+		ch2_y2s1_final_grade = 1.75
+		print("DEBUG: Skipped to Professor Query. Mock grades injected.")
 
 # ─── Currency Helpers ────────────────────────────────────────────────────────
 

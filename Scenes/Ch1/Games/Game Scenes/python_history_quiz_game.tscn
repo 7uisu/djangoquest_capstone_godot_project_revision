@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bqwigqhlgstac"]
 
 [ext_resource type="FontFile" uid="uid://cnsbcnhbqh6em" path="res://Textures/Fonts/Linden_Hill/LindenHill-Regular.ttf" id="1_b0a1u"]
-[ext_resource type="Script" uid="uid://c77b1ou2kamaq" path="res://Scenes/Ch1/Games/Game Scripts/python_history_quiz_game.gd" id="1_jvqy0"]
+[ext_resource type="Script" uid="uid://c77b1ou2kamaq" path="res://Scenes/Ch1/Games/Game Scripts/v.gd" id="1_jvqy0"]
 [ext_resource type="Texture2D" uid="uid://bmilup1pvwkxw" path="res://Textures/Paper Texture/Paper Texture1.jpg" id="2_l25o4"]
 
 [node name="PythonHistoryQuizGame" type="Control" unique_id=1573328105]

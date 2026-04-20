@@ -3,6 +3,11 @@
 extends Control
 
 signal challenge_completed(success: bool, challenge_id: String)
+signal challenge_failed
+signal hint_used
+# Emitted when an AI evaluator challenge is auto-skipped due to connection failures.
+# challenge_id matches the challenge's "id" field (e.g. "query_ai_evaluator_1").
+signal ai_challenge_skipped(challenge_id: String)
 
 # ─── Challenge Data ──────────────────────────────────────────────────────────
 var current_challenge: Dictionary = {}
@@ -16,10 +21,11 @@ var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 
 var _attempts: int = 0  # tracks incorrect submissions
+var _ai_network_failures: int = 0
 var _ai_hint_used: bool = false       # one AI hint per challenge
 var _ai_hint_text: String = ""        # cached AI hint so player can review it
 var _free_hints_revealed: int = 0     # how many free hints are visible in OverflowStack
-const MAX_FREE_HINTS: int = 3         # maximum free hints per challenge
+var MAX_FREE_HINTS: int = 3         # maximum free hints per challenge
 var _challenge_active: bool = false   # true while player is working on a challenge (for log censoring)
 var _premium_hint_button: Button = null
 var why_button: Button = null
@@ -239,6 +245,12 @@ func _process(delta):
 			_on_time_up()
 
 # ─── Public API ──────────────────────────────────────────────────────────────
+
+func get_attempts() -> int:
+	return _attempts
+
+func get_hints_used() -> int:
+	return _free_hints_revealed + (1 if _ai_hint_used else 0)
 
 func load_challenge(challenge: Dictionary) -> void:
 	current_challenge = challenge
@@ -1082,6 +1094,8 @@ func _on_run_pressed():
 		if correct_sfx.stream:
 			correct_sfx.play()
 	else:
+		_attempts += 1
+		emit_signal("challenge_failed")
 		var error_output = current_challenge.get("error_output", "Error!")
 		terminal_output.text = "[color=#e06c75]" + error_output + "[/color]"
 		if _get_output_type() == "browser":
@@ -1184,6 +1198,7 @@ func _on_overflow_stack_btn_pressed():
 	var total = min(hints_array.size(), MAX_FREE_HINTS)
 	if _free_hints_revealed < total:
 		_free_hints_revealed += 1
+		emit_signal("hint_used")
 	_update_overflow_button_label()
 	_show_overflow_stack()
 
@@ -1336,9 +1351,11 @@ func _request_premium_ai_hint():
 	elif result.get("ai_hint", "") != "":
 		_ai_hint_text = result.get("ai_hint", "")
 		_ai_hint_used = true
+		emit_signal("hint_used")
 	else:
 		_ai_hint_text = "The premium assistant could not generate a hint for this attempt. Review the free hints and try a slightly different approach."
 		_ai_hint_used = true
+		emit_signal("hint_used")
 
 	_show_overflow_stack()
 	feedback_label.text = "Premium AI hint added to OverflowStack."
@@ -1495,8 +1512,76 @@ func _run_free_type():
 
 func _handle_ai_evaluator_result(result: Dictionary):
 	terminal_output.bbcode_enabled = true
+	var is_offline = result.get("offline", false)
 	var is_correct = result.get("success", false)
 	var output = result.get("feedback", "")
+	var challenge_id = current_challenge.get("id", "")
+
+	if is_offline:
+		_ai_network_failures += 1
+		print("[DEBUG] AI Network Failure — Challenge: %s | Failure #%d" % [challenge_id, _ai_network_failures])
+		var retries_left = 3 - _ai_network_failures
+
+		var warning_text = "[color=#e5c07b]⚠️ Cannot connect to the AI evaluation server.[/color]\n"
+		warning_text += "[color=#abb2bf]This attempt will NOT count against your grade.[/color]\n"
+
+		if _ai_network_failures >= 3:
+			# ── Auto-skip: max retries hit ───────────────────────────────────────
+			warning_text += "\n[color=#e06c75]Max retries reached.[/color]\n"
+			warning_text += "[color=#e5c07b]This challenge has been [b]auto-skipped[/b].[/color]\n"
+			warning_text += "[color=#abb2bf]Your teacher's dashboard will record this skip.[/color]"
+			terminal_output.text = warning_text
+
+			# ── Write skip flag to CharacterData ─────────────────────────────────
+			var cd = get_node_or_null("/root/CharacterData")
+			if cd:
+				match challenge_id:
+					"query_ai_evaluator_1":
+						cd.ch2_y2s2_ai_oto_skipped = true
+						print("[DEBUG] CharacterData: OTO challenge auto-skipped and flagged.")
+					"query_ai_evaluator_2":
+						cd.ch2_y2s2_ai_otm_skipped = true
+						print("[DEBUG] CharacterData: OTM challenge auto-skipped and flagged.")
+					"query_ai_evaluator_3":
+						cd.ch2_y2s2_ai_mtm_skipped = true
+						print("[DEBUG] CharacterData: MTM challenge auto-skipped and flagged.")
+				# If all three were ultimately skipped, mark full offline run
+				if cd.ch2_y2s2_ai_oto_skipped and cd.ch2_y2s2_ai_otm_skipped and cd.ch2_y2s2_ai_mtm_skipped:
+					cd.ch2_y2s2_ai_fully_offline = true
+					print("[DEBUG] CharacterData: All three AI challenges skipped — fully_offline flagged.")
+
+			# ── Signal upward so the professor controller can react ───────────────
+			emit_signal("ai_challenge_skipped", challenge_id)
+			print("[DEBUG] Emitted ai_challenge_skipped: ", challenge_id)
+
+			feedback_label.text = "⚠️ Auto-skipped (connection error logged)"
+			feedback_label.add_theme_color_override("font_color", Color("e5c07b"))
+			feedback_label.visible = true
+			run_button.disabled = true
+
+			is_completed = true
+			timer_running = false
+			free_type_edit.editable = false
+			code_edit.editable = false
+
+			await get_tree().create_timer(2.5).timeout
+			_show_results(true)
+			return
+		else:
+			# ── Retry available ───────────────────────────────────────────────────
+			warning_text += "\n[color=#abb2bf]You have [b]%d retr%s[/b] before this challenge is auto-skipped.[/color]" % [
+				retries_left, "y" if retries_left == 1 else "ies"
+			]
+			terminal_output.text = warning_text
+
+			feedback_label.text = "⚠️ Connection Failed — Retry available"
+			feedback_label.add_theme_color_override("font_color", Color("e5c07b"))
+			feedback_label.visible = true
+
+			free_type_edit.editable = true
+			code_edit.editable = true
+			run_button.disabled = false
+			return
 
 	if is_correct:
 		is_completed = true
@@ -1517,6 +1602,7 @@ func _handle_ai_evaluator_result(result: Dictionary):
 		_show_results(true)
 	else:
 		_attempts += 1
+		emit_signal("challenge_failed")
 		terminal_output.text = "[color=#e06c75]" + output + "[/color]"
 
 		feedback_label.text = "❌ Not quite — adjust your hypothesis."
@@ -1558,6 +1644,7 @@ func _handle_server_result(result: Dictionary):
 		_show_results(true)
 	else:
 		_attempts += 1
+		emit_signal("challenge_failed")
 
 		# Show error only in terminal — no hints here
 		var error_text = "[color=#e06c75]" + output + "[/color]"
@@ -1659,6 +1746,7 @@ func _run_free_type_local(submission: Dictionary, expected_answers):
 		_show_results(true)
 	else:
 		_attempts += 1
+		emit_signal("challenge_failed")
 		var error_output = custom_error if custom_error != "" else current_challenge.get("error_output", "Error!")
 		terminal_output.text = "[color=#e06c75]" + error_output + "[/color]"
 		feedback_label.text = "❌ Not quite — check OverflowStack for hints!"

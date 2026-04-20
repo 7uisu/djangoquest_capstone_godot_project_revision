@@ -16,6 +16,10 @@ extends Node
 const CODING_UI_SCENE = preload("res://Scenes/Games/coding_challenge_ui.tscn")
 const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
 const GLOSSARY_POPUP_SCENE = preload("res://Scripts/UI/glossary_popup.gd")
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
+
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
 
 @onready var character_data = get_node("/root/CharacterData")
 
@@ -32,6 +36,17 @@ var _log_overlay: CanvasLayer = null
 var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
+
+# ── Grade Evaluation Config ───────────────────────────────────────────
+@export var deduction_wrong_attempt: float = 0.25
+@export var deduction_hint_used: float = 0.50
+@export var removal_pass_score: int = 2
+
+var reward_credits_retake_0: int = 100
+var reward_credits_retake_1: int = 90
+var reward_credits_retake_2: int = 80
+var reward_credits_retake_3: int = 60
+var reward_credits_retake_4_plus: int = 50
 
 # ── Interaction Handler ───────────────────────────────────────────────
 
@@ -53,6 +68,27 @@ func _on_professor_interacted():
 		_start_lesson_sequence()
 		return
 	
+		# ── Retake Interception ───────────────────────────────────────
+	if character_data and not character_data.ch2_y1s2_teaching_done and character_data.ch2_y1s2_retake_count > 0:
+		if dialogue_box:
+			var retakes = character_data.ch2_y1s2_retake_count
+			var lines = []
+			if retakes == 1:
+				lines.append({ "name": "Professor Syntax", "text": "A 5.0. You failed." })
+				lines.append({ "name": "Professor Syntax", "text": "Do not pretend you understand. We go back to the beginning." })
+			else:
+				lines.append({ "name": "Professor Syntax", "text": "Failed again. A 5.0." })
+				lines.append({ "name": "Professor Syntax", "text": "Programming requires precision. Try again from Module 1." })
+				
+			lines.append({
+				"name": "Professor Syntax",
+				"text": "Ready to restart the lecture sequence for Year 1 Semester 2?",
+				"choices": ["Yes", "Not yet"]
+			})
+			dialogue_box.choice_selected.connect(_on_lecture_choice, CONNECT_ONE_SHOT)
+			dialogue_box.start(lines)
+		return
+
 	# ── Gate: Must complete Semester 1 first ──────────────────────
 	if character_data and not character_data.ch2_y1s1_teaching_done:
 		if dialogue_box:
@@ -130,6 +166,8 @@ func _start_lesson_sequence():
 	
 	_challenge_canvas = null
 	_challenge_ui = null
+	_session_wrong_attempts = 0
+	_session_hints_used = 0
 	
 	# ─── Run modules from current progress ────────────────────────
 	
@@ -163,23 +201,32 @@ func _start_lesson_sequence():
 		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
 			parent_node.show_professor_selector_disabled()
 	
+		# ─── Grade Evaluation (normal mode, IDE was used) ────────────
+	if not is_learning_mode and not DEBUG_SKIP_IDE:
+		character_data.ch2_y1s2_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y1s2_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			return
+	
 	await get_tree().create_timer(0.3).timeout
 	
-	# Completion dialogue
-	dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start([
-			{ "name": "Professor Syntax", "text": "You made it through." },
-			{ "name": "Professor Syntax", "text": "You now understand [color=#f0c674]loops[/color], [color=#f0c674]object-oriented programming[/color], and [color=#f0c674]HTTP requests[/color]." },
-			{ "name": "Professor Syntax", "text": "These aren't just topics. They're the tools you'll use to [color=#f0c674]build real systems[/color]." },
-			{ "name": "Professor Syntax", "text": "Semester complete. Don't get lazy." }
-		])
-		await dialogue_box.dialogue_finished
-	
-	# Mark complete
-	if character_data and not is_learning_mode:
-		character_data.ch2_y1s2_teaching_done = true
-	
+	if is_learning_mode or DEBUG_SKIP_IDE:
+		# Dummy completion for learning mode
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Syntax", "text": "You made it through." },
+				{ "name": "Professor Syntax", "text": "Semester complete." }
+			])
+			await dialogue_box.dialogue_finished
+
 	# Unfreeze player
 	if player:
 		player.can_move = true
@@ -243,10 +290,19 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_canvas.layer = 50
 	_challenge_canvas.name = "ChallengeCanvasLayer"
 	get_tree().current_scene.add_child(_challenge_canvas)
+	var dim_bg = ColorRect.new()
+	dim_bg.color = Color(0, 0, 0, 1.0)
+	dim_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_challenge_canvas.add_child(dim_bg)
+
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
 	await get_tree().process_frame
+	if not _challenge_ui.challenge_failed.is_connected(_on_challenge_failed):
+		_challenge_ui.challenge_failed.connect(_on_challenge_failed)
+	if not _challenge_ui.hint_used.is_connected(_on_hint_used):
+		_challenge_ui.hint_used.connect(_on_hint_used)
 	if _challenge_ui.continue_button.pressed.is_connected(_challenge_ui._on_continue_pressed):
 		_challenge_ui.continue_button.pressed.disconnect(_challenge_ui._on_continue_pressed)
 	_challenge_ui.close_button.visible = false
@@ -1141,3 +1197,160 @@ func _on_slide_glossary_clicked(meta) -> void:
 	var popup = GLOSSARY_POPUP_SCENE.new()
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+
+# ─── Grade System Extensions ──────────────────────────────────────────
+
+func _on_challenge_failed() -> void:
+	_session_wrong_attempts += 1
+	print("ProfSyntax: wrong_attempts = ", _session_wrong_attempts)
+
+func _on_hint_used() -> void:
+	_session_hints_used += 1
+	print("ProfSyntax: hints_used = ", _session_hints_used)
+
+func _evaluate_and_finalize_grade() -> String:
+	if not character_data: return "pass"
+
+	var GradeCalculator = load("res://Scripts/Autoload or Global/grade_calculator.gd")
+	var raw = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+	
+	character_data.ch2_y1s2_wrong_attempts += _session_wrong_attempts
+	character_data.ch2_y1s2_hints_used += _session_hints_used
+	character_data.ch2_y1s2_final_grade = raw
+
+	print("ProfSyntax Final Grade Computed: ", raw)
+
+	dialogue_box = _get_dialogue_box()
+
+	if GradeCalculator.is_passing(raw):
+		var qm = get_node_or_null("/root/QuestManager")
+		character_data.ch2_y1s2_teaching_done = true
+		_dispatch_rewards()
+		
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Syntax", "text": "You passed. Grade: " + GradeCalculator.grade_to_label(raw) + "." },
+				{ "name": "Professor Syntax", "text": "You understand the foundations of Python, OOP, and HTTP." },
+				{ "name": "Professor Syntax", "text": "Prepare yourself for Django. It won't be easy." }
+			])
+			await dialogue_box.dialogue_finished
+		if qm:
+			qm.show_quest()
+			if qm.has_method("refresh_college_quest"):
+				qm.refresh_college_quest()
+		return "pass"
+
+	elif GradeCalculator.is_inc(raw):
+		character_data.ch2_y1s2_inc_triggered = true
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Syntax", "text": "Your code works, but it's sloppy." },
+				{ "name": "Professor Syntax", "text": "You accumulated too many errors and hints. You are receiving an INC (4.0)." },
+				{ "name": "Professor Syntax", "text": "Take the removal exam now. Pass it, or fail completely." }
+			])
+			await dialogue_box.dialogue_finished
+			
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y1s2_removal_passed = true
+			character_data.ch2_y1s2_final_grade = 3.0
+			character_data.ch2_y1s2_teaching_done = true
+			_dispatch_rewards()
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Syntax", "text": "You passed the removal exam. Grade updated to 3.0." },
+					{ "name": "Professor Syntax", "text": "Barely acceptable, but you may proceed." }
+				])
+				await dialogue_box.dialogue_finished
+			return "inc_pass"
+		else:
+			character_data.ch2_y1s2_retake_count += 1
+			character_data.ch2_y1s2_current_module = 0
+			character_data.ch2_y1s2_final_grade = 5.0
+			character_data.ch2_y1s2_removal_passed = false
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Syntax", "text": "You failed the removal exam." },
+					{ "name": "Professor Syntax", "text": "You will retake this semester. Goodbye." }
+				])
+				await dialogue_box.dialogue_finished
+			return "inc_fail"
+
+	else:
+		character_data.ch2_y1s2_retake_count += 1
+		character_data.ch2_y1s2_current_module = 0
+		character_data.ch2_y1s2_final_grade = 5.0
+		
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Syntax", "text": "A 5.0? Ridiculous." },
+				{ "name": "Professor Syntax", "text": "Your errors reflect a lack of discipline." },
+				{ "name": "Professor Syntax", "text": "You have failed Semester 2. You will have to retake these lessons." }
+			])
+			await dialogue_box.dialogue_finished
+		return "fail"
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+
+	var quiz_instance = REMOVAL_QUIZ_SCENE.instantiate()
+	quiz_instance.pass_score = removal_pass_score
+	quiz_instance.quiz_count = 5
+	
+	quiz_instance.all_questions = [
+		{
+			"question": "Which construct allows repeating code a specific number of times?",
+			"options": ["A) A map function", "B) An if statement", "C) A for loop", "D) A switch statement"],
+			"correct": 2
+		},
+		{
+			"question": "What is the primary keyword used to define a class in Python?",
+			"options": ["A) def", "B) object", "C) class", "D) struct"],
+			"correct": 2
+		},
+		{
+			"question": "Which requests method is used to retrieve data from a server?",
+			"options": ["A) requests.post()", "B) requests.get()", "C) requests.fetch()", "D) requests.read()"],
+			"correct": 1
+		},
+		{
+			"question": "Which Python data structure stores data in key-value pairs?",
+			"options": ["A) List", "B) Tuple", "C) Dictionary", "D) Set"],
+			"correct": 2
+		},
+		{
+			"question": "What is the correct syntax for defining a function in Python?",
+			"options": ["A) function my_func():", "B) void my_func():", "C) def my_func():", "D) create my_func():"],
+			"correct": 2
+		}
+	]
+	
+	canvas.add_child(quiz_instance)
+	var score = await quiz_instance.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	canvas.queue_free()
+	return passed
+
+func _dispatch_rewards():
+	var retakes = character_data.ch2_y1s2_retake_count
+	var credits_earned = 0
+	if retakes == 0:
+		credits_earned = reward_credits_retake_0
+	elif retakes == 1:
+		credits_earned = reward_credits_retake_1
+	elif retakes == 2:
+		credits_earned = reward_credits_retake_2
+	elif retakes == 3:
+		credits_earned = reward_credits_retake_3
+	else:
+		credits_earned = reward_credits_retake_4_plus
+		
+	if credits_earned > 0:
+		character_data.add_credits(credits_earned)
+		print("ProfSyntax: Dispatched ", credits_earned, " credits for retake count: ", retakes)
+	else:
+		print("ProfSyntax: No credits dispatched (retakes >= 3)")

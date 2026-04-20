@@ -20,6 +20,9 @@ var retro_browser_content: Control
 var notes_content: Control
 var quest_log_content: Control
 var settings_content: Control
+var sis_content: Control
+
+var _cred_label: Label
 
 # Quest log card references (for updating the tracked indicator)
 var _quest_cards: Dictionary = {}  # quest_id -> { card, indicator }
@@ -37,6 +40,9 @@ func open():
 	current_app = ""
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm: qm.hide_quest()
+	var cd = get_node_or_null("/root/CharacterData")
+	if _cred_label and cd:
+		_cred_label.text = str(cd.credits)
 	_show_desktop()
 
 func close():
@@ -163,7 +169,7 @@ func _create_top_bar() -> PanelContainer:
 
 	return bar_panel
 
-# ─── Desktop (4 App Icons) ───────────────────────────────────────────────────
+# ─── Desktop (App Icons) ─────────────────────────────────────────────────────
 
 func _create_desktop() -> Control:
 	var container = Control.new()
@@ -175,13 +181,14 @@ func _create_desktop() -> Control:
 	container.add_child(center)
 
 	var grid = GridContainer.new()
-	grid.columns = 2
+	grid.columns = 3
 	grid.add_theme_constant_override("h_separation", 40)
 	grid.add_theme_constant_override("v_separation", 30)
 	center.add_child(grid)
 
 	# App icons
 	var apps = [
+		{"id": "sis", "name": "Student Information System", "icon": "🎓", "color": Color(0.8, 0.3, 0.3), "desc": "Academic Records"},
 		{"id": "retro_browser", "name": "RetroBrowser", "icon": "🌐", "color": Color(0.2, 0.5, 0.9), "desc": "Replay unlocked challenges"},
 		{"id": "notes", "name": "Notes", "icon": "📝", "color": Color(0.85, 0.75, 0.2), "desc": "Your knowledge base"},
 		{"id": "quest_log", "name": "Quest Log", "icon": "📋", "color": Color(0.3, 0.75, 0.4), "desc": "Track your quests"},
@@ -310,11 +317,13 @@ func _create_app_view() -> Control:
 	notes_content = _build_notes()
 	quest_log_content = _build_quest_log()
 	settings_content = _build_settings()
+	sis_content = _build_sis()
 
 	app_content.add_child(retro_browser_content)
 	app_content.add_child(notes_content)
 	app_content.add_child(quest_log_content)
 	app_content.add_child(settings_content)
+	app_content.add_child(sis_content)
 
 	return container
 
@@ -494,10 +503,8 @@ func _build_quest_log() -> ScrollContainer:
 	return scroll
 
 func _on_quest_changed_refresh(_id: String, _text: String) -> void:
-	# Rebuild the quest log app contents live
 	if quest_log_content == null:
 		return
-	# Find the ScrollContainer's vbox and update the main quest card
 	var scroll = quest_log_content as ScrollContainer
 	if scroll == null:
 		return
@@ -505,8 +512,6 @@ func _on_quest_changed_refresh(_id: String, _text: String) -> void:
 	if vbox == null:
 		return
 
-	# Remove old cards (everything between header+sep and second separator)
-	# Easiest approach: remove all children and rebuild
 	for c in vbox.get_children():
 		c.queue_free()
 	await get_tree().process_frame
@@ -612,6 +617,276 @@ func _create_quest_card(quest_id: String, quest_text: String, qm) -> PanelContai
 
 	return card
 
+# ─── SIS App ─────────────────────────────────────────────────────────────────
+# Uses a sticky header (non-scrolling) with a scrollable cards area below.
+
+func _build_sis() -> Control:
+	# Outer wrapper — fills the app content area, never scrolls
+	var outer = VBoxContainer.new()
+	outer.name = "SISOuter"
+	outer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	outer.add_theme_constant_override("separation", 0)
+	outer.visible = false
+
+	# ── Sticky header panel ───────────────────────────────────────────────────
+	var header_panel = PanelContainer.new()
+	header_panel.name = "SISHeaderPanel"
+	var header_panel_style = StyleBoxFlat.new()
+	header_panel_style.bg_color = Color(0.08, 0.10, 0.16, 1.0)
+	header_panel_style.border_color = Color(0.2, 0.25, 0.4, 0.7)
+	header_panel_style.border_width_bottom = 1
+	header_panel_style.set_content_margin_all(12)
+	header_panel.add_theme_stylebox_override("panel", header_panel_style)
+	outer.add_child(header_panel)
+
+	var header_hbox = HBoxContainer.new()
+	header_panel.add_child(header_hbox)
+
+	var header = Label.new()
+	header.name = "SISTitle"
+	header.text = "📋 Academic Records"
+	header.add_theme_font_size_override("font_size", 16)
+	header.add_theme_color_override("font_color", Color(0.8, 0.3, 0.3))
+	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_hbox.add_child(header)
+
+	var gwa_label = Label.new()
+	gwa_label.name = "GWALabel"
+	gwa_label.text = "GWA: " + _calculate_gwa()
+	gwa_label.add_theme_font_size_override("font_size", 14)
+	gwa_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	header_hbox.add_child(gwa_label)
+
+	# ── Scrollable cards area ─────────────────────────────────────────────────
+	var scroll = ScrollContainer.new()
+	scroll.name = "SISScroll"
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.add_child(scroll)
+
+	var vbox = VBoxContainer.new()
+	vbox.name = "SISCardVBox"
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 14)
+	scroll.add_child(vbox)
+
+	# Generate initial cards
+	_populate_sis_cards(vbox)
+
+	return outer
+
+func _refresh_sis():
+	if sis_content == null: return
+
+	# Update the sticky GWA label in-place (no rebuild needed)
+	var gwa_lbl = sis_content.find_child("GWALabel", true, false)
+	if gwa_lbl:
+		gwa_lbl.text = "GWA: " + _calculate_gwa()
+
+	# Clear and repopulate only the scrollable cards vbox
+	var vbox = sis_content.find_child("SISCardVBox", true, false) as VBoxContainer
+	if vbox == null: return
+
+	for c in vbox.get_children():
+		c.queue_free()
+
+	await get_tree().process_frame
+	_populate_sis_cards(vbox)
+
+func _populate_sis_cards(vbox: VBoxContainer) -> void:
+	var cd = get_node_or_null("/root/CharacterData")
+
+	# Prof Markup
+	if cd and (cd.get("ch2_y1s1_teaching_done") or float(cd.get("ch2_y1s1_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor Markup — HTML & CSS",
+			cd.ch2_y1s1_final_grade,
+			cd.ch2_y1s1_retake_count,
+			cd.ch2_y1s1_removal_passed,
+			cd.ch2_y1s1_removal_passed or cd.ch2_y1s1_final_grade <= 3.0
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor Markup — HTML & CSS"))
+
+	# Prof Syntax
+	if cd and (cd.get("ch2_y1s2_teaching_done") or float(cd.get("ch2_y1s2_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor Syntax — Python",
+			float(cd.ch2_y1s2_final_grade),
+			int(cd.ch2_y1s2_retake_count),
+			bool(cd.ch2_y1s2_removal_passed),
+			bool(cd.ch2_y1s2_removal_passed) or float(cd.ch2_y1s2_final_grade) <= 3.0
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor Syntax — Python"))
+
+	# Prof View
+	if cd and (cd.get("ch2_y2s1_teaching_done") or float(cd.get("ch2_y2s1_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor View — Django Setup & Views",
+			float(cd.ch2_y2s1_final_grade),
+			int(cd.ch2_y2s1_retake_count),
+			bool(cd.ch2_y2s1_removal_passed),
+			bool(cd.ch2_y2s1_removal_passed) or float(cd.ch2_y2s1_final_grade) <= 3.0
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor View — Django Setup & Views"))
+
+	# Prof Query (with AI minigame monitoring)
+	if cd and (cd.get("ch2_y2s2_teaching_done") or float(cd.get("ch2_y2s2_final_grade")) > 0.0):
+		vbox.add_child(_create_active_prof_card(
+			"Professor Query — Models, ORM & Databases",
+			float(cd.ch2_y2s2_final_grade),
+			int(cd.ch2_y2s2_retake_count),
+			bool(cd.ch2_y2s2_removal_passed),
+			bool(cd.ch2_y2s2_removal_passed) or float(cd.ch2_y2s2_final_grade) <= 3.0,
+			{
+				"ai_oto_skipped": bool(cd.ch2_y2s2_ai_oto_skipped),
+				"ai_otm_skipped": bool(cd.ch2_y2s2_ai_otm_skipped),
+				"ai_mtm_skipped": bool(cd.ch2_y2s2_ai_mtm_skipped),
+				"ai_fully_offline": bool(cd.ch2_y2s2_ai_fully_offline),
+			}
+		))
+	else:
+		vbox.add_child(_create_locked_prof_card("Professor Query — Models, ORM & Databases"))
+
+	vbox.add_child(_create_locked_prof_card("Professor Otek — Forms & Security"))
+	vbox.add_child(_create_locked_prof_card("Professor Auth — Authentication & CRUD"))
+	vbox.add_child(_create_locked_prof_card("Professor REST — APIs & Modern Systems"))
+
+func _calculate_gwa() -> String:
+	var cd = get_node_or_null("/root/CharacterData")
+	if not cd: return "N/A"
+
+	var total_grades = 0.0
+	var count = 0
+
+	if cd.get("ch2_y1s1_teaching_done"):
+		total_grades += float(cd.ch2_y1s1_final_grade)
+		count += 1
+
+	if cd.get("ch2_y1s2_teaching_done"):
+		total_grades += float(cd.ch2_y1s2_final_grade)
+		count += 1
+
+	if cd.get("ch2_y2s1_teaching_done"):
+		total_grades += float(cd.ch2_y2s1_final_grade)
+		count += 1
+
+	if cd.get("ch2_y2s2_teaching_done"):
+		total_grades += float(cd.ch2_y2s2_final_grade)
+		count += 1
+
+	if count == 0:
+		return "N/A"
+
+	var gwa = total_grades / count
+	return "%.2f" % gwa
+
+func _create_active_prof_card(prof_name: String, grade: float, retakes: int, removal_passed: bool, is_passing: bool, ai_data: Dictionary = {}) -> PanelContainer:
+	var card = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.16, 0.22, 1.0)
+	style.border_color = Color(0.4, 0.6, 0.9, 0.6)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(14)
+	card.add_theme_stylebox_override("panel", style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	card.add_child(vbox)
+
+	var title = Label.new()
+	title.text = "▼ " + prof_name
+	title.add_theme_font_size_override("font_size", 16)
+	title.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
+	vbox.add_child(title)
+
+	var grid = GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation", 40)
+	grid.add_theme_constant_override("v_separation", 4)
+	vbox.add_child(grid)
+
+	_add_grid_row(grid, "Final Grade:", "%.2f" % grade, Color(0.4, 0.9, 0.5) if is_passing else Color(0.9, 0.4, 0.4))
+	_add_grid_row(grid, "Retakes:", str(retakes), Color(0.8, 0.8, 0.8))
+	_add_grid_row(grid, "INC (Removal Exam):", "Passed" if removal_passed else ("Failed" if grade == 5.0 and retakes > 0 else "N/A"), Color(0.8, 0.8, 0.8))
+
+	# ─── AI Minigame Monitoring Section ───────────────────────────────────────
+	# Only shown when ai_data is provided (currently: Prof Query — Relationship Architecture)
+	if not ai_data.is_empty():
+		var ai_sep = HSeparator.new()
+		var ai_sep_style = StyleBoxLine.new()
+		ai_sep_style.color = Color(0.25, 0.3, 0.45, 0.5)
+		ai_sep_style.thickness = 1
+		ai_sep.add_theme_stylebox_override("separator", ai_sep_style)
+		vbox.add_child(ai_sep)
+
+		var ai_header = Label.new()
+		ai_header.text = "🤖 AI Minigame — Relationship Architecture"
+		ai_header.add_theme_font_size_override("font_size", 13)
+		ai_header.add_theme_color_override("font_color", Color(0.6, 0.75, 1.0))
+		vbox.add_child(ai_header)
+
+		var ai_grid = GridContainer.new()
+		ai_grid.columns = 2
+		ai_grid.add_theme_constant_override("h_separation", 40)
+		ai_grid.add_theme_constant_override("v_separation", 4)
+		vbox.add_child(ai_grid)
+
+		var oto_skipped: bool = ai_data.get("ai_oto_skipped", false)
+		var otm_skipped: bool = ai_data.get("ai_otm_skipped", false)
+		var mtm_skipped: bool = ai_data.get("ai_mtm_skipped", false)
+		var fully_offline: bool = ai_data.get("ai_fully_offline", false)
+
+		_add_grid_row(ai_grid, "One-to-One:", "⚠️ Auto-skipped" if oto_skipped else "✅ Completed",
+			Color(0.95, 0.65, 0.15) if oto_skipped else Color(0.4, 0.9, 0.5))
+		_add_grid_row(ai_grid, "One-to-Many:", "⚠️ Auto-skipped" if otm_skipped else "✅ Completed",
+			Color(0.95, 0.65, 0.15) if otm_skipped else Color(0.4, 0.9, 0.5))
+		_add_grid_row(ai_grid, "Many-to-Many:", "⚠️ Auto-skipped" if mtm_skipped else "✅ Completed",
+			Color(0.95, 0.65, 0.15) if mtm_skipped else Color(0.4, 0.9, 0.5))
+
+		var skip_count = (1 if oto_skipped else 0) + (1 if otm_skipped else 0) + (1 if mtm_skipped else 0)
+		if fully_offline:
+			_add_grid_row(ai_grid, "Server Status:", "❌ Fully Offline (all 3 skipped)", Color(0.9, 0.35, 0.35))
+		elif skip_count > 0:
+			_add_grid_row(ai_grid, "Server Status:", "⚠️ Partial (%d/3 skipped)" % skip_count, Color(0.95, 0.65, 0.15))
+		else:
+			_add_grid_row(ai_grid, "Server Status:", "✅ Online — all completed", Color(0.4, 0.9, 0.5))
+
+	return card
+
+func _create_locked_prof_card(prof_name: String) -> PanelContainer:
+	var card = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.1, 0.14, 0.8)
+	style.border_color = Color(0.2, 0.25, 0.35, 0.5)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(14)
+	card.add_theme_stylebox_override("panel", style)
+
+	var title = Label.new()
+	title.text = "▶ " + prof_name + " (Locked)"
+	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
+	card.add_child(title)
+
+	return card
+
+func _add_grid_row(grid: GridContainer, label_text: String, val_text: String, val_color: Color):
+	var lbl1 = Label.new()
+	lbl1.text = "  " + label_text
+	lbl1.add_theme_font_size_override("font_size", 14)
+	lbl1.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
+	grid.add_child(lbl1)
+
+	var lbl2 = Label.new()
+	lbl2.text = val_text
+	lbl2.add_theme_font_size_override("font_size", 14)
+	lbl2.add_theme_color_override("font_color", val_color)
+	grid.add_child(lbl2)
 
 # ─── Settings App ────────────────────────────────────────────────────────────
 
@@ -755,12 +1030,12 @@ func _create_taskbar() -> PanelContainer:
 		credit_icon.texture = cred_tex
 	credit_hbox.add_child(credit_icon)
 
-	var cred_label = Label.new()
+	_cred_label = Label.new()
 	var cd = get_node_or_null("/root/CharacterData")
-	cred_label.text = str(cd.get_credits()) if cd else "0"
-	cred_label.add_theme_font_size_override("font_size", 10)
-	cred_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	credit_hbox.add_child(cred_label)
+	_cred_label.text = str(cd.credits) if cd else "0"
+	_cred_label.add_theme_font_size_override("font_size", 10)
+	_cred_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	credit_hbox.add_child(_cred_label)
 
 	# Spacer
 	var cred_spacer = Label.new()
@@ -816,11 +1091,10 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 	btn.disabled = true
 	if exit_btn:
 		exit_btn.disabled = true
-	
+
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
 		sm.save_game()
-		# Wait a moment to give cloud upload time + visual feedback
 		await get_tree().create_timer(2.0).timeout
 		btn.text = "✅ Saved!"
 		btn.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
@@ -867,9 +1141,14 @@ func _open_app(app_id: String):
 	notes_content.visible = false
 	quest_log_content.visible = false
 	settings_content.visible = false
+	sis_content.visible = false
 
 	# Show the selected app
 	match app_id:
+		"sis":
+			app_title_label.text = "🎓 Student Information System"
+			_refresh_sis()
+			sis_content.visible = true
 		"retro_browser":
 			app_title_label.text = "🌐 RetroBrowser"
 			retro_browser_content.visible = true
@@ -894,7 +1173,7 @@ func _unhandled_input(event):
 		var current_scene = get_tree().current_scene
 		if current_scene and (current_scene.name == "MainMenu" or current_scene.name == "IntroSlides" or current_scene.name == "LoginScreen"):
 			return
-		
+
 		var is_story_mode = false
 		if current_scene and (current_scene.name.contains("School") or current_scene.name.contains("Dorm") or current_scene.name.contains("Chapter") or get_tree().get_nodes_in_group("player").size() > 0):
 			is_story_mode = true
@@ -902,7 +1181,7 @@ func _unhandled_input(event):
 		# Don't try to open Laptop UI if we are in Learning or Challenge Mode natively
 		if not is_story_mode:
 			return
-		
+
 		if not is_open:
 			# Check if player is allowed to open it
 			var players = get_tree().get_nodes_in_group("player")

@@ -11,6 +11,7 @@ extends Node
 const CODING_UI_SCENE = preload("res://Scenes/Games/coding_challenge_ui.tscn")
 const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
 const GLOSSARY_POPUP_SCENE = preload("res://Scripts/UI/glossary_popup.gd")
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
 
 @onready var character_data = get_node("/root/CharacterData")
 
@@ -28,11 +29,70 @@ var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
 
+# ── Grade Evaluation Config ───────────────────────────────────────────
+@export var deduction_wrong_attempt: float = 0.25
+@export var deduction_hint_used: float = 0.50
+@export var removal_pass_score: int = 3
+
+# Reward variables (Hardcoded for script editing)
+var reward_credits_retake_0: int = 100
+var reward_credits_retake_1: int = 90
+var reward_credits_retake_2: int = 80
+var reward_credits_retake_3: int = 60
+var reward_credits_retake_4_plus: int = 50
+
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
+
+var _removal_questions: Array = [
+	{"question": "What HTTP method is used to retrieve a webpage?", "options": ["A) POST", "B) GET", "C) PUT", "D) DELETE"], "correct": 1},
+	{"question": "What does HTML stand for?", "options": ["A) Hyper Tool Markup Language", "B) HyperText Markup Language", "C) Home Text Making Language", "D) HyperText Machine Logic"], "correct": 1},
+	{"question": "Which HTML tag defines a paragraph?", "options": ["A) <h1>", "B) <div>", "C) <p>", "D) <span>"], "correct": 2},
+	{"question": "What is the CSS Box Model order (inside out)?", "options": ["A) Margin, Border, Padding, Content", "B) Content, Padding, Border, Margin", "C) Border, Margin, Content, Padding", "D) Padding, Content, Margin, Border"], "correct": 1},
+	{"question": "Which CSS property makes a container use Flexbox?", "options": ["A) position: flex", "B) layout: flexbox", "C) display: flex", "D) flex: enabled"], "correct": 2},
+	{"question": "What does justify-content: center do in Flexbox?", "options": ["A) Centers items vertically", "B) Centers items along the main axis", "C) Adds padding to all sides", "D) Makes text bold"], "correct": 1},
+	{"question": "What CSS feature adapts layout based on screen size?", "options": ["A) Flexbox", "B) Animations", "C) Media queries", "D) Variables"], "correct": 2},
+	{"question": "What does a server send back after receiving a request?", "options": ["A) A cookie", "B) A response", "C) A token", "D) A redirect"], "correct": 1},
+	{"question": "Which tag is used for the main heading of a page?", "options": ["A) <title>", "B) <header>", "C) <h1>", "D) <main>"], "correct": 2},
+	{"question": "What does padding control in CSS?", "options": ["A) Space outside the element", "B) Space between content and border", "C) The element background color", "D) The font size"], "correct": 1}
+]
+
 # ── Public: called by college_map_manager to wire up ──────────────────
 # Note: The manager handles NPC wiring (clearing dialogue, creating
 # the interaction Area2D). This controller just needs to be referenced.
 
 # ── Interaction Handler ───────────────────────────────────────────────
+
+var retake_dialogues: Array = [
+	# Index 0 — first time (normal intro, handled by existing code, leave empty or use as override)
+	[],
+	# Index 1 — retake 1
+	[{ "name": "Professor Markup", "text": "Let's go through this again. Take your time." }],
+	# Index 2 — retake 2
+	[
+		{ "name": "Professor Markup", "text": "Before we start —" },
+		{ "name": "Professor Markup", "text": "What do you think went wrong last time?" }
+	],
+	# Index 3 — retake 3+
+	[
+		{ "name": "Professor Markup", "text": "I'm not going to pretend this has been easy." },
+		{ "name": "Professor Markup", "text": "But I've seen students exactly where you are become the best in the class." },
+		{ "name": "Professor Markup", "text": "One more time." }
+	]
+]
+
+func _dispatch_rewards() -> void:
+	var retake = character_data.ch2_y1s1_retake_count
+	var credits_reward = 0
+	match retake:
+		0: credits_reward = reward_credits_retake_0
+		1: credits_reward = reward_credits_retake_1
+		2: credits_reward = reward_credits_retake_2
+		3: credits_reward = reward_credits_retake_3
+		_: credits_reward = reward_credits_retake_4_plus
+
+	character_data.credits += credits_reward
+	print("ProfMarkupController: Dispatched %d credits for retake %d" % [credits_reward, retake])
 
 func _on_professor_interacted():
 	print("ProfMarkupController: _on_professor_interacted() called!")
@@ -62,6 +122,15 @@ func _on_professor_interacted():
 				{ "name": "Professor Markup", "text": "Keep practicing what you've learned. HTML and CSS are the foundation of everything." }
 			])
 		return
+	
+	if dialogue_box and character_data:
+		var retake_count = character_data.ch2_y1s1_retake_count
+		if retake_count > 0:
+			var dialogue_index = min(retake_count, retake_dialogues.size() - 1)
+			var dialogue_lines = retake_dialogues[dialogue_index]
+			if dialogue_lines.size() > 0:
+				dialogue_box.start(dialogue_lines)
+				await dialogue_box.dialogue_finished
 	
 	# Show lecture prompt with choices
 	if dialogue_box:
@@ -122,6 +191,8 @@ func _start_lesson_sequence():
 	# IDE is created lazily on first challenge (after teaching placeholders).
 	_challenge_canvas = null
 	_challenge_ui = null
+	_session_wrong_attempts = 0
+	_session_hints_used = 0
 	
 	# ─── Run modules from current progress ────────────────────────
 	
@@ -167,6 +238,23 @@ func _start_lesson_sequence():
 		if parent_node and parent_node.has_method("show_professor_selector_disabled"):
 			parent_node.show_professor_selector_disabled()
 	
+	# ─── Grade Evaluation (normal mode, IDE was used) ────────────
+	if not is_learning_mode and not DEBUG_SKIP_IDE:
+		character_data.ch2_y1s1_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y1s1_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			var qm2 = get_node_or_null("/root/QuestManager")
+			if qm2:
+				qm2.show_quest()
+			return
+	
 	await get_tree().create_timer(0.3).timeout
 	
 	# Completion dialogue
@@ -183,6 +271,7 @@ func _start_lesson_sequence():
 	# Mark complete
 	if character_data and not is_learning_mode:
 		character_data.ch2_y1s1_teaching_done = true
+		_dispatch_rewards()
 	
 	# Unfreeze player
 	if player:
@@ -250,6 +339,11 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_canvas.layer = 50
 	_challenge_canvas.name = "ChallengeCanvasLayer"
 	get_tree().current_scene.add_child(_challenge_canvas)
+	var dim_bg = ColorRect.new()
+	dim_bg.color = Color(0, 0, 0, 1.0)
+	dim_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_challenge_canvas.add_child(dim_bg)
+
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
@@ -367,6 +461,8 @@ func _play_module_1_web_basics(skip_ide: bool):
 	ui.lock_typing(false)
 	
 	await _await_challenge_done(ui)
+	_session_wrong_attempts += ui.get_attempts()
+	_session_hints_used += ui.get_hints_used()
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -480,6 +576,8 @@ func _play_module_2_html(skip_ide: bool):
 	ui.lock_typing(false)
 	
 	await _await_challenge_done(ui)
+	_session_wrong_attempts += ui.get_attempts()
+	_session_hints_used += ui.get_hints_used()
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -589,6 +687,8 @@ func _play_module_3_css(skip_ide: bool):
 	ui.lock_typing(false)
 	
 	await _await_challenge_done(ui)
+	_session_wrong_attempts += ui.get_attempts()
+	_session_hints_used += ui.get_hints_used()
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -697,6 +797,8 @@ func _play_module_4_flexbox(skip_ide: bool):
 	ui.lock_typing(false)
 	
 	await _await_challenge_done(ui)
+	_session_wrong_attempts += ui.get_attempts()
+	_session_hints_used += ui.get_hints_used()
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -807,6 +909,8 @@ func _play_module_5_responsiveness(skip_ide: bool):
 	ui.lock_typing(false)
 	
 	await _await_challenge_done(ui)
+	_session_wrong_attempts += ui.get_attempts()
+	_session_hints_used += ui.get_hints_used()
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -820,6 +924,91 @@ func _play_module_5_responsiveness(skip_ide: bool):
 # ══════════════════════════════════════════════════════════════════════
 #  HELPERS
 # ══════════════════════════════════════════════════════════════════════
+
+func _evaluate_and_finalize_grade() -> String:
+	var raw = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+	character_data.ch2_y1s1_final_grade = raw
+	
+	print("--- DEBUG NORMAL GRADE EVALUATION ---")
+	print("Wrong Attempts: ", _session_wrong_attempts, " | Hints Used: ", _session_hints_used)
+	print("Raw Computed Grade: ", raw, " (", GradeCalculator.grade_to_label(raw), ")")
+	print("-------------------------------------")
+	
+	dialogue_box = _get_dialogue_box()
+	
+	if GradeCalculator.is_passing(raw):
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Markup", "text": "I've tallied your scores. You got a %s. You passed!" % GradeCalculator.grade_to_label(raw) }
+			])
+			await dialogue_box.dialogue_finished
+		return "pass"
+		
+	elif GradeCalculator.is_inc(raw):
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Markup", "text": "Your grade is... 4.0 (INC)." },
+				{ "name": "Professor Markup", "text": "This means you didn't quite make the cut. However, you can take a removal exam." }
+			])
+			await dialogue_box.dialogue_finished
+			
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y1s1_final_grade = 3.0
+			character_data.ch2_y1s1_removal_passed = true
+			if dialogue_box:
+				_show_dialogue_with_log(dialogue_box, [
+					{ "name": "Professor Markup", "text": "You passed the removal exam! Your final grade is 3.0." }
+				])
+				await dialogue_box.dialogue_finished
+			return "inc_pass"
+		else:
+			character_data.ch2_y1s1_final_grade = 5.0
+			character_data.ch2_y1s1_removal_passed = false
+			character_data.ch2_y1s1_retake_count += 1
+			character_data.ch2_y1s1_current_module = 0
+			if dialogue_box:
+				_show_dialogue_with_log(dialogue_box, [
+					{ "name": "Professor Markup", "text": "You failed the removal exam. Your final grade is 5.0." },
+					{ "name": "Professor Markup", "text": "You'll have to retake my class." }
+				])
+				await dialogue_box.dialogue_finished
+			# Ensure IDE resources and states are cleared
+			return "inc_fail"
+			
+	else:
+		character_data.ch2_y1s1_final_grade = 5.0
+		character_data.ch2_y1s1_retake_count += 1
+		character_data.ch2_y1s1_current_module = 0
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Markup", "text": "Your score was too low. Your final grade is 5.0 (FAILED)." },
+				{ "name": "Professor Markup", "text": "You will have to completely retake this module." }
+			])
+			await dialogue_box.dialogue_finished
+		return "fail"
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+	
+	var quiz = REMOVAL_QUIZ_SCENE.instantiate()
+	quiz.all_questions = _removal_questions
+	quiz.quiz_count = 5
+	quiz.pass_score = removal_pass_score
+	canvas.add_child(quiz)
+	
+	var score = await quiz.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	print("--- DEBUG REMOVAL EXAM ---")
+	print("Removal Exam Score: ", score, "/", quiz.quiz_count)
+	print("Removal Exam Passed? ", passed)
+	print("--------------------------")
+	
+	canvas.queue_free()
+	return passed
 
 func _make_challenge(id: String, title: String, topic: String, file_name: String,
 	code_lines: Array, mission_steps: Array, placeholder: String,

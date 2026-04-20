@@ -34,6 +34,55 @@ var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
 
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
+
+# ─── AI Evaluator Skip Tracking (current session) ────────────────────────────
+# Tracks which AI challenges were skipped in the CURRENT RUN so the controller
+# can show partial-skip dialogue and handle the full-offline edge case.
+var _session_ai_oto_skipped: bool = false
+var _session_ai_otm_skipped: bool = false
+var _session_ai_mtm_skipped: bool = false
+
+func _on_ai_challenge_skipped(challenge_id: String) -> void:
+	match challenge_id:
+		"query_ai_evaluator_1": _session_ai_oto_skipped = true
+		"query_ai_evaluator_2": _session_ai_otm_skipped = true
+		"query_ai_evaluator_3": _session_ai_mtm_skipped = true
+	var skip_count = (1 if _session_ai_oto_skipped else 0) + \
+					 (1 if _session_ai_otm_skipped else 0) + \
+					 (1 if _session_ai_mtm_skipped else 0)
+	print("[ProfQuery] AI challenge skipped: %s | Session skip total: %d/3" % [challenge_id, skip_count])
+
+const deduction_wrong_attempt: float = 0.25
+const deduction_hint_used: float = 0.50
+const removal_pass_score: int = 3
+
+var reward_credits_retake_0: int = 300
+var reward_credits_retake_1: int = 250
+var reward_credits_retake_2: int = 200
+var reward_credits_retake_3: int = 150
+var reward_credits_retake_4_plus: int = 100
+
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
+
+var retake_dialogues: Array = [
+	# Index 0 — first time (normal intro, handled by existing code)
+	[],
+	# Index 1 — retake 1
+	[{ "name": "Professor Query", "text": "Back again. Let's review the data layer from scratch." }],
+	# Index 2 — retake 2
+	[
+		{ "name": "Professor Query", "text": "Two attempts now." },
+		{ "name": "Professor Query", "text": "Pay closer attention to migrations and querysets this time." }
+	],
+	# Index 3 — retake 3+
+	[
+		{ "name": "Professor Query", "text": "I've seen students struggle with the ORM before." },
+		{ "name": "Professor Query", "text": "But persistence is a valid algorithm. One more time." }
+	]
+]
+
 # ── Interaction Handler ───────────────────────────────────────────────
 
 func _on_professor_interacted():
@@ -52,6 +101,54 @@ func _on_professor_interacted():
 	if is_learning_mode:
 		_cutscene_running = true
 		_start_lesson_sequence()
+		return
+		
+	# Check INC loop state
+	if character_data and character_data.get("ch2_y2s2_inc_triggered"):
+		_cutscene_running = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Query", "text": "You still have an INC (4.0) unresolved." },
+				{ "name": "Professor Query", "text": "Take the removal exam now." }
+			])
+			await dialogue_box.dialogue_finished
+			
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y2s2_removal_passed = true
+			character_data.ch2_y2s2_teaching_done = true
+			character_data.ch2_y2s2_inc_triggered = false
+			character_data.ch2_y2s2_final_grade = 3.0
+			_dispatch_rewards()
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Query", "text": "You passed. Grade finalized at [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor Query", "text": "Do not fail me again." }
+				])
+				await dialogue_box.dialogue_finished
+		else:
+			character_data.ch2_y2s2_removal_passed = false
+			character_data.ch2_y2s2_teaching_done = false
+			character_data.ch2_y2s2_inc_triggered = false
+			character_data.ch2_y2s2_retake_count += 1
+			character_data.ch2_y2s2_current_module = 0
+			character_data.ch2_y2s2_final_grade = 5.0
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Query", "text": "You failed the removal exam. Grade is [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor Query", "text": "You must retake my class from the beginning." }
+				])
+				await dialogue_box.dialogue_finished
+		
+		if player:
+			player.can_move = true
+			player.can_interact = true
+		_cutscene_running = false
 		return
 	
 	# ── Gate: Must complete Y1S1, Y1S2, AND Y2S1 first ────────
@@ -77,6 +174,16 @@ func _on_professor_interacted():
 				{ "name": "Professor Query", "text": "Do not let your data corrupt. Move forward." }
 			])
 		return
+	
+	# ── Retake dialogue ───────────────────────────────────────────
+	if dialogue_box and character_data:
+		var retake_count = character_data.ch2_y2s2_retake_count
+		if retake_count > 0:
+			var dialogue_index = min(retake_count, retake_dialogues.size() - 1)
+			var dialogue_lines = retake_dialogues[dialogue_index]
+			if dialogue_lines.size() > 0:
+				dialogue_box.start(dialogue_lines)
+				await dialogue_box.dialogue_finished
 	
 	# ── Lecture prompt ────────────────────────────────────────────
 	if dialogue_box:
@@ -124,6 +231,23 @@ func _start_lesson_sequence():
 	var current_module = 0
 	if character_data:
 		current_module = character_data.ch2_y2s2_current_module
+	
+	_session_wrong_attempts = 0
+	_session_hints_used = 0
+	
+	# ─── Reset per-session AI skip trackers ───────────────────────────────────
+	_session_ai_oto_skipped = false
+	_session_ai_otm_skipped = false
+	_session_ai_mtm_skipped = false
+	
+	# ─── Retake Loop Guard ─────────────────────────────────────────────────────
+	# If the player is retaking AND all 3 AI challenges were previously flagged as
+	# skipped, clear the flags now so they get a fresh chance this run.
+	# Without this, the flags would stay "skipped" forever across all retakes.
+	if character_data and character_data.ch2_y2s2_retake_count > 0:
+		if character_data.get_ai_skip_count_y2s2() == 3:
+			character_data.reset_ai_skip_flags_y2s2()
+			print("[ProfQuery] Retake loop guard triggered — AI skip flags cleared for fresh run.")
 	
 	if is_learning_mode:
 		current_module = 0
@@ -175,21 +299,31 @@ func _start_lesson_sequence():
 	
 	await get_tree().create_timer(0.3).timeout
 	
-	# Completion dialogue
-	dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start([
-			{ "name": "Professor Query", "text": "Database migrations applied. Models normalized." },
-			{ "name": "Professor Query", "text": "You now understand [color=#f0c674]models[/color], [color=#f0c674]ORM queries[/color], [color=#f0c674]admin registration[/color], and the [color=#f0c674]MVT flow[/color]." },
-			{ "name": "Professor Query", "text": "These aren't just topics. They're the data backbone of every Django application." },
-			{ "name": "Professor Query", "text": "Year 2 complete. Do not let your data corrupt." }
-		])
-		await dialogue_box.dialogue_finished
-	
-	# Mark complete
-	if character_data and not is_learning_mode:
-		character_data.ch2_y2s2_teaching_done = true
-	
+	# Evaluate Grade
+	if not is_learning_mode and not DEBUG_SKIP_IDE:
+		character_data.ch2_y2s2_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y2s2_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			return
+			
+	if is_learning_mode or DEBUG_SKIP_IDE:
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Query", "text": "Database migrations applied. Models normalized." },
+				{ "name": "Professor Query", "text": "You now understand [color=#f0c674]models[/color], [color=#f0c674]ORM queries[/color], [color=#f0c674]admin registration[/color], and the [color=#f0c674]MVT flow[/color]." },
+				{ "name": "Professor Query", "text": "These aren't just topics. They're the data backbone of every Django application." },
+				{ "name": "Professor Query", "text": "Year 2 complete. Do not let your data corrupt." }
+			])
+			await dialogue_box.dialogue_finished
+			
 	# Unfreeze player
 	if player:
 		player.can_move = true
@@ -256,9 +390,22 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_canvas.layer = 50
 	_challenge_canvas.name = "ChallengeCanvasLayer"
 	get_tree().current_scene.add_child(_challenge_canvas)
+	
+	var dim_bg = ColorRect.new()
+	dim_bg.color = Color(0, 0, 0, 1.0)
+	dim_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_challenge_canvas.add_child(dim_bg)
+
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
+	
+	if not _challenge_ui.is_connected("challenge_failed", Callable(self, "_on_wrong_attempt")):
+		_challenge_ui.connect("challenge_failed", Callable(self, "_on_wrong_attempt"))
+	if not _challenge_ui.is_connected("hint_used", Callable(self, "_on_hint_used")):
+		_challenge_ui.connect("hint_used", Callable(self, "_on_hint_used"))
+	if not _challenge_ui.is_connected("ai_challenge_skipped", Callable(self, "_on_ai_challenge_skipped")):
+		_challenge_ui.connect("ai_challenge_skipped", Callable(self, "_on_ai_challenge_skipped"))
 	await get_tree().process_frame
 	if _challenge_ui.continue_button.pressed.is_connected(_challenge_ui._on_continue_pressed):
 		_challenge_ui.continue_button.pressed.disconnect(_challenge_ui._on_continue_pressed)
@@ -528,8 +675,8 @@ func _play_module_1_models(skip_ide: bool):
 			],
 			"Type your database analogies here...",
 			[],
-			"AI is evaluating...",
-			"AI Evaluation failed.",
+			"System is evaluating...",
+			"Evaluation failed.",
 			["Provide strict, real world examples."]
 		)
 		ch_data1["files"] = {"brainstorming.txt": ""}
@@ -570,8 +717,8 @@ func _play_module_1_models(skip_ide: bool):
 			],
 			"Type your database analogies here...",
 			[],
-			"AI is evaluating...",
-			"AI Evaluation failed.",
+			"System is evaluating...",
+			"Evaluation failed.",
 			["Provide strict, real world examples."]
 		)
 		ch_data2["files"] = {"brainstorming.txt": ""}
@@ -611,8 +758,8 @@ func _play_module_1_models(skip_ide: bool):
 			],
 			"Type your database analogies here...",
 			[],
-			"AI is evaluating...",
-			"AI Evaluation failed.",
+			"System is evaluating...",
+			"Evaluation failed.",
 			["Provide strict, real world examples."]
 		)
 		ch_data3["files"] = {"brainstorming.txt": ""}
@@ -625,6 +772,40 @@ func _play_module_1_models(skip_ide: bool):
 		_show_challenge_canvas()
 		ui.lock_typing(false)
 		await _await_challenge_done(ui)
+
+		# ─── Post AI-evaluator block: handle partial or full skips ────────────────
+		var skip_count = (1 if _session_ai_oto_skipped else 0) + \
+						 (1 if _session_ai_otm_skipped else 0) + \
+						 (1 if _session_ai_mtm_skipped else 0)
+		dialogue_box = _get_dialogue_box()
+
+		if skip_count == 3:
+			# ── Full offline: all three were skipped ──────────────────────────────
+			print("[ProfQuery] All 3 AI challenges skipped — showing full offline message.")
+			if dialogue_box:
+				_show_dialogue_with_log(dialogue_box, [
+					{ "name": "Professor Query", "text": "[color=#e5c07b]⚠️ The AI evaluation system is completely unreachable.[/color]" },
+					{ "name": "Professor Query", "text": "All three relationship exercises — [color=#f0c674]One-to-One[/color], [color=#f0c674]One-to-Many[/color], and [color=#f0c674]Many-to-Many[/color] — have been auto-skipped." },
+					{ "name": "Professor Query", "text": "This has been logged. Your teacher can review which exercises were skipped on their dashboard." },
+					{ "name": "Professor Query", "text": "This will NOT penalize your grade, but I recommend revisiting these concepts when the server is back online." }
+				])
+				await dialogue_box.dialogue_finished
+		elif skip_count >= 1:
+			# ── Partial skip: 1 or 2 were skipped ────────────────────────────────
+			var skipped_labels: Array = []
+			if _session_ai_oto_skipped: skipped_labels.append("[color=#e5c07b]One-to-One[/color]")
+			if _session_ai_otm_skipped: skipped_labels.append("[color=#e5c07b]One-to-Many[/color]")
+			if _session_ai_mtm_skipped: skipped_labels.append("[color=#e5c07b]Many-to-Many[/color]")
+			var skipped_str = ", ".join(skipped_labels)
+			var completed_str = str(3 - skip_count) + " of 3"
+			print("[ProfQuery] Partial skip: %d/3 skipped — %s" % [skip_count, skipped_str])
+			if dialogue_box:
+				_show_dialogue_with_log(dialogue_box, [
+					{ "name": "Professor Query", "text": "[color=#e5c07b]⚠️ Connection issues interrupted the AI evaluation.[/color]" },
+					{ "name": "Professor Query", "text": "Only [color=#f0c674]" + completed_str + "[/color] relationship exercises were completed. The following were auto-skipped: " + skipped_str + "." },
+					{ "name": "Professor Query", "text": "These skips have been logged for your teacher. They will not count against your grade directly, but review the skipped topics on your own." }
+				])
+				await dialogue_box.dialogue_finished
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -1478,3 +1659,417 @@ func _on_slide_glossary_clicked(meta) -> void:
 	var popup = GLOSSARY_POPUP_SCENE.new()
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+
+# ── Grade Evaluation & Backend ───────────────────────────────────────
+
+func _on_wrong_attempt() -> void:
+	_session_wrong_attempts += 1
+	var minus_grade = _session_wrong_attempts * deduction_wrong_attempt
+	print("[DEBUG] Prof Query: Wrong attempt #", _session_wrong_attempts, "! Added to raw grade: +", deduction_wrong_attempt, " (Total added: ", minus_grade, ")")
+
+func _on_hint_used() -> void:
+	_session_hints_used += 1
+	var minus_grade = _session_hints_used * deduction_hint_used
+	print("[DEBUG] Prof Query: Hint used #", _session_hints_used, "! Added to raw grade: +", deduction_hint_used, " (Total added: ", minus_grade, ")")
+
+func _evaluate_and_finalize_grade() -> String:
+	if is_learning_mode:
+		return "learning"
+
+	var final_grade = GradeCalculator.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+	character_data.ch2_y2s2_final_grade = final_grade
+
+	print("--- DEBUG QUERY GRADE EVALUATION ---")
+	print("Wrong Attempts: ", _session_wrong_attempts, " | Hints Used: ", _session_hints_used)
+	print("Raw Computed Grade: ", final_grade, " (", GradeCalculator.grade_to_label(final_grade), ")")
+	print("------------------------------------")
+
+	dialogue_box = _get_dialogue_box()
+
+	if GradeCalculator.is_passing(final_grade):
+		character_data.ch2_y2s2_teaching_done = true
+		_dispatch_rewards()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Query", "text": "Database migrations applied. Models normalized. Final grade: [color=#f0c674]" + GradeCalculator.grade_to_label(final_grade) + "[/color]." },
+				{ "name": "Professor Query", "text": "These aren't just topics. They're the data backbone of every Django application." }
+			])
+			await dialogue_box.dialogue_finished
+		return "pass"
+
+	elif GradeCalculator.is_inc(final_grade):
+		character_data.ch2_y2s2_inc_triggered = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Query", "text": "Your queries are inefficient and your schemas are messy." },
+				{ "name": "Professor Query", "text": "You are receiving an INC (4.0)." },
+				{ "name": "Professor Query", "text": "Take the removal exam now. Prove you understand the underlying concepts." }
+			])
+			await dialogue_box.dialogue_finished
+
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y2s2_final_grade = 3.0
+			character_data.ch2_y2s2_removal_passed = true
+			character_data.ch2_y2s2_teaching_done = true
+			character_data.ch2_y2s2_inc_triggered = false
+			_dispatch_rewards()
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor Query", "text": "You passed the removal exam. Final grade: [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor Query", "text": "Review your data structures before the next semester." }
+				])
+				await dialogue_box.dialogue_finished
+			return "inc_pass"
+		else:
+			character_data.ch2_y2s2_final_grade = 5.0
+			character_data.ch2_y2s2_removal_passed = false
+			character_data.ch2_y2s2_teaching_done = false
+			character_data.ch2_y2s2_inc_triggered = false
+			character_data.ch2_y2s2_retake_count += 1
+			character_data.ch2_y2s2_current_module = 0
+			if dialogue_box:
+				var inc_fail_lines = [
+					{ "name": "Professor Query", "text": "You failed the removal exam. Final grade: [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor Query", "text": "You must retake my class from the beginning." }
+				]
+				# If all three AI challenges were skipped, warn about retake loop
+				if character_data.ch2_y2s2_ai_fully_offline:
+					inc_fail_lines.append({ "name": "Professor Query", "text": "[color=#e5c07b]Note:[/color] The AI evaluation system was fully offline this run. On your next attempt, those exercises will reset and you will get a fresh chance to complete them if the server is back up." })
+				dialogue_box.start(inc_fail_lines)
+				await dialogue_box.dialogue_finished
+			return "inc_fail"
+
+	else:
+		character_data.ch2_y2s2_final_grade = 5.0
+		character_data.ch2_y2s2_retake_count += 1
+		character_data.ch2_y2s2_current_module = 0
+		character_data.ch2_y2s2_teaching_done = false
+		if dialogue_box:
+			var fail_lines = [
+				{ "name": "Professor Query", "text": "Your code has failed my tests. Final grade: [color=#f0c674]5.0 (FAILED)[/color]." },
+				{ "name": "Professor Query", "text": "You must retake all modules from the beginning." }
+			]
+			# If all three AI challenges were skipped, explain the retake loop guard
+			if character_data and character_data.ch2_y2s2_ai_fully_offline:
+				fail_lines.append({ "name": "Professor Query", "text": "[color=#e5c07b]Note:[/color] The AI evaluation server was completely offline this run. All three relationship exercises were skipped. On your next retake, those skip flags will be cleared so you can attempt them again if the server recovers." })
+			elif character_data and character_data.get_ai_skip_count_y2s2() > 0:
+				var n = character_data.get_ai_skip_count_y2s2()
+				fail_lines.append({ "name": "Professor Query", "text": "[color=#e5c07b]Note:[/color] " + str(n) + " of the 3 relationship exercises were auto-skipped due to connection issues. Your teacher has been notified. These will persist on your record but will not loop — you can re-attempt them on the next run if the server is up." })
+			dialogue_box.start(fail_lines)
+			await dialogue_box.dialogue_finished
+		return "fail"
+
+func _dispatch_rewards() -> void:
+	if not character_data: return
+	var retake = character_data.ch2_y2s2_retake_count
+	var credits_reward = 0
+	match retake:
+		0: credits_reward = reward_credits_retake_0
+		1: credits_reward = reward_credits_retake_1
+		2: credits_reward = reward_credits_retake_2
+		3: credits_reward = reward_credits_retake_3
+		_: credits_reward = reward_credits_retake_4_plus
+	character_data.add_credits(credits_reward)
+	print("ProfQueryController: Dispatched %d credits for retake %d" % [credits_reward, retake])
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+
+	var quiz_instance = REMOVAL_QUIZ_SCENE.instantiate()
+	quiz_instance.pass_score = removal_pass_score
+	quiz_instance.quiz_count = 5
+	
+	quiz_instance.all_questions = [
+		{
+			"question": "Which file is the correct location to define Django Models?",
+			"options": ["A) urls.py", "B) views.py", "C) models.py", "D) settings.py"],
+			"correct": 2
+		},
+		{
+			"question": "What is the command to apply migrations to the database?",
+			"options": ["A) python manage.py migrate", "B) python manage.py apply", "C) python manage.py pushdb", "D) python manage.py makemigrations"],
+			"correct": 0
+		},
+		{
+			"question": "Which ORM method retrieves all records from a Model?",
+			"options": ["A) select_all()", "B) get_all()", "C) objects.all()", "D) query.all()"],
+			"correct": 2
+		},
+		{
+			"question": "What field type should be used for a short text string like a Title?",
+			"options": ["A) BooleanField", "B) TextField", "C) IntegerField", "D) CharField"],
+			"correct": 3
+		},
+		{
+			"question": "In which file do you register models so they appear in the Django Admin interface?",
+			"options": ["A) settings.py", "B) admin.py", "C) urls.py", "D) views.py"],
+			"correct": 1
+		}
+	]
+	
+	canvas.add_child(quiz_instance)
+	var score = await quiz_instance.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	canvas.queue_free()
+	return passed
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  AI MINIGAME DEBUGGER
+#  Toggle with the exported flag below. Creates an in-game overlay panel that
+#  shows real-time state of the three AI evaluator challenges, the session skip
+#  counters, the CharacterData flags, and the retake loop guard status.
+#  Set DEBUG_AI_MINIGAME = false before shipping.
+# ══════════════════════════════════════════════════════════════════════════════
+
+@export var DEBUG_AI_MINIGAME: bool = false
+
+var _debug_panel: CanvasLayer = null
+var _debug_labels: Dictionary = {}   # key -> Label
+
+func _input(event: InputEvent) -> void:
+	if not DEBUG_AI_MINIGAME:
+		return
+	# Press F9 to toggle the AI minigame debugger overlay
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F9:
+		if _debug_panel and is_instance_valid(_debug_panel):
+			_debug_panel.visible = not _debug_panel.visible
+			if _debug_panel.visible:
+				_refresh_debug_panel()
+		else:
+			_build_debug_panel()
+
+func _build_debug_panel() -> void:
+	_debug_panel = CanvasLayer.new()
+	_debug_panel.layer = 200
+	_debug_panel.name = "AIMinigameDebugger"
+	get_tree().current_scene.add_child(_debug_panel)
+
+	var bg = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.12, 0.94)
+	style.border_color = Color(0.9, 0.5, 0.1, 0.9)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12)
+	bg.add_theme_stylebox_override("panel", style)
+	bg.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	bg.offset_left = -420
+	bg.offset_top = 10
+	bg.offset_right = -10
+	bg.offset_bottom = 10
+	bg.custom_minimum_size = Vector2(400, 0)
+	_debug_panel.add_child(bg)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 5)
+	bg.add_child(vbox)
+
+	# Title row
+	var title_hbox = HBoxContainer.new()
+	vbox.add_child(title_hbox)
+
+	var title = Label.new()
+	title.text = "🤖 AI Minigame Debugger  [F9]"
+	title.add_theme_font_size_override("font_size", 13)
+	title.add_theme_color_override("font_color", Color(1.0, 0.65, 0.1))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_hbox.add_child(title)
+
+	var close_btn = Button.new()
+	close_btn.text = "✕"
+	close_btn.custom_minimum_size = Vector2(24, 24)
+	close_btn.add_theme_font_size_override("font_size", 11)
+	close_btn.pressed.connect(func(): _debug_panel.visible = false)
+	title_hbox.add_child(close_btn)
+
+	var sep = HSeparator.new()
+	vbox.add_child(sep)
+
+	# Section: Session State
+	_add_debug_section(vbox, "SESSION  (current run)")
+	_debug_labels["session_oto"] = _add_debug_row(vbox, "OTO skipped (session):", "false")
+	_debug_labels["session_otm"] = _add_debug_row(vbox, "OTM skipped (session):", "false")
+	_debug_labels["session_mtm"] = _add_debug_row(vbox, "MTM skipped (session):", "false")
+	_debug_labels["session_count"] = _add_debug_row(vbox, "Session skip total:", "0 / 3")
+
+	var sep2 = HSeparator.new()
+	vbox.add_child(sep2)
+
+	# Section: CharacterData Flags
+	_add_debug_section(vbox, "CHARACTER DATA  (persisted)")
+	_debug_labels["cd_oto"] = _add_debug_row(vbox, "ch2_y2s2_ai_oto_skipped:", "—")
+	_debug_labels["cd_otm"] = _add_debug_row(vbox, "ch2_y2s2_ai_otm_skipped:", "—")
+	_debug_labels["cd_mtm"] = _add_debug_row(vbox, "ch2_y2s2_ai_mtm_skipped:", "—")
+	_debug_labels["cd_fully_offline"] = _add_debug_row(vbox, "ch2_y2s2_ai_fully_offline:", "—")
+	_debug_labels["cd_skip_count"] = _add_debug_row(vbox, "get_ai_skip_count_y2s2():", "—")
+	_debug_labels["cd_retake"] = _add_debug_row(vbox, "ch2_y2s2_retake_count:", "—")
+
+	var sep3 = HSeparator.new()
+	vbox.add_child(sep3)
+
+	# Section: Loop Guard
+	_add_debug_section(vbox, "RETAKE LOOP GUARD")
+	_debug_labels["loop_guard"] = _add_debug_row(vbox, "Loop guard would trigger:", "—")
+	_debug_labels["loop_note"] = _add_debug_row(vbox, "Note:", "Triggers if retake_count > 0 AND all 3 skipped")
+
+	var sep4 = HSeparator.new()
+	vbox.add_child(sep4)
+
+	# Refresh and Force buttons
+	var btn_hbox = HBoxContainer.new()
+	btn_hbox.add_theme_constant_override("separation", 6)
+	vbox.add_child(btn_hbox)
+
+	var refresh_btn = Button.new()
+	refresh_btn.text = "🔄 Refresh"
+	refresh_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	refresh_btn.pressed.connect(_refresh_debug_panel)
+	btn_hbox.add_child(refresh_btn)
+
+	var force_oto_btn = Button.new()
+	force_oto_btn.text = "Skip OTO"
+	force_oto_btn.pressed.connect(func():
+		_session_ai_oto_skipped = true
+		if character_data: character_data.ch2_y2s2_ai_oto_skipped = true
+		_refresh_debug_panel()
+	)
+	btn_hbox.add_child(force_oto_btn)
+
+	var force_otm_btn = Button.new()
+	force_otm_btn.text = "Skip OTM"
+	force_otm_btn.pressed.connect(func():
+		_session_ai_otm_skipped = true
+		if character_data: character_data.ch2_y2s2_ai_otm_skipped = true
+		_refresh_debug_panel()
+	)
+	btn_hbox.add_child(force_otm_btn)
+
+	var force_mtm_btn = Button.new()
+	force_mtm_btn.text = "Skip MTM"
+	force_mtm_btn.pressed.connect(func():
+		_session_ai_mtm_skipped = true
+		if character_data: character_data.ch2_y2s2_ai_mtm_skipped = true
+		_refresh_debug_panel()
+	)
+	btn_hbox.add_child(force_mtm_btn)
+
+	var btn_hbox2 = HBoxContainer.new()
+	btn_hbox2.add_theme_constant_override("separation", 6)
+	vbox.add_child(btn_hbox2)
+
+	var skip_all_btn = Button.new()
+	skip_all_btn.text = "⚡ Skip ALL 3"
+	skip_all_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	skip_all_btn.pressed.connect(func():
+		_session_ai_oto_skipped = true
+		_session_ai_otm_skipped = true
+		_session_ai_mtm_skipped = true
+		if character_data:
+			character_data.ch2_y2s2_ai_oto_skipped = true
+			character_data.ch2_y2s2_ai_otm_skipped = true
+			character_data.ch2_y2s2_ai_mtm_skipped = true
+			character_data.ch2_y2s2_ai_fully_offline = true
+		_refresh_debug_panel()
+	)
+	btn_hbox2.add_child(skip_all_btn)
+
+	var clear_btn = Button.new()
+	clear_btn.text = "🗑 Clear All Flags"
+	clear_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	clear_btn.pressed.connect(func():
+		_session_ai_oto_skipped = false
+		_session_ai_otm_skipped = false
+		_session_ai_mtm_skipped = false
+		if character_data:
+			character_data.reset_ai_skip_flags_y2s2()
+		_refresh_debug_panel()
+	)
+	btn_hbox2.add_child(clear_btn)
+
+	_refresh_debug_panel()
+
+func _add_debug_section(parent: VBoxContainer, title: String) -> void:
+	var lbl = Label.new()
+	lbl.text = "▸ " + title
+	lbl.add_theme_font_size_override("font_size", 11)
+	lbl.add_theme_color_override("font_color", Color(0.6, 0.75, 1.0))
+	parent.add_child(lbl)
+
+func _add_debug_row(parent: VBoxContainer, key: String, initial_val: String) -> Label:
+	var hbox = HBoxContainer.new()
+	parent.add_child(hbox)
+
+	var key_lbl = Label.new()
+	key_lbl.text = "  " + key
+	key_lbl.add_theme_font_size_override("font_size", 11)
+	key_lbl.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
+	key_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbox.add_child(key_lbl)
+
+	var val_lbl = Label.new()
+	val_lbl.text = initial_val
+	val_lbl.add_theme_font_size_override("font_size", 11)
+	val_lbl.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9))
+	hbox.add_child(val_lbl)
+
+	return val_lbl
+
+func _refresh_debug_panel() -> void:
+	if not _debug_panel or not is_instance_valid(_debug_panel):
+		return
+
+	# ── Session values ────────────────────────────────────────────────────────
+	_set_debug_bool("session_oto", _session_ai_oto_skipped)
+	_set_debug_bool("session_otm", _session_ai_otm_skipped)
+	_set_debug_bool("session_mtm", _session_ai_mtm_skipped)
+	var sess_count = (1 if _session_ai_oto_skipped else 0) + \
+					 (1 if _session_ai_otm_skipped else 0) + \
+					 (1 if _session_ai_mtm_skipped else 0)
+	_debug_labels["session_count"].text = str(sess_count) + " / 3"
+	_debug_labels["session_count"].add_theme_color_override("font_color",
+		Color(0.9, 0.35, 0.35) if sess_count == 3 else
+		Color(0.9, 0.65, 0.15) if sess_count > 0 else
+		Color(0.5, 0.9, 0.5)
+	)
+
+	# ── CharacterData values ──────────────────────────────────────────────────
+	if character_data:
+		_set_debug_bool("cd_oto", character_data.ch2_y2s2_ai_oto_skipped)
+		_set_debug_bool("cd_otm", character_data.ch2_y2s2_ai_otm_skipped)
+		_set_debug_bool("cd_mtm", character_data.ch2_y2s2_ai_mtm_skipped)
+		_set_debug_bool("cd_fully_offline", character_data.ch2_y2s2_ai_fully_offline)
+		var cd_count = character_data.get_ai_skip_count_y2s2()
+		_debug_labels["cd_skip_count"].text = str(cd_count) + " / 3"
+		_debug_labels["cd_skip_count"].add_theme_color_override("font_color",
+			Color(0.9, 0.35, 0.35) if cd_count == 3 else
+			Color(0.9, 0.65, 0.15) if cd_count > 0 else
+			Color(0.5, 0.9, 0.5)
+		)
+		_debug_labels["cd_retake"].text = str(character_data.ch2_y2s2_retake_count)
+		# Loop guard check
+		var guard_would_fire = character_data.ch2_y2s2_retake_count > 0 and cd_count == 3
+		_debug_labels["loop_guard"].text = "YES — flags would be cleared" if guard_would_fire else "no"
+		_debug_labels["loop_guard"].add_theme_color_override("font_color",
+			Color(0.4, 0.9, 0.4) if guard_would_fire else Color(0.6, 0.65, 0.75)
+		)
+	else:
+		for key in ["cd_oto", "cd_otm", "cd_mtm", "cd_fully_offline", "cd_skip_count", "cd_retake", "loop_guard"]:
+			_debug_labels[key].text = "CharacterData not found"
+			_debug_labels[key].add_theme_color_override("font_color", Color(0.9, 0.35, 0.35))
+
+func _set_debug_bool(key: String, value: bool) -> void:
+	if not _debug_labels.has(key):
+		return
+	_debug_labels[key].text = "true" if value else "false"
+	_debug_labels[key].add_theme_color_override("font_color",
+		Color(0.9, 0.35, 0.35) if value else Color(0.5, 0.9, 0.5)
+	)

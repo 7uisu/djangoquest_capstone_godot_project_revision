@@ -372,19 +372,19 @@ func check_ai_evaluator(challenge_type: String, student_answer: String, context:
 
 	if error != OK:
 		print("[ApiManager] ❌ HTTPRequest.request() failed with error: %s" % str(error))
-		emit_signal("ai_evaluated", {"success": false, "feedback": "Network error connecting to AI backend."})
+		emit_signal("ai_evaluated", {"offline": true, "success": false, "feedback": "Network error connecting to backend."})
 		http.queue_free()
 
 func _on_ai_evaluator_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
 	http.queue_free()
 	
 	if result != HTTPRequest.RESULT_SUCCESS:
-		emit_signal("ai_evaluated", {"success": false, "feedback": "Failed to reach AI evaluator endpoint."})
+		emit_signal("ai_evaluated", {"offline": true, "success": false, "feedback": "Failed to reach evaluator endpoint."})
 		return
 
 	var json = JSON.parse_string(body.get_string_from_utf8())
 	if json == null:
-		emit_signal("ai_evaluated", {"success": false, "feedback": "Corrupted response geometry from AI endpoint."})
+		emit_signal("ai_evaluated", {"offline": true, "success": false, "feedback": "Corrupted response geometry from endpoint."})
 		return
 
 	emit_signal("ai_evaluated", {

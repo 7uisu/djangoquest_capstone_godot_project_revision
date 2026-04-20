@@ -32,6 +32,7 @@ GlobalLaptopUI="*res://Scenes/UI/laptop_ui.tscn"
 CustomConfirm="*res://Scenes/UI/custom_confirm.tscn"
 GlobalPauseMenu="*res://Scenes/UI/pause_menu.tscn"
 GlossaryData="*res://Scripts/Autoload or Global/glossary_data.gd"
+GradeCalculator="*uid://c10dm6r1rny68"
 
 [display]
 

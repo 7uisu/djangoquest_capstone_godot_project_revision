@@ -34,6 +34,20 @@ var _challenge_canvas: CanvasLayer = null
 var _challenge_ui: Node = null
 var _original_dialogue_layer: int = 10
 
+var _session_wrong_attempts: int = 0
+var _session_hints_used: int = 0
+
+# ── Grade Evaluation Config ───────────────────────────────────────────
+@export var deduction_wrong_attempt: float = 0.25
+@export var deduction_hint_used: float = 0.50
+@export var removal_pass_score: int = 2
+
+var reward_credits_retake_0: int = 100
+var reward_credits_retake_1: int = 90
+var reward_credits_retake_2: int = 80
+var reward_credits_retake_3: int = 60
+var reward_credits_retake_4_plus: int = 50
+
 # ── Interaction Handler ───────────────────────────────────────────────
 
 func _on_professor_interacted():
@@ -74,18 +88,42 @@ func _on_professor_interacted():
 			])
 		return
 	
-	# ── Lecture prompt ────────────────────────────────────────────
+	# ── INC / Removal Exam Check ──────────────────────────────────
+	if character_data and character_data.ch2_y2s1_inc_triggered and not character_data.ch2_y2s1_removal_passed:
+		_cutscene_running = true
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor View", "text": "Your grade is currently an [color=#f0c674]INC (4.0)[/color]." },
+				{ "name": "Professor View", "text": "You accumulated too many errors in your previous attempt." },
+				{ "name": "Professor View", "text": "To remove the INC, you must pass my removal exam right now." }
+			])
+			await dialogue_box.dialogue_finished
+		_launch_removal_exam()
+		return
+
+	# ── Lecture prompt (Retake-Aware) ────────────────────────────
 	if dialogue_box:
 		var current_mod = 0
+		var r_count = 0
 		if character_data:
 			current_mod = character_data.ch2_y2s1_current_module
+			r_count = character_data.ch2_y2s1_retake_count
 		
-		var mod_names = ["Project Setup", "Views & Routing", "Templates", "Static Files"]
+		var mod_names = ["Project Setup", "Views & Routing", "Templates", "Static Files", "Generic Views"]
 		var mod_label = mod_names[current_mod] if current_mod < mod_names.size() else "the lesson"
+		
+		var intro_text = "Ready to start " + mod_label + "?"
+		if r_count == 1:
+			intro_text = "Let's review " + mod_label + ". Remember the structure this time."
+		elif r_count > 1:
+			intro_text = "Back again for " + mod_label + "? Focus. This is a core Django concept."
 		
 		var lines = [{
 			"name": "Professor View",
-			"text": "Ready for the lecture on " + mod_label + "?",
+			"text": intro_text,
 			"choices": ["Yes", "Not yet"]
 		}]
 		
@@ -120,6 +158,10 @@ func _start_lesson_sequence():
 	var current_module = 0
 	if character_data:
 		current_module = character_data.ch2_y2s1_current_module
+	
+	if current_module == 0:
+		_session_wrong_attempts = 0
+		_session_hints_used = 0
 	
 	if is_learning_mode:
 		current_module = 0
@@ -176,21 +218,31 @@ func _start_lesson_sequence():
 	
 	await get_tree().create_timer(0.3).timeout
 	
-	# Completion dialogue
-	dialogue_box = _get_dialogue_box()
-	if dialogue_box:
-		dialogue_box.start([
-			{ "name": "Professor View", "text": "You made it through the entire semester." },
-			{ "name": "Professor View", "text": "You now understand [color=#f0c674]project structure[/color], [color=#f0c674]views[/color], [color=#f0c674]templates[/color], and [color=#f0c674]static files[/color]." },
-			{ "name": "Professor View", "text": "This is how every Django application begins. From here, it only gets deeper." },
-			{ "name": "Professor View", "text": "Semester complete. Well done." }
-		])
-		await dialogue_box.dialogue_finished
+	# Mark complete / Evaluate Grade
+	if not is_learning_mode and not DEBUG_SKIP_IDE:
+		character_data.ch2_y2s1_wrong_attempts = _session_wrong_attempts
+		character_data.ch2_y2s1_hints_used = _session_hints_used
+		var grade_result = await _evaluate_and_finalize_grade()
+		if grade_result == "fail" or grade_result == "inc_fail":
+			if player:
+				player.can_move = true
+				player.can_interact = true
+				player.set_physics_process(true)
+				player.block_ui_input = false
+			_cutscene_running = false
+			return
 	
-	# Mark complete
-	if character_data and not is_learning_mode:
-		character_data.ch2_y2s1_teaching_done = true
+	await get_tree().create_timer(0.3).timeout
 	
+	if is_learning_mode or DEBUG_SKIP_IDE:
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor View", "text": "You made it through." },
+				{ "name": "Professor View", "text": "Semester complete." }
+			])
+			await dialogue_box.dialogue_finished
+
 	# Unfreeze player
 	if player:
 		player.can_move = true
@@ -248,6 +300,12 @@ func _await_challenge_done(ui) -> void:
 	ui.results_overlay.visible = false
 	ui.lock_typing(true)
 
+func _on_challenge_failed() -> void:
+	_session_wrong_attempts += 1
+
+func _on_hint_used() -> void:
+	_session_hints_used += 1
+
 func _ensure_challenge_ui() -> Node:
 	if _challenge_ui and is_instance_valid(_challenge_ui):
 		# Even when reusing, ensure dialogue stays above the challenge canvas
@@ -260,10 +318,19 @@ func _ensure_challenge_ui() -> Node:
 	_challenge_canvas.layer = 50
 	_challenge_canvas.name = "ChallengeCanvasLayer"
 	get_tree().current_scene.add_child(_challenge_canvas)
+	var dim_bg = ColorRect.new()
+	dim_bg.color = Color(0, 0, 0, 1.0)
+	dim_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_challenge_canvas.add_child(dim_bg)
+
 	_challenge_ui = CODING_UI_SCENE.instantiate()
 	_challenge_ui.hide_close_button = true
 	_challenge_canvas.add_child(_challenge_ui)
 	await get_tree().process_frame
+	if not _challenge_ui.challenge_failed.is_connected(_on_challenge_failed):
+		_challenge_ui.challenge_failed.connect(_on_challenge_failed)
+	if not _challenge_ui.hint_used.is_connected(_on_hint_used):
+		_challenge_ui.hint_used.connect(_on_hint_used)
 	if _challenge_ui.continue_button.pressed.is_connected(_challenge_ui._on_continue_pressed):
 		_challenge_ui.continue_button.pressed.disconnect(_challenge_ui._on_continue_pressed)
 	_challenge_ui.close_button.visible = false
@@ -301,7 +368,7 @@ source venv/bin/activate  # macOS/Linux
 venv\\Scripts\\activate  # Windows",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "1 / 15"
+		"slide_num": "1 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -378,7 +445,7 @@ venv\\Scripts\\activate  # Windows",
 		"code": "venv\\Scripts\\activate       # Windows\nsource venv/bin/activate    # macOS/Linux\n\n(venv) C:\\Users\\hansu\\...\\DjangoQuest-Backend>   ← You'll see this prefix",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "2 / 15"
+		"slide_num": "2 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -449,7 +516,7 @@ venv\\Scripts\\activate  # Windows",
 		"code": "pip install django\n# Successfully installed Django-5.0",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "2 / 15"
+		"slide_num": "3 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -522,7 +589,7 @@ venv\\Scripts\\activate  # Windows",
 		"code": "django-admin startproject mysite",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "2 / 15"
+		"slide_num": "4 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -629,7 +696,7 @@ venv\\Scripts\\activate  # Windows",
 		"code": "python manage.py migrate\npython manage.py runserver",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "3 / 15"
+		"slide_num": "5 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -736,7 +803,7 @@ Running migrations:
 		"code": "python manage.py startapp blog",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "4 / 15"
+		"slide_num": "6 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -800,7 +867,7 @@ Running migrations:
 		"code": "# settings.py\nINSTALLED_APPS = [\n    'django.contrib.admin',\n    'django.contrib.auth',\n    'blog',  # <-- Your new app!\n]",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "5 / 15"
+		"slide_num": "7 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -866,7 +933,7 @@ Running migrations:
 		"code": "mysite/\n├── manage.py\n├── mysite/\n│   ├── settings.py\n│   ├── urls.py\n│   └── wsgi.py\n└── blog/\n    ├── views.py\n    ├── models.py\n    └── urls.py",
 		"header": "MODULE 1 — PROJECT SETUP",
 		"header_icon": "🐍",
-		"slide_num": "6 / 15"
+		"slide_num": "8 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -900,7 +967,7 @@ func _play_module_2_views_routing(skip_ide: bool):
 		"code": "# urls.py\nfrom django.urls import path\nfrom . import views\n\nurlpatterns = [\n    path('home/', views.home),\n]",
 		"header": "MODULE 2 — VIEWS & ROUTING",
 		"header_icon": "🌐",
-		"slide_num": "5 / 10"
+		"slide_num": "9 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -928,7 +995,7 @@ func _play_module_2_views_routing(skip_ide: bool):
 		"code": "# views.py\nfrom django.http import HttpResponse\n\ndef home(request):\n    return HttpResponse('Welcome!')",
 		"header": "MODULE 2 — VIEWS & ROUTING",
 		"header_icon": "🌐",
-		"slide_num": "6 / 10",
+		"slide_num": "10 / 17",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -1040,7 +1107,7 @@ func _play_module_3_templates(skip_ide: bool):
 		"code": "<!-- template.html -->\n<h1>Hello, {{ user.name }}!</h1>\n<p>You have {{ message_count }} messages.</p>",
 		"header": "MODULE 3 — TEMPLATES",
 		"header_icon": "📄",
-		"slide_num": "7 / 10",
+		"slide_num": "11 / 17",
 		"reference": "Source: MDN Web Docs - Django Templates"
 	})
 	if dialogue_box:
@@ -1069,7 +1136,7 @@ func _play_module_3_templates(skip_ide: bool):
 		"code": "# views.py\nfrom django.shortcuts import render\n\ndef home(request):\n    context = {'name': 'Alice'}\n    return render(request, 'home.html', context)",
 		"header": "MODULE 3 — TEMPLATES",
 		"header_icon": "📄",
-		"slide_num": "8 / 10",
+		"slide_num": "12 / 17",
 		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
@@ -1180,7 +1247,7 @@ func _play_module_4_static_files(skip_ide: bool):
 		"code": "{% load static %}\n<html>\n<head>\n    <link rel=\"stylesheet\"\n          href=\"{% static 'css/style.css' %}\">\n</head>",
 		"header": "MODULE 4 — STATIC FILES",
 		"header_icon": "🎨",
-		"slide_num": "9 / 10",
+		"slide_num": "13 / 17",
 		"reference": "Source: Official Django Documentation"
 	})
 	if dialogue_box:
@@ -1209,7 +1276,7 @@ func _play_module_4_static_files(skip_ide: bool):
 		"code": "blog/\n├── static/\n│   └── css/\n│       └── style.css\n├── templates/\n│   └── home.html\n└── views.py",
 		"header": "MODULE 4 — STATIC FILES",
 		"header_icon": "🎨",
-		"slide_num": "10 / 10",
+		"slide_num": "14 / 17",
 		"reference": "Source: Django for Beginners (Vincent, 2023)"
 	})
 	if dialogue_box:
@@ -1274,7 +1341,7 @@ func _play_module_4_static_files(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor View", "text": "Done. You now know how to [color=#f0c674]structure[/color], [color=#f0c674]route[/color], [color=#f0c674]render[/color], and [color=#f0c674]style[/color] a Django app." },
+   # { "name": "Professor View", "text": "Done. You now know how to [color=#f0c674]structure[/color], [color=#f0c674]route[/color], [color=#f0c674]render[/color], and [color=#f0c674]style[/color] a Django app." },
 			{ "name": "Professor View", "text": "Project setup. Views. Templates. Static files. That's the foundation." },
 			{ "name": "Professor View", "text": "Next semester, you'll learn [color=#f0c674]databases[/color] and [color=#f0c674]models[/color]. The real power of Django." }
 		])
@@ -1837,7 +1904,7 @@ func _play_module_5_generic_views(skip_ide: bool):
 		"code": "from django.views.generic import ListView\n\nclass BookListView(ListView):\n    model = Book\n    template_name = 'book_list.html'",
 		"header": "MODULE 5 — CRUD & GENERIC VIEWS",
 		"header_icon": "🗃️",
-		"slide_num": "9 / 12"
+		"slide_num": "15 / 17"
 	})
 	
 	if dialogue_box:
@@ -1914,7 +1981,7 @@ func _play_module_5_generic_views(skip_ide: bool):
 		"code": "from django.views.generic import DetailView\n\nclass BookDetailView(DetailView):\n    model = Book\n    # Automatically looks for book_detail.html and passes 'object'",
 		"header": "MODULE 5 — CRUD & GENERIC VIEWS",
 		"header_icon": "🗃️",
-		"slide_num": "10 / 12"
+		"slide_num": "16 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -1979,7 +2046,7 @@ func _play_module_5_generic_views(skip_ide: bool):
 		"code": "from django.views.generic import CreateView\n\nclass BookCreateView(CreateView):\n    model = Book\n    fields = ['title', 'author']\n    success_url = '/books/'",
 		"header": "MODULE 5 — CRUD & GENERIC VIEWS",
 		"header_icon": "🗃️",
-		"slide_num": "11 / 12"
+		"slide_num": "17 / 17"
 	})
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
@@ -2030,3 +2097,175 @@ func _play_module_5_generic_views(skip_ide: bool):
 		
 		ui.lock_typing(false)
 		await _await_challenge_done(ui)
+
+# ── Grade Evaluation & Backend ───────────────────────────────────────
+
+func _evaluate_and_finalize_grade() -> String:
+	if is_learning_mode:
+		return "learning"
+		
+	var grade_calc = get_node_or_null("/root/GradeCalculator")
+	if not grade_calc:
+		push_error("Professor View: GradeCalculator autoload not found!")
+		return "passed"
+		
+	var final_grade = grade_calc.compute_grade(_session_wrong_attempts, _session_hints_used, deduction_wrong_attempt, deduction_hint_used)
+	
+	character_data.ch2_y2s1_final_grade = final_grade
+	print("Professor View - Final Grade: ", final_grade)
+	
+	if final_grade == 4.0:
+		character_data.ch2_y2s1_inc_triggered = true
+		
+		# Auto-trigger INC prompt
+		dialogue_box = _get_dialogue_box()
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor View", "text": "Your code is failing fundamentally, but not completely." },
+				{ "name": "Professor View", "text": "You accumulated too many mistakes. You are receiving an INC (4.0)." },
+				{ "name": "Professor View", "text": "Take the removal exam now. Pass it, or fail completely." }
+			])
+			await dialogue_box.dialogue_finished
+		
+		var passed = await _launch_removal_exam()
+		if passed:
+			character_data.ch2_y2s1_removal_passed = true
+			character_data.ch2_y2s1_final_grade = 3.0
+			character_data.ch2_y2s1_teaching_done = true
+			_dispatch_rewards(3.0)
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor View", "text": "You passed the removal exam. Your grade is [color=#f0c674]3.0[/color]." },
+					{ "name": "Professor View", "text": "Do better next semester." }
+				])
+				await dialogue_box.dialogue_finished
+			return "inc_pass"
+		else:
+			character_data.ch2_y2s1_removal_passed = false
+			character_data.ch2_y2s1_teaching_done = false
+			character_data.ch2_y2s1_retake_count += 1
+			character_data.ch2_y2s1_current_module = 0
+			character_data.ch2_y2s1_final_grade = 5.0
+			
+			if dialogue_box:
+				dialogue_box.start([
+					{ "name": "Professor View", "text": "You failed the removal exam. Your grade is officially a [color=#f0c674]5.0[/color]." },
+					{ "name": "Professor View", "text": "You must retake the entire chapter." }
+				])
+				await dialogue_box.dialogue_finished
+			return "inc_fail"
+	elif final_grade == 5.0:
+		character_data.ch2_y2s1_teaching_done = false
+		character_data.ch2_y2s1_retake_count += 1
+		character_data.ch2_y2s1_current_module = 0
+		_dispatch_rewards(final_grade)
+		
+		# Show fail dialogue
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor View", "text": "Your code is failing fundamentally. Your grade is [color=#f0c674]5.0[/color]." },
+				{ "name": "Professor View", "text": "You must retake the entire chapter from the beginning." }
+			])
+			await dialogue_box.dialogue_finished
+		return "fail"
+	else:
+		# Passing condition
+		character_data.ch2_y2s1_teaching_done = true
+		_dispatch_rewards(final_grade)
+		
+		if player:
+			player.can_move = false
+			player.can_interact = false
+		
+		dialogue_box = _get_dialogue_box()
+		if dialogue_box:
+			var grade_str = "%.1f" % final_grade
+			dialogue_box.start([
+				{ "name": "Professor View", "text": "We are done here. Your final grade for this module is [color=#f0c674]" + grade_str + "[/color]." },
+				{ "name": "Professor View", "text": "Keep your project structured." }
+			])
+			await dialogue_box.dialogue_finished
+		return "passed"
+
+func _dispatch_rewards(grade: float) -> void:
+	if not character_data: return
+	
+	var r_count = character_data.ch2_y2s1_retake_count
+	
+	# Only give credits if they pass (grade <= 3.0)
+	if grade <= 3.0:
+		var reward_amount = reward_credits_retake_0
+		if r_count == 2:
+			reward_amount = reward_credits_retake_1
+		elif r_count == 3:
+			reward_amount = reward_credits_retake_2
+		elif r_count == 4:
+			reward_amount = reward_credits_retake_3
+		elif r_count > 4:
+			reward_amount = reward_credits_retake_4_plus
+			
+		character_data.add_credits(reward_amount)
+		print("Professor View: Awarded " + str(reward_amount) + " credits.")
+
+# ── Removal Exam System ──────────────────────────────────────────────
+
+const REMOVAL_QUIZ_SCENE = preload("res://Scenes/Games/removal_quiz_game.tscn")
+var removal_quiz_instance: Node = null
+
+func _launch_removal_exam() -> bool:
+	var canvas = CanvasLayer.new()
+	canvas.layer = 75
+	get_tree().current_scene.add_child(canvas)
+	
+	var q_scene = REMOVAL_QUIZ_SCENE
+	removal_quiz_instance = q_scene.instantiate()
+	
+	# The quiz sets the 'correct' key to specify the index
+	var all_questions = [
+		{
+			"question": "Which file serves as your Django project's command center?",
+			"options": ["A) admin.py", "B) manage.py", "C) views.py", "D) settings.py"],
+			"correct": 1
+		},
+		{
+			"question": "In Django routing (urls.py), what maps a browser path to a specific view?",
+			"options": ["A) render()", "B) path()", "C) HttpResponse()", "D) include()"],
+			"correct": 1
+		},
+		{
+			"question": "When defining an HTML template context, how is it typically structured?",
+			"options": ["A) As a Python list", "B) As a Python Dictionary", "C) As a JSON string", "D) As an array tuple"],
+			"correct": 1
+		},
+		{
+			"question": "Which generic view is designed to handle form submissions and save a new object?",
+			"options": ["A) CreateView", "B) DetailView", "C) ListView", "D) TemplateView"],
+			"correct": 0
+		},
+		{
+			"question": "Where do you register a new app so Django knows it exists?",
+			"options": ["A) views.py imports", "B) urls.py pathways", "C) settings.py INSTALLED_APPS", "D) manage.py setup"],
+			"correct": 2
+		}
+	]
+	
+	removal_quiz_instance.all_questions = all_questions
+	removal_quiz_instance.quiz_count = 5
+	removal_quiz_instance.pass_score = removal_pass_score
+	
+	canvas.add_child(removal_quiz_instance)
+	
+	var score = await removal_quiz_instance.quiz_completed
+	var passed = score >= removal_pass_score
+	
+	canvas.queue_free()
+	
+	return passed
