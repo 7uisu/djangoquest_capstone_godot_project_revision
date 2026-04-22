@@ -45,6 +45,7 @@ func open():
 	if _cred_label and cd:
 		_cred_label.text = str(cd.credits)
 	_show_desktop()
+	_update_sis_lock()
 
 func close():
 	if is_saving: return
@@ -54,6 +55,33 @@ func close():
 	current_app = ""
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm: qm.show_quest()
+
+func _update_sis_lock():
+	# Find the SIS button on the desktop grid and enable/disable dynamically
+	if not desktop_view:
+		return
+	var cd = get_node_or_null("/root/CharacterData")
+	if not cd:
+		return
+	var should_lock = not cd.has_reached_college
+	for node in _get_all_desktop_buttons():
+		if node is Button and node.text.strip_edges() == "🎓":
+			node.disabled = should_lock
+			break
+
+func _get_all_desktop_buttons() -> Array:
+	var result = []
+	if not desktop_view:
+		return result
+	for child in desktop_view.get_children():
+		_collect_buttons(child, result)
+	return result
+
+func _collect_buttons(node: Node, result: Array):
+	if node is Button:
+		result.append(node)
+	for child in node.get_children():
+		_collect_buttons(child, result)
 
 # ─── Build Full UI ───────────────────────────────────────────────────────────
 
@@ -230,9 +258,23 @@ func _create_app_icon(app: Dictionary) -> VBoxContainer:
 
 	btn.add_theme_color_override("font_color", Color.WHITE)
 
+	var disabled_style = btn_style.duplicate()
+	disabled_style.bg_color = app["color"].darkened(0.7)
+	disabled_style.border_color = app["color"].darkened(0.7)
+	btn.add_theme_stylebox_override("disabled", disabled_style)
+	btn.add_theme_color_override("font_disabled_color", Color(0.6, 0.6, 0.6))
+
 	var app_id = app["id"]
 	btn.pressed.connect(func(): _open_app(app_id))
 	vbox.add_child(btn)
+
+	# Lock SIS if still in Ch1
+	if app_id == "sis":
+		var cd = get_node_or_null("/root/CharacterData")
+		# If they haven't finished the chapter 1 teaching/quiz, lock it
+		if cd and not cd.has_reached_college:
+			btn.disabled = true
+			btn.tooltip_text = "Locked until College."
 
 	# Label
 	var label = Label.new()
@@ -1088,6 +1130,7 @@ func _create_taskbar() -> PanelContainer:
 
 	# Credit display
 	var credit_hbox = HBoxContainer.new()
+	credit_hbox.name = "CreditDisplay"
 	credit_hbox.add_theme_constant_override("separation", 4)
 	hbox.add_child(credit_hbox)
 

@@ -354,10 +354,11 @@ func _setup_mission_panel():
 	hint_label.visible = false
 	hint_button.visible = false
 
-	# OverflowStack button — always visible for challenges with hints
+	# OverflowStack button — only visible for Professor Markup challenges with hints
 	var has_hint = current_challenge.get("hint", "") != "" or current_challenge.get("hints", []).size() > 0
-	overflow_stack_button.visible = has_hint
-	if has_hint:
+	var is_markup = current_challenge.get("is_professor_markup", false)
+	overflow_stack_button.visible = has_hint and is_markup
+	if has_hint and is_markup:
 		_update_overflow_button_label()
 
 func _setup_code_panel():

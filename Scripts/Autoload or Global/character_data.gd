@@ -7,6 +7,15 @@ var api_username: String = ""  # Username from Django API login (empty if guest)
 var has_seen_tutorial: bool = false
 var has_seen_learning_mode_intro: bool = false
 
+# ── Contextual Spotlight Tutorial Flags ───────────────────────────────────────
+var has_seen_controls_tutorial: bool = false
+var has_seen_inventory_tutorial: bool = false
+var has_seen_laptop_tutorial: bool = false
+var has_seen_ide_tutorial: bool = false
+var has_seen_college_sis_tutorial: bool = false
+var has_seen_overflow_stack_tutorial: bool = false
+var has_reached_college: bool = false
+
 # Chapter 1 progress
 var ch1_teaching_done: bool = false
 var ch1_quiz_done: bool = false
@@ -159,6 +168,13 @@ func reset_data():
 	api_username = ""
 	has_seen_tutorial = false
 	has_seen_learning_mode_intro = false
+	has_seen_controls_tutorial = false
+	has_seen_inventory_tutorial = false
+	has_seen_laptop_tutorial = false
+	has_seen_ide_tutorial = false
+	has_seen_college_sis_tutorial = false
+	has_seen_overflow_stack_tutorial = false
+	has_reached_college = false
 	ch1_teaching_done = false
 	ch1_quiz_done = false
 	ch1_quiz_score = 0
@@ -216,6 +232,13 @@ func to_save_dict() -> Dictionary:
 		"api_username": api_username,
 		"has_seen_tutorial": has_seen_tutorial,
 		"has_seen_learning_mode_intro": has_seen_learning_mode_intro,
+		"has_seen_controls_tutorial": has_seen_controls_tutorial,
+		"has_seen_inventory_tutorial": has_seen_inventory_tutorial,
+		"has_seen_laptop_tutorial": has_seen_laptop_tutorial,
+		"has_seen_ide_tutorial": has_seen_ide_tutorial,
+		"has_seen_college_sis_tutorial": has_seen_college_sis_tutorial,
+		"has_seen_overflow_stack_tutorial": has_seen_overflow_stack_tutorial,
+		"has_reached_college": has_reached_college,
 		# Chapter 1
 		"ch1_teaching_done": ch1_teaching_done,
 		"ch1_quiz_done": ch1_quiz_done,
@@ -279,6 +302,13 @@ func from_save_dict(data: Dictionary):
 	api_username = data.get("api_username", "")
 	has_seen_tutorial = data.get("has_seen_tutorial", false)
 	has_seen_learning_mode_intro = data.get("has_seen_learning_mode_intro", false)
+	has_seen_controls_tutorial = data.get("has_seen_controls_tutorial", false)
+	has_seen_inventory_tutorial = data.get("has_seen_inventory_tutorial", false)
+	has_seen_laptop_tutorial = data.get("has_seen_laptop_tutorial", false)
+	has_seen_ide_tutorial = data.get("has_seen_ide_tutorial", false)
+	has_seen_college_sis_tutorial = data.get("has_seen_college_sis_tutorial", false)
+	has_seen_overflow_stack_tutorial = data.get("has_seen_overflow_stack_tutorial", false)
+	has_reached_college = data.get("has_reached_college", false)
 	# Chapter 1
 	ch1_teaching_done = data.get("ch1_teaching_done", false)
 	ch1_quiz_done = data.get("ch1_quiz_done", false)

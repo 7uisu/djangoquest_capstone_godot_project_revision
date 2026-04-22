@@ -36,6 +36,7 @@
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="19_c6n5g"]
 [ext_resource type="PackedScene" uid="uid://dtlui10prrlxp" path="res://Scenes/Ch1/Interactive Objects/Door/front_door_1.tscn" id="20_yi0jh"]
 [ext_resource type="PackedScene" uid="uid://bgwjauga0lr0w" path="res://Scenes/Ch1/Interactive Objects/school_chair_facing_up.tscn" id="36_yt67o"]
+[ext_resource type="PackedScene" uid="uid://1tla2l4f0xyd" path="res://Scenes/Button Keys/esc_button.tscn" id="37_mynpu"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0ykgn"]
 texture = ExtResource("10_nww6i")
@@ -1114,3 +1115,6 @@ speaker_name = "Male Student 07"
 [node name="Player" parent="." unique_id=833241429 instance=ExtResource("11_0ykgn")]
 y_sort_enabled = false
 position = Vector2(481, -68)
+
+[node name="EscButton" parent="." unique_id=1507789426 instance=ExtResource("37_mynpu")]
+visible = false

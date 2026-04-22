@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://b2je2wnvy4fgm"]
+
+[ext_resource type="Texture2D" uid="uid://mbfxx5pie364" path="res://Textures/Keyboard Keys/Spritesheet/SHIFT.png" id="1_p7f1h"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6stdk"]
+atlas = ExtResource("1_p7f1h")
+region = Rect2(0, 0, 44, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_stwtk"]
+atlas = ExtResource("1_p7f1h")
+region = Rect2(44, 0, 44, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_0t2qc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6stdk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_stwtk")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="ShiftButton" type="Node2D" unique_id=1522759435]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=88151488]
+sprite_frames = SubResource("SpriteFrames_0t2qc")

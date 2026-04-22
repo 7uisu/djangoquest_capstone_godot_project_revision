@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://jg8vbqqorvs2"]
+
+[ext_resource type="Texture2D" uid="uid://da2jmxiitai76" path="res://Textures/Keyboard Keys/Spritesheet/F.png" id="1_x230u"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xxe4u"]
+atlas = ExtResource("1_x230u")
+region = Rect2(0, 0, 17, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q5m3o"]
+atlas = ExtResource("1_x230u")
+region = Rect2(17, 0, 17, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_g02ts"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xxe4u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q5m3o")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="FButton" type="Node2D" unique_id=736416386]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1733731028]
+sprite_frames = SubResource("SpriteFrames_g02ts")

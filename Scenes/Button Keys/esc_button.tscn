@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://1tla2l4f0xyd"]
+
+[ext_resource type="Texture2D" uid="uid://t87d1yvksceu" path="res://Textures/Keyboard Keys/Spritesheet/ESC.png" id="1_cxl4a"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jxajl"]
+atlas = ExtResource("1_cxl4a")
+region = Rect2(0, 0, 17, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7o2tq"]
+atlas = ExtResource("1_cxl4a")
+region = Rect2(17, 0, 17, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5vjov"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jxajl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7o2tq")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="EscButton" type="Node2D" unique_id=1507789426]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=956341598]
+sprite_frames = SubResource("SpriteFrames_5vjov")

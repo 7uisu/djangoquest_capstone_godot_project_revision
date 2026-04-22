@@ -226,6 +226,53 @@ func _start_cutscene():
 	# Add the 📜 Log button to the IDE
 	_create_log_button(canvas_layer)
 
+	# ── IDE SPOTLIGHT TUTORIAL (first time only) ───────────────────────
+	if character_data and not character_data.has_seen_ide_tutorial:
+		var _tut_overlay = await _create_ide_tutorial_overlay()
+		if _tut_overlay:
+			# Find the log button we just created
+			var log_btn = canvas_layer.get_node_or_null("LogButton")
+			
+			_tut_overlay.start_tutorial([
+				{
+					"text": "Welcome to the [color=#f0c674]Code Editor[/color]!\nThis is where you type your code.",
+					"highlight_node": ui.code_edit,
+					"tooltip_side": "left"
+				},
+				{
+					"text": "This is the [color=#f0c674]Terminal[/color].\nErrors and success messages appear here.",
+					"highlight_node": ui.terminal_strip,
+					"tooltip_side": "top"
+				},
+				{
+					"text": "Click [color=#f0c674]Alt Tab[/color] to switch between the IDE and the Browser view.",
+					"highlight_node": ui.alt_tab_button,
+					"tooltip_side": "right"
+				},
+				{
+					"text": "The [color=#f0c674]📜 Log[/color] button lets you review past dialogue if you forget instructions.",
+					"highlight_node": log_btn,
+					"tooltip_side": "bottom"
+				},
+				{
+					"text": "When you're done writing code, click [color=#f0c674]▶ Run[/color] to execute it!",
+					"highlight_node": ui.run_button,
+					"tooltip_side": "top"
+				},
+				{
+					"text": "The [color=#f0c674]🎒 Use Items[/color] button lets you use inventory items during a challenge.\nItems can give you hints or boosts!",
+					"highlight_node": ui.item_button,
+					"tooltip_side": "bottom"
+				},
+			])
+			await _tut_overlay.tutorial_finished
+			_tut_overlay.queue_free()
+			character_data.has_seen_ide_tutorial = true
+
+	# Disable Use Items button during internet cafe cutscene
+	if ui.item_button:
+		ui.item_button.disabled = true
+
 	# Raise the dialogue box layer ABOVE the IDE so it renders on top
 	dialogue_box = _get_dialogue_box()
 	var _original_dialogue_layer = 10
@@ -470,6 +517,16 @@ func _play_epilogue_sequence(pname: String):
 	# Mark done
 	character_data.ch1_spaghetti_guy_cutscene_done = true
 	_cutscene_running = false
+
+	# Re-enable Use Items button
+	var _challenge_ui = get_tree().get_first_node_in_group("coding_challenge_ui")
+	if _challenge_ui == null:
+		for node in get_tree().current_scene.get_children():
+			if node.has_method("load_challenge"):
+				_challenge_ui = node
+				break
+	if _challenge_ui and "item_button" in _challenge_ui and _challenge_ui.item_button:
+		_challenge_ui.item_button.disabled = false
 
 	# Restore player controls
 	if player:
@@ -889,3 +946,15 @@ func _refresh_log_content():
 	if scroll:
 		await get_tree().process_frame
 		scroll.scroll_vertical = scroll.get_v_scroll_bar().max_value
+
+# ── IDE Tutorial Overlay Helper ──────────────────────────────────────────────
+
+func _create_ide_tutorial_overlay():
+	var TUTORIAL_OVERLAY_SCRIPT = preload("res://Scripts/UI/tutorial_overlay.gd")
+	var overlay = CanvasLayer.new()
+	overlay.set_script(TUTORIAL_OVERLAY_SCRIPT)
+	overlay.layer = 150
+	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().current_scene.add_child(overlay)
+	await get_tree().process_frame
+	return overlay

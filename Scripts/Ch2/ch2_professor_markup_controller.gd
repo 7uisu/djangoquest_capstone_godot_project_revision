@@ -449,7 +449,47 @@ func _play_module_1_web_basics(skip_ide: bool):
 	ch_data["project_tree"] = {"request.txt": "file", "index.html": "file", "style.css": "file", "layout.css": "file", "responsive.css": "file"}
 	ui.load_challenge(ch_data)
 	ui.lock_typing(true)
-	
+
+	# ── Overflow Stack Spotlight Tutorial (first time only) ────────────
+	var cd = get_node_or_null("/root/CharacterData")
+	if cd and not cd.has_seen_overflow_stack_tutorial:
+		var TUTORIAL_OVERLAY_SCRIPT = preload("res://Scripts/UI/tutorial_overlay.gd")
+		var tut_overlay = CanvasLayer.new()
+		tut_overlay.set_script(TUTORIAL_OVERLAY_SCRIPT)
+		tut_overlay.layer = 150
+		tut_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+		get_tree().current_scene.add_child(tut_overlay)
+		await get_tree().process_frame
+
+		var tut_steps = []
+
+		# Spotlight Purpose Code button if it exists
+		if ui.get("why_button") and is_instance_valid(ui.why_button) and ui.why_button.visible:
+			tut_steps.append({
+				"text": "This is the [color=#f0c674]📘 Purpose of Code[/color] button.\nClick it to understand [color=#f0c674]why[/color] you're learning this concept.",
+				"highlight_node": ui.why_button,
+				"tooltip_side": "right"
+			})
+
+		# Spotlight Overflow Stack button
+		if ui.overflow_stack_button and ui.overflow_stack_button.visible:
+			tut_steps.append({
+				"text": "This is the [color=#f0c674]📚 OverflowStack[/color]!\nClick it when you need help with the challenge.",
+				"highlight_node": ui.overflow_stack_button,
+				"tooltip_side": "right"
+			})
+			tut_steps.append({
+				"text": "Inside you'll find two options:\n• [color=#81c784]Normal Hint[/color] — general tips\n• [color=#f0c674]Premium Hint[/color] — personalized AI feedback on YOUR code\nWrite your code first, then use the premium hint!",
+				"highlight_node": ui.overflow_stack_button,
+				"tooltip_side": "right"
+			})
+
+		if tut_steps.size() > 0:
+			tut_overlay.start_tutorial(tut_steps)
+			await tut_overlay.tutorial_finished
+		tut_overlay.queue_free()
+		cd.has_seen_overflow_stack_tutorial = true
+
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor Markup", "text": "Let's try it! Write an [color=#f0c674]HTTP GET[/color] request." },
@@ -1085,7 +1125,8 @@ func _make_challenge(id: String, title: String, topic: String, file_name: String
 		"show_output": true,
 		"output_type": "browser" if topic in ["html", "css", "django"] else "terminal",
 		"hint": base_hint,
-		"timed": false
+		"timed": false,
+		"is_professor_markup": true
 	}
 
 func _get_dialogue_box():

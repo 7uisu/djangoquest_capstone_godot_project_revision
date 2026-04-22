@@ -37,6 +37,12 @@
 [ext_resource type="Texture2D" uid="uid://c0l213o3m2bs1" path="res://Textures/School Textures/Items/Interactable/CreditCard-32x32.png" id="29_otfab"]
 [ext_resource type="Texture2D" uid="uid://dgc66mi4d6mms" path="res://Textures/NPC/College Students/Male College Students/NPCMaleCollegeStudent04.png" id="29_ov5yb"]
 [ext_resource type="Texture2D" uid="uid://qiyo21cvgwx2" path="res://Textures/School Textures/Items/Interactable/Encrypted Drive-32x32.png" id="30_aerbk"]
+[ext_resource type="PackedScene" uid="uid://b03bl55e605t1" path="res://Scenes/Button Keys/arrow_button.tscn" id="38_3ikxs"]
+[ext_resource type="PackedScene" uid="uid://1tla2l4f0xyd" path="res://Scenes/Button Keys/esc_button.tscn" id="39_uyc0v"]
+[ext_resource type="PackedScene" uid="uid://p87b3vkvwunh" path="res://Scenes/Button Keys/e_button.tscn" id="40_ea31t"]
+[ext_resource type="PackedScene" uid="uid://jg8vbqqorvs2" path="res://Scenes/Button Keys/f_button.tscn" id="41_bp8if"]
+[ext_resource type="PackedScene" uid="uid://b2je2wnvy4fgm" path="res://Scenes/Button Keys/shift_button.tscn" id="42_k73d7"]
+[ext_resource type="PackedScene" uid="uid://c6xtvkruagsrq" path="res://Scenes/Button Keys/wasd_button.tscn" id="43_mnmpq"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cne3e"]
 texture = ExtResource("10_mwrpm")
@@ -996,7 +1002,6 @@ script = ExtResource("24_ch1ctrl")
 position = Vector2(2007, 504)
 npc_texture = ExtResource("25_62k5o")
 npc_name = "Bug Boy"
-intro_line_3 = "PYTHON!"
 challenge_id = "py_debug_01"
 
 [node name="ChallengeNPC2" parent="." unique_id=795328829 instance=ExtResource("25_4lbgn")]
@@ -1017,14 +1022,12 @@ position = Vector2(2001, 201)
 npc_texture = ExtResource("28_6st8i")
 npc_name = "Django Dan"
 challenge_id = "dj_free_01"
-challenge_topic = "django"
 
 [node name="ChallengeNPC5" parent="." unique_id=422677344 instance=ExtResource("25_4lbgn")]
 position = Vector2(2000, 110)
 npc_texture = ExtResource("29_ov5yb")
 npc_name = "Terminal Tina"
 challenge_id = "dj_term_01"
-challenge_topic = "django"
 
 [node name="RubberDuck" parent="." unique_id=733640705 instance=ExtResource("17_8rrk8")]
 position = Vector2(1756, 499)
@@ -1078,3 +1081,27 @@ dialogue_line_2 = "Someone hastily scratched 'SOLUTIONS' on the casing. Better k
 [node name="Player" parent="." unique_id=577792238 instance=ExtResource("8_jorty")]
 y_sort_enabled = false
 position = Vector2(395, 24)
+
+[node name="ArrowButton" parent="Player" unique_id=772515237 instance=ExtResource("38_3ikxs")]
+visible = false
+position = Vector2(51, -88)
+
+[node name="EscButton" parent="Player" unique_id=1507789426 instance=ExtResource("39_uyc0v")]
+visible = false
+position = Vector2(0, -66)
+
+[node name="EButton" parent="Player" unique_id=1964370354 instance=ExtResource("40_ea31t")]
+visible = false
+position = Vector2(0, -66)
+
+[node name="FButton" parent="Player" unique_id=736416386 instance=ExtResource("41_bp8if")]
+visible = false
+position = Vector2(0, -66)
+
+[node name="ShiftButton" parent="Player" unique_id=1522759435 instance=ExtResource("42_k73d7")]
+visible = false
+position = Vector2(0, -66)
+
+[node name="WasdButton" parent="Player" unique_id=1233751847 instance=ExtResource("43_mnmpq")]
+visible = false
+position = Vector2(-51, -88)

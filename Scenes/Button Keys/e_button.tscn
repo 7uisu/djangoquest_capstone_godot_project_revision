@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://p87b3vkvwunh"]
+
+[ext_resource type="Texture2D" uid="uid://dw1moeasp50q4" path="res://Textures/Keyboard Keys/Spritesheet/E.png" id="1_lrlxk"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_om2mt"]
+atlas = ExtResource("1_lrlxk")
+region = Rect2(0, 0, 17, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_it7q2"]
+atlas = ExtResource("1_lrlxk")
+region = Rect2(17, 0, 17, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_uxljf"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_om2mt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_it7q2")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="EButton" type="Node2D" unique_id=1964370354]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=82614773]
+sprite_frames = SubResource("SpriteFrames_uxljf")
