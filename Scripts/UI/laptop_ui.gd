@@ -1287,6 +1287,11 @@ func _back_to_desktop():
 
 func _unhandled_input(event):
 	if event.is_action_pressed("ui_cancel"):
+		# Don't toggle if a tutorial overlay is currently active
+		for node in get_tree().get_nodes_in_group("tutorial_overlay_active"):
+			if node.has_method("is_running") and node.is_running():
+				return
+
 		var current_scene = get_tree().current_scene
 		if current_scene and (current_scene.name == "MainMenu" or current_scene.name == "IntroSlides" or current_scene.name == "LoginScreen"):
 			return
@@ -1310,4 +1315,10 @@ func _unhandled_input(event):
 					return
 			open()
 		else:
+			# Don't close if player is in a tutorial (block_ui_input = true)
+			var players2 = get_tree().get_nodes_in_group("player")
+			if players2.size() > 0:
+				var p2 = players2[0]
+				if p2.get("block_ui_input"):
+					return
 			close()

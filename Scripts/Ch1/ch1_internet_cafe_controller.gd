@@ -503,8 +503,8 @@ func _play_epilogue_sequence(pname: String):
 
 	await get_tree().create_timer(0.3).timeout
 
-	# Placeholder college image + narration
-	_show_placeholder_image("🏫 COLLEGE\n\nPlaceholder: College campus first day")
+	# College image
+	_show_fullscreen_image(load("res://Textures/COLLEGE.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [

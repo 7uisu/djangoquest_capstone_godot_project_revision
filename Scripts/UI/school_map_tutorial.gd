@@ -157,6 +157,10 @@ func _start_tutorial():
 	await _wait_for_action("ui_cancel")
 	_hide_key_nodes()
 
+	# IMMEDIATELY block further input to prevent double-tap Esc closing the laptop
+	if _player:
+		_player.block_ui_input = true
+
 	# Explicitly open the laptop (no built-in Esc handler exists)
 	var laptop = get_node_or_null("/root/GlobalLaptopUI")
 	if laptop and laptop.has_method("open") and not laptop.is_open:

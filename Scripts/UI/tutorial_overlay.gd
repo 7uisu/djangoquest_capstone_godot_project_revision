@@ -12,6 +12,12 @@ var _watching_action: String = ""
 var _waiting_for_advance: bool = false
 var _is_running: bool = false
 
+# Typewriter
+var _typewriter_active: bool = false
+var _typewriter_total: int = 0
+var _typewriter_speed: float = 40.0  # characters per second
+var _typewriter_elapsed: float = 0.0
+
 # UI nodes (created in _ready)
 var spotlight_rect: ColorRect = null
 var tooltip_panel: PanelContainer = null
@@ -97,6 +103,7 @@ func start_tutorial(tutorial_steps: Array) -> void:
 	current_step = -1
 	_is_running = true
 	visible = true
+	add_to_group("tutorial_overlay_active")
 	_next_step()
 
 func notify_action(action: String) -> void:
@@ -109,15 +116,43 @@ func notify_action(action: String) -> void:
 func is_running() -> bool:
 	return _is_running
 
+# ── Typewriter _process ──────────────────────────────────────────────────────
+
+func _process(delta: float) -> void:
+	if not _typewriter_active:
+		return
+	_typewriter_elapsed += delta
+	var chars_to_show = int(_typewriter_elapsed * _typewriter_speed)
+	if chars_to_show >= _typewriter_total:
+		instruction_label.visible_characters = -1
+		_typewriter_active = false
+	else:
+		instruction_label.visible_characters = chars_to_show
+
 # ── Input ────────────────────────────────────────────────────────────────────
 
 func _input(event: InputEvent):
-	if not _is_running or not _waiting_for_advance:
+	if not _is_running:
 		return
+
+	# Block Esc and E while tutorial is active to prevent closing laptop/inventory
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("toggle_inventory"):
+		get_viewport().set_input_as_handled()
+		return
+
 	if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept"):
 		get_viewport().set_input_as_handled()
-		_waiting_for_advance = false
-		_next_step()
+
+		# If typewriter is still typing, complete it instantly
+		if _typewriter_active:
+			instruction_label.visible_characters = -1
+			_typewriter_active = false
+			return
+
+		# If waiting for spacebar advance, go to next step
+		if _waiting_for_advance:
+			_waiting_for_advance = false
+			_next_step()
 
 # ── Step Logic ───────────────────────────────────────────────────────────────
 
@@ -135,6 +170,15 @@ func _apply_step(step: Dictionary) -> void:
 	_waiting_for_advance = false
 	_target_node = null
 
+	# Start typewriter effect
+	instruction_label.visible_characters = 0
+	_typewriter_active = true
+	_typewriter_elapsed = 0.0
+	# Get character count after setting text (works with BBCode)
+	_typewriter_total = instruction_label.get_total_character_count()
+	if _typewriter_total <= 0:
+		_typewriter_total = text.length()
+
 	# Spotlight target
 	var node_ref = step.get("highlight_node", null)
 	if node_ref is Control and is_instance_valid(node_ref):
@@ -150,11 +194,11 @@ func _apply_step(step: Dictionary) -> void:
 	else:
 		_clear_spotlight()
 
-	# Position tooltip
-	_position_tooltip(step.get("tooltip_side", "bottom"))
+	# Move tooltip off-screen but keep visible so Godot computes its real size
+	tooltip_panel.position = Vector2(-5000, -5000)
 	tooltip_panel.visible = true
 
-	# Update continue hint and arrow
+	# Update continue hint and arrow (synchronously, before positioning)
 	var hint_label = tooltip_panel.find_child("ContinueHint", true, false)
 	if _watching_action != "":
 		var action_hints = {
@@ -180,6 +224,16 @@ func _apply_step(step: Dictionary) -> void:
 		"right": _arrow_label.text = "►"
 		_: _arrow_label.text = "▼"
 
+	# Fire-and-forget: wait 2 frames for layout, then position correctly
+	_do_position_after_layout(side)
+
+func _do_position_after_layout(side: String) -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not _is_running:
+		return
+	_position_tooltip_sync(side)
+
 func _point_spotlight_at(node: Control) -> void:
 	var rect = node.get_global_rect()
 	var center = rect.get_center()
@@ -196,10 +250,7 @@ func _point_spotlight_at(node: Control) -> void:
 func _clear_spotlight() -> void:
 	shader_mat.set_shader_parameter("spotlight_size", Vector2(0.0, 0.0))
 
-func _position_tooltip(side: String) -> void:
-	# Wait a frame for layout
-	await get_tree().process_frame
-
+func _position_tooltip_sync(side: String) -> void:
 	var screen = get_viewport().get_visible_rect().size
 	if not _target_node or not is_instance_valid(_target_node):
 		tooltip_panel.position = Vector2(screen.x / 2 - 140, screen.y / 2 - 40)
@@ -228,9 +279,13 @@ func _end_tutorial() -> void:
 	_is_running = false
 	_watching_action = ""
 	_waiting_for_advance = false
+	_typewriter_active = false
 	tooltip_panel.visible = false
+	instruction_label.visible_characters = -1
 	_clear_spotlight()
 	visible = false
+	if is_in_group("tutorial_overlay_active"):
+		remove_from_group("tutorial_overlay_active")
 	tutorial_finished.emit()
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

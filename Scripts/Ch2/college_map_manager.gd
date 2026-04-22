@@ -306,6 +306,10 @@ func _run_college_sis_tutorial(cd) -> void:
 	# Wait for Esc press
 	await _wait_for_action("ui_cancel")
 
+	# IMMEDIATELY block further input to prevent double-tap Esc closing the laptop
+	if player:
+		player.block_ui_input = true
+
 	# Hide the Esc key node
 	if esc_node and is_instance_valid(esc_node):
 		esc_node.queue_free()
