@@ -231,6 +231,35 @@ func _run_laptop_tutorial(laptop) -> void:
 	_tutorial_overlay.queue_free()
 	_tutorial_overlay = null
 
+	# Step 4: Spotlight the Save button
+	var save_btn = laptop.find_child("SaveButton", true, false)
+	if save_btn:
+		_tutorial_overlay = await _create_tutorial_overlay()
+		_tutorial_overlay.start_tutorial([
+			{
+				"text": "[color=#f0c674]Save[/color] — Click this to save your progress.\nMake sure to save often so you don't lose any of your hard work!",
+				"highlight_node": save_btn,
+				"tooltip_side": "top"
+			}
+		])
+		await _tutorial_overlay.tutorial_finished
+		_tutorial_overlay.queue_free()
+
+	# Step 5: Spotlight the Exit Game button
+	var exit_btn = laptop.find_child("ExitGameButton", true, false)
+	if exit_btn:
+		_tutorial_overlay = await _create_tutorial_overlay()
+		_tutorial_overlay.start_tutorial([
+			{
+				"text": "[color=#f0c674]Exit Game[/color] — This will take you back to the main menu.\nDon't forget to save before exiting!",
+				"highlight_node": exit_btn,
+				"tooltip_side": "top"
+			}
+		])
+		await _tutorial_overlay.tutorial_finished
+		_tutorial_overlay.queue_free()
+	_tutorial_overlay = null
+
 	# Close laptop
 	if laptop.has_method("close"):
 		laptop.close()

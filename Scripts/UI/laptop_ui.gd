@@ -1166,6 +1166,7 @@ func _create_taskbar() -> PanelContainer:
 
 	# Save button
 	var save_btn = Button.new()
+	save_btn.name = "SaveButton"
 	save_btn.text = "💾 Save"
 	save_btn.add_theme_font_size_override("font_size", 11)
 	var save_style = StyleBoxFlat.new()
@@ -1178,6 +1179,7 @@ func _create_taskbar() -> PanelContainer:
 	save_btn.add_theme_stylebox_override("hover", save_hover)
 	save_btn.add_theme_color_override("font_color", Color(0.7, 1.0, 0.7))
 	var exit_btn = Button.new()
+	exit_btn.name = "ExitGameButton"
 	exit_btn.text = "Exit Game"
 
 	save_btn.pressed.connect(_on_save_pressed.bind(save_btn, exit_btn))
