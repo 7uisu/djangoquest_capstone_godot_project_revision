@@ -6,11 +6,14 @@ extends CanvasLayer
 var _panel: PanelContainer
 var _term_label: Label
 var _definition_label: RichTextLabel
+var _source_label: Label
 
 func _init():
-	layer = 100  # Above everything (slides=50, dialogue=60)
+	layer = 200  # Above everything including tutorials (150)
 
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	# ── Dark overlay backdrop ──
 	var overlay = ColorRect.new()
 	overlay.color = Color(0, 0, 0, 0.6)
@@ -81,6 +84,16 @@ func _ready():
 		_definition_label.add_theme_font_override("normal_font", font)
 	vbox.add_child(_definition_label)
 
+	# ── Source label ──
+	_source_label = Label.new()
+	_source_label.text = ""
+	_source_label.add_theme_font_size_override("font_size", 10)
+	_source_label.add_theme_color_override("font_color", Color(0.45, 0.55, 0.75, 0.8))
+	_source_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if font:
+		_source_label.add_theme_font_override("font", font)
+	vbox.add_child(_source_label)
+
 	# ── Close button ──
 	var close_btn = Button.new()
 	close_btn.text = "✕  Close"
@@ -110,8 +123,16 @@ func show_definition(term: String) -> void:
 	_term_label.text = term.capitalize()
 	var definition = GlossaryData.get_definition(term)
 	_definition_label.text = "[color=#abb2bf]" + definition + "[/color]"
+	var source = GlossaryData.get_source(term)
+	if source != "":
+		_source_label.text = "📎 Source: " + source
+	else:
+		_source_label.text = ""
 
 func _input(event):
-	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		queue_free()
+	# Block ALL keyboard input while popup is open to prevent dialogue from advancing via Space/E
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_ESCAPE:
+			queue_free()
 		get_viewport().set_input_as_handled()
+
