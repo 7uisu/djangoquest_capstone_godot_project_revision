@@ -17,6 +17,16 @@ var _floors: Array = []
 func _ready():
 	layer = 90  # Below SceneTransition (100) but above everything else
 	cancel_button.pressed.connect(_on_cancel_pressed)
+	
+	# Force an opaque background so world text doesn't bleed through
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color("24273a")
+	style.border_color = Color("1e2030")
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12)
+	panel.add_theme_stylebox_override("panel", style)
+
 	# Fade in
 	panel.modulate.a = 0.0
 	var tween = create_tween()

@@ -503,6 +503,95 @@ func _play_module_1_authentication(skip_ide: bool):
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
 
+	# ─── AI Minigame: The ID Checker (Bouncer Roleplay) ────────────
+	_show_teaching_slide({
+		"icon": "🪪",
+		"title": "Authentication in Real Life",
+		"subtitle": "How do you prove who you are?",
+		"bullets": [
+			"[b]Valid auth[/b] = something verifiable (ID card, fingerprint, password)",
+			"[b]Invalid auth[/b] = unverifiable claims ('trust me', 'I look like them')",
+			"Authentication isn't about trust — it's about [b]proof[/b].",
+			"The same logic applies to Django's authenticate() function."
+		],
+		"code": "# Real life → Code concept:\n# Passport ✅  →  authenticate(username, password)\n# 'Trust me' ❌ →  No credentials provided",
+		"header": "MODULE 1 — AUTHENTICATION",
+		"header_icon": "🔑",
+		"slide_num": "★ AI GAME",
+		"reference": "Source: Django for Beginners (Vincent, 2023)"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Auth", "text": "Before we move on, let's see if you truly understand what [color=#f0c674]authentication[/color] means." },
+			{ "name": "Professor Auth", "text": "Imagine you're a [color=#f0c674]bouncer[/color] at a club. Someone wants in." },
+			{ "name": "Professor Auth", "text": "Here are two examples:" },
+			{ "name": "Professor Auth", "text": "[color=#98c379]✅ VALID:[/color] [color=#f0c674]Showing a government-issued passport[/color] — that's verifiable proof." },
+			{ "name": "Professor Auth", "text": "[color=#e06c75]❌ INVALID:[/color] [color=#f0c674]Saying 'Trust me bro, I work here'[/color] — that proves nothing." },
+			{ "name": "Professor Auth", "text": "Now your turn. Give me [color=#f0c674]2 VALID[/color] and [color=#f0c674]2 INVALID[/color] ways to prove your identity." },
+			{ "name": "Professor Auth", "text": "And you cannot use my examples." }
+		])
+		await dialogue_box.dialogue_finished
+
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	if not skip_ide:
+		ui = await _ensure_challenge_ui()
+		var ai_data = _make_challenge(
+			"auth_ai_checker", "The ID Checker", "ai_evaluator", "brainstorming.txt",
+			[
+				"🎯 GOAL: Prove your identity to the bouncer!",
+				"",
+				"🪪 What Counts as Authentication:",
+				"  • VALID = verifiable proof (ID card, fingerprint, password)",
+				"  • INVALID = unverifiable claims ('I know the DJ', 'I look old enough')",
+				"  • Authentication is about PROOF, not trust.",
+				"",
+				"✅ EXAMPLE (how your answer should look):",
+				"  VALID 1:   Scanning my fingerprint at the door",
+				"  VALID 2:   Showing my company employee badge",
+				"  INVALID 1: Telling the bouncer 'My friend is already inside'",
+				"  INVALID 2: Wearing a fancy uniform to look like staff",
+				"",
+				"🚫 BANNED (do NOT use these):",
+				"  ✅ VALID: Showing my government-issued passport",
+				"  ❌ INVALID: Saying 'Trust me bro, I work here'",
+				"",
+				"📝 YOUR TURN — provide exactly 4 methods:",
+				"  VALID 1:   # your answer",
+				"  VALID 2:   # your answer",
+				"  INVALID 1: # your answer",
+				"  INVALID 2: # your answer"
+			],
+			[
+				"Provide 2 VALID and 2 INVALID ways to prove your identity to a bouncer.",
+				"Cannot reuse the tutorial examples (passport, trust me bro)."
+			],
+			"Type your 4 methods here...",
+			[],
+			"System is evaluating...",
+			"Evaluation failed.",
+			["Think about what a bouncer would accept vs reject as proof."]
+		)
+		ai_data["files"] = {"brainstorming.txt": ""}
+		ai_data["active_file"] = "brainstorming.txt"
+		ai_data["topic"] = "ai_evaluator"
+		ai_data["challenge_type"] = "auth_checker"
+		ai_data["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file"}, "brainstorming.txt": "file"}
+		ai_data["instructions"] = ["auth_checker", "Provide 2 VALID and 2 INVALID ways to prove your identity to a bouncer. Valid = verifiable proof. Invalid = unverifiable claims."]
+
+		ui.load_challenge(ai_data)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Auth", "text": "Good. You understand the difference between a claim and proof." },
+				{ "name": "Professor Auth", "text": "That's exactly what Django's authenticate() does — it checks [color=#f0c674]proof[/color], not promises." }
+			])
+			await dialogue_box.dialogue_finished
+		await get_tree().create_timer(0.3).timeout
+
 # ══════════════════════════════════════════════════════════════════════
 #  MODULE 2 — Full CRUD & Permissions (Ownership logic)
 # ══════════════════════════════════════════════════════════════════════

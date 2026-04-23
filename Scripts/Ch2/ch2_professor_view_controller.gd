@@ -1085,6 +1085,95 @@ func _play_module_2_views_routing(skip_ide: bool):
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
 
+	# ─── AI Minigame: The Mailman URL Router ──────────────────────
+	_show_teaching_slide({
+		"icon": "📬",
+		"title": "URLs Are Like City Addresses",
+		"subtitle": "Every page has a specific route",
+		"bullets": [
+			"Django's [b]urls.py[/b] is like a city map.",
+			"Each URL path is an [b]address[/b] that leads to a specific [b]building[/b] (view).",
+			"You can't get to the bakery by going to the police station address.",
+			"The same logic applies to web apps — wrong URL = wrong page."
+		],
+		"code": "# Real life → Django URL:\n# 'Report a crime'    →  /police-station/\n# 'Buy some bread'    →  /bakery/\n# 'See a doctor'      →  /hospital/",
+		"header": "MODULE 2 — VIEWS & ROUTING",
+		"header_icon": "🌐",
+		"slide_num": "★ AI GAME",
+		"reference": "Source: Official Django Documentation"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor View", "text": "Before we move to templates… let me test your routing intuition." },
+			{ "name": "Professor View", "text": "Think of Django's urls.py like a [color=#f0c674]city map[/color]. Every URL is an address." },
+			{ "name": "Professor View", "text": "Here are two examples:" },
+			{ "name": "Professor View", "text": "[color=#f0c674]'I need to report a crime'[/color] → Routes to [color=#98c379]/police-station/[/color]" },
+			{ "name": "Professor View", "text": "[color=#f0c674]'I want to buy some bread'[/color] → Routes to [color=#98c379]/bakery/[/color]" },
+			{ "name": "Professor View", "text": "Now your turn. Give me [color=#f0c674]4 real-life errands[/color] and the URL path you'd route them to." },
+			{ "name": "Professor View", "text": "Make them logical. And no — you can't reuse mine." }
+		])
+		await dialogue_box.dialogue_finished
+
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	if not skip_ide:
+		ui = await _ensure_challenge_ui()
+		var ai_data = _make_challenge(
+			"view_ai_url_routing", "The Mailman URL Router", "ai_evaluator", "brainstorming.txt",
+			[
+				"🎯 GOAL: Map 4 real-life errands to Django-style URL paths.",
+				"",
+				"📬 How Django Routing Works:",
+				"  • Every page has a URL path, like a city address.",
+				"  • URLs should be lowercase, hyphenated, with slashes.",
+				"  • The URL must logically match the destination.",
+				"",
+				"✅ EXAMPLE (how your answer should look):",
+				"  1. 'I want to see a doctor' → /hospital/",
+				"  2. 'I need to work out' → /gym/",
+				"  3. 'I want to watch a movie' → /cinema/",
+				"  4. 'I need to mail a package' → /post-office/",
+				"",
+				"🚫 BANNED (do NOT use these):",
+				"  • 'Report a crime' → /police-station/",
+				"  • 'Buy some bread' → /bakery/",
+				"",
+				"📝 YOUR TURN — supply 4 errand-to-URL mappings:",
+				"  1. # your errand → /your-url/",
+				"  2. # your errand → /your-url/",
+				"  3. # your errand → /your-url/",
+				"  4. # your errand → /your-url/"
+			],
+			[
+				"Map 4 real-life errands/destinations to Django-style URL paths.",
+				"URLs should be lowercase, hyphenated, with slashes. Cannot reuse tutorial examples."
+			],
+			"Type your 4 errands and URLs here...",
+			[],
+			"System is evaluating...",
+			"Evaluation failed.",
+			["Think of places you visit in real life — what would their URL address be?"]
+		)
+		ai_data["files"] = {"brainstorming.txt": ""}
+		ai_data["active_file"] = "brainstorming.txt"
+		ai_data["topic"] = "ai_evaluator"
+		ai_data["challenge_type"] = "url_routing"
+		ai_data["project_tree"] = {"venv": {}, "mysite": {"urls.py": "file"}, "brainstorming.txt": "file"}
+		ai_data["instructions"] = ["url_routing", "Map 4 real-life errands/destinations to Django-style URL paths (lowercase, hyphenated, with slashes)."]
+
+		ui.load_challenge(ai_data)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor View", "text": "Good. You understand routing intuitively." },
+				{ "name": "Professor View", "text": "Every web address follows the same logic — specific paths for specific destinations." }
+			])
+			await dialogue_box.dialogue_finished
+		await get_tree().create_timer(0.3).timeout
+
 # ══════════════════════════════════════════════════════════════════════
 #  MODULE 3 — Templates / DTL (Dynamic HTML Rendering)
 # ══════════════════════════════════════════════════════════════════════

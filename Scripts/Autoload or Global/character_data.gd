@@ -90,6 +90,22 @@ var ch2_y2s2_ai_otm_skipped: bool = false    # One-to-Many challenge auto-skippe
 var ch2_y2s2_ai_mtm_skipped: bool = false    # Many-to-Many challenge auto-skipped
 var ch2_y2s2_ai_fully_offline: bool = false  # TRUE = all AI was down, full offline run
 
+# ── AI Minigame skip flags — Prof Syntax (Y1S2: Data Type Detective) ──────
+var ch2_y1s2_ai_data_types_skipped: bool = false
+var ch2_y1s2_ai_fully_offline: bool = false
+
+# ── AI Minigame skip flags — Prof View (Y2S1: Mailman URL Router) ─────────
+var ch2_y2s1_ai_url_routing_skipped: bool = false
+var ch2_y2s1_ai_fully_offline: bool = false
+
+# ── AI Minigame skip flags — Prof Auth (Y3S2: ID Checker) ─────────────────
+var ch2_y3s2_ai_auth_checker_skipped: bool = false
+var ch2_y3s2_ai_fully_offline: bool = false
+
+# ── AI Minigame skip flags — Prof REST (Y3MID: The 4 Verbs) ───────────────
+var ch2_y3mid_ai_http_verbs_skipped: bool = false
+var ch2_y3mid_ai_fully_offline: bool = false
+
 # ─── Learning Mode Grading ───────────────────────────────────────────────────
 var learning_mode_grades: Dictionary = {}
 
@@ -100,9 +116,6 @@ func update_learning_mode_grade(professor_id: String, new_grade: float) -> void:
 		print("CharacterData: Saved new best learning mode grade for ", professor_id, " -> ", new_grade)
 
 # ─── Retake Loop Guard ───────────────────────────────────────────────────────
-# If a retake happens while all three are already flagged as skipped,
-# the skips are cleared so the player gets a fresh chance on the next run.
-# This prevents an infinite "skipped forever" loop.
 func reset_ai_skip_flags_y2s2() -> void:
 	ch2_y2s2_ai_oto_skipped = false
 	ch2_y2s2_ai_otm_skipped = false
@@ -116,6 +129,18 @@ func get_ai_skip_count_y2s2() -> int:
 	if ch2_y2s2_ai_otm_skipped: count += 1
 	if ch2_y2s2_ai_mtm_skipped: count += 1
 	return count
+
+func reset_ai_skip_flags_all() -> void:
+	reset_ai_skip_flags_y2s2()
+	ch2_y1s2_ai_data_types_skipped = false
+	ch2_y1s2_ai_fully_offline = false
+	ch2_y2s1_ai_url_routing_skipped = false
+	ch2_y2s1_ai_fully_offline = false
+	ch2_y3s2_ai_auth_checker_skipped = false
+	ch2_y3s2_ai_fully_offline = false
+	ch2_y3mid_ai_http_verbs_skipped = false
+	ch2_y3mid_ai_fully_offline = false
+	print("CharacterData: All AI skip flags cleared.")
 
 
 # Y3S1 — Professor Token (Forms & Security)
@@ -207,7 +232,7 @@ func reset_data():
 		set("ch2_%s_inc_triggered" % prefix, false)
 		set("ch2_%s_removal_passed" % prefix, false)
 	# AI skip flags
-	reset_ai_skip_flags_y2s2()
+	reset_ai_skip_flags_all()
 	challenges_completed = 0
 	credits = 0
 	defeated_challenge_npcs = []
@@ -269,11 +294,20 @@ func to_save_dict() -> Dictionary:
 			"bonus_item_earned", "inc_triggered", "removal_passed"]:
 			var key = "ch2_%s_%s" % [prefix, suffix]
 			d[key] = get(key)
-	# AI minigame skip flags (Y2S2)
+	# AI minigame skip flags (Y2S2 — Prof Query)
 	d["ch2_y2s2_ai_oto_skipped"] = ch2_y2s2_ai_oto_skipped
 	d["ch2_y2s2_ai_otm_skipped"] = ch2_y2s2_ai_otm_skipped
 	d["ch2_y2s2_ai_mtm_skipped"] = ch2_y2s2_ai_mtm_skipped
 	d["ch2_y2s2_ai_fully_offline"] = ch2_y2s2_ai_fully_offline
+	# AI minigame skip flags — other professors
+	d["ch2_y1s2_ai_data_types_skipped"] = ch2_y1s2_ai_data_types_skipped
+	d["ch2_y1s2_ai_fully_offline"] = ch2_y1s2_ai_fully_offline
+	d["ch2_y2s1_ai_url_routing_skipped"] = ch2_y2s1_ai_url_routing_skipped
+	d["ch2_y2s1_ai_fully_offline"] = ch2_y2s1_ai_fully_offline
+	d["ch2_y3s2_ai_auth_checker_skipped"] = ch2_y3s2_ai_auth_checker_skipped
+	d["ch2_y3s2_ai_fully_offline"] = ch2_y3s2_ai_fully_offline
+	d["ch2_y3mid_ai_http_verbs_skipped"] = ch2_y3mid_ai_http_verbs_skipped
+	d["ch2_y3mid_ai_fully_offline"] = ch2_y3mid_ai_fully_offline
 	d.merge({
 		# Tracking
 		"challenges_completed": challenges_completed,
@@ -342,11 +376,20 @@ func from_save_dict(data: Dictionary):
 		set("ch2_%s_bonus_item_earned" % prefix, data.get("ch2_%s_bonus_item_earned" % prefix, false))
 		set("ch2_%s_inc_triggered" % prefix, data.get("ch2_%s_inc_triggered" % prefix, false))
 		set("ch2_%s_removal_passed" % prefix, data.get("ch2_%s_removal_passed" % prefix, false))
-	# AI skip flags
+	# AI skip flags — Prof Query
 	ch2_y2s2_ai_oto_skipped = data.get("ch2_y2s2_ai_oto_skipped", false)
 	ch2_y2s2_ai_otm_skipped = data.get("ch2_y2s2_ai_otm_skipped", false)
 	ch2_y2s2_ai_mtm_skipped = data.get("ch2_y2s2_ai_mtm_skipped", false)
 	ch2_y2s2_ai_fully_offline = data.get("ch2_y2s2_ai_fully_offline", false)
+	# AI skip flags — other professors
+	ch2_y1s2_ai_data_types_skipped = data.get("ch2_y1s2_ai_data_types_skipped", false)
+	ch2_y1s2_ai_fully_offline = data.get("ch2_y1s2_ai_fully_offline", false)
+	ch2_y2s1_ai_url_routing_skipped = data.get("ch2_y2s1_ai_url_routing_skipped", false)
+	ch2_y2s1_ai_fully_offline = data.get("ch2_y2s1_ai_fully_offline", false)
+	ch2_y3s2_ai_auth_checker_skipped = data.get("ch2_y3s2_ai_auth_checker_skipped", false)
+	ch2_y3s2_ai_fully_offline = data.get("ch2_y3s2_ai_fully_offline", false)
+	ch2_y3mid_ai_http_verbs_skipped = data.get("ch2_y3mid_ai_http_verbs_skipped", false)
+	ch2_y3mid_ai_fully_offline = data.get("ch2_y3mid_ai_fully_offline", false)
 	# Tracking
 	learning_mode_grades = data.get("learning_mode_grades", {})
 	challenges_completed = int(data.get("challenges_completed", 0))

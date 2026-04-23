@@ -504,6 +504,96 @@ func _play_module_1_apis_json(skip_ide: bool):
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
 
+	# ─── AI Minigame: The 4 Verbs ─────────────────────────────────
+	_show_teaching_slide({
+		"icon": "📮",
+		"title": "The 4 HTTP Verbs",
+		"subtitle": "Every API action is one of four verbs",
+		"bullets": [
+			"[b]GET[/b] = Read/retrieve (looking up info — no changes)",
+			"[b]POST[/b] = Create something new (making a new record)",
+			"[b]PUT[/b] = Update something that exists (editing a record)",
+			"[b]DELETE[/b] = Remove something permanently (destroying a record)"
+		],
+		"code": "# Real life → HTTP verb:\n# Reading the newspaper  →  GET\n# Painting a new picture →  POST\n# Editing your resume    →  PUT\n# Throwing away trash    →  DELETE",
+		"header": "MODULE 1 — APIs & JSON",
+		"header_icon": "📡",
+		"slide_num": "★ AI GAME",
+		"reference": "Source: Django REST Framework Documentation"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor REST", "text": "Before we move on to security, let me test your understanding of [color=#f0c674]HTTP verbs[/color]." },
+			{ "name": "Professor REST", "text": "Every API action maps to one of four verbs: [color=#f0c674]GET[/color], [color=#f0c674]POST[/color], [color=#f0c674]PUT[/color], [color=#f0c674]DELETE[/color]." },
+			{ "name": "Professor REST", "text": "Here are two examples:" },
+			{ "name": "Professor REST", "text": "[color=#f0c674]'Reading the morning newspaper'[/color] → That's a [color=#98c379]GET[/color] — you're retrieving information." },
+			{ "name": "Professor REST", "text": "[color=#f0c674]'Painting a brand new painting'[/color] → That's a [color=#98c379]POST[/color] — you're creating something new." },
+			{ "name": "Professor REST", "text": "Now it's your turn. Give me [color=#f0c674]4 real-world actions[/color] — one for each verb." },
+			{ "name": "Professor REST", "text": "And you cannot reuse my examples." }
+		])
+		await dialogue_box.dialogue_finished
+
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	if not skip_ide:
+		ui = await _ensure_challenge_ui()
+		var ai_data = _make_challenge(
+			"rest_ai_http_verbs", "The 4 Verbs", "ai_evaluator", "brainstorming.txt",
+			[
+				"🎯 GOAL: Map 4 real-world actions to HTTP verbs.",
+				"",
+				"📮 The 4 HTTP Verbs:",
+				"  • GET    = Read/retrieve (looking up info, no changes)",
+				"  • POST   = Create something new (making a record)",
+				"  • PUT    = Update something that exists (editing)",
+				"  • DELETE = Remove something permanently (destroying)",
+				"",
+				"✅ EXAMPLE (how your answer should look):",
+				"  GET:    Checking my mailbox for letters",
+				"  POST:   Writing a new diary entry",
+				"  PUT:    Updating my phone's contact list",
+				"  DELETE: Shredding old documents",
+				"",
+				"🚫 BANNED (do NOT use these):",
+				"  • 'Reading the morning newspaper' → GET",
+				"  • 'Painting a brand new painting' → POST",
+				"",
+				"📝 YOUR TURN — supply one for each verb:",
+				"  GET:    # your action (read/retrieve)",
+				"  POST:   # your action (create)",
+				"  PUT:    # your action (update)",
+				"  DELETE: # your action (remove)"
+			],
+			[
+				"Map 4 real-world actions to HTTP verbs: GET, POST, PUT, DELETE.",
+				"One example per verb. Cannot reuse the tutorial examples."
+			],
+			"Type your 4 real-world actions here...",
+			[],
+			"System is evaluating...",
+			"Evaluation failed.",
+			["Think of everyday actions — are you reading, creating, updating, or destroying?"]
+		)
+		ai_data["files"] = {"brainstorming.txt": ""}
+		ai_data["active_file"] = "brainstorming.txt"
+		ai_data["topic"] = "ai_evaluator"
+		ai_data["challenge_type"] = "http_verbs"
+		ai_data["project_tree"] = {"venv": {}, "mysite": {"urls.py": "file"}, "brainstorming.txt": "file"}
+		ai_data["instructions"] = ["http_verbs", "Map 4 real-world actions to HTTP verbs: GET (read), POST (create), PUT (update), DELETE (remove). Provide one example for each."]
+
+		ui.load_challenge(ai_data)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor REST", "text": "Good. You see the verbs in everyday life." },
+				{ "name": "Professor REST", "text": "Every API endpoint you build will use these exact same concepts." }
+			])
+			await dialogue_box.dialogue_finished
+		await get_tree().create_timer(0.3).timeout
+
 # ══════════════════════════════════════════════════════════════════════
 #  MODULE 2 — Token Authentication (API security)
 # ══════════════════════════════════════════════════════════════════════

@@ -27,6 +27,7 @@ var _ai_hint_text: String = ""        # cached AI hint so player can review it
 var _free_hints_revealed: int = 0     # how many free hints are visible in OverflowStack
 var MAX_FREE_HINTS: int = 3         # maximum free hints per challenge
 var _challenge_active: bool = false   # true while player is working on a challenge (for log censoring)
+var _premium_hint_loading: bool = false  # true while premium AI hint is being fetched
 var _premium_hint_button: Button = null
 var _reveal_hint_button: Button = null
 var why_button: Button = null
@@ -189,7 +190,11 @@ func _ready():
 	continue_button.pressed.connect(_on_continue_pressed)
 	free_type_edit.text_changed.connect(_on_free_type_changed)
 	gear_button.pressed.connect(_on_gear_pressed)
-	stack_close_button.pressed.connect(func(): overflow_overlay.visible = false)
+	stack_close_button.pressed.connect(func():
+		if _premium_hint_loading:
+			return  # Block close while loading
+		overflow_overlay.visible = false
+	)
 	troll_dialogue.gui_input.connect(_on_troll_panel_clicked)
 	troll_dialogue.mouse_filter = Control.MOUSE_FILTER_STOP
 	item_button.pressed.connect(_on_item_button_pressed)
@@ -1348,7 +1353,7 @@ func _on_premium_hint_pressed():
 
 	CustomConfirm.prompt(
 		"Use Premium AI Hint",
-		"Are you sure you want to use your 1 premium AI hint?",
+		"Are you sure you want to use your 1 premium AI hint?\n\nIMPORTANT: Be sure to input your thought code first before using this! The AI will analyze what you've typed.",
 		_request_premium_ai_hint
 	)
 
@@ -1374,7 +1379,22 @@ func _request_premium_ai_hint():
 	var code_to_check = submission.get("player_typed_only", "")
 	if code_to_check == "":
 		code_to_check = submission.get("full_text", "")
+	# Strip hardcoded template comments before sending to AI
+	code_to_check = _strip_code_comments(code_to_check, language)
 	code_to_check = _build_ai_context_payload(code_to_check)
+
+	# Lock the OverflowStack so it can't be closed while loading
+	_premium_hint_loading = true
+	_show_overflow_stack()
+	# Show loading state inside the OverflowStack
+	stack_answer.bbcode_enabled = true
+	var loading_lines: Array[String] = []
+	loading_lines.append("[color=#3b4045][b]Accepted Answer[/b][/color]")
+	loading_lines.append("")
+	loading_lines.append("[color=#61afef]⏳ Generating your Premium AI Hint... Please wait.[/color]")
+	loading_lines.append("[color=#5c6370]The AI is analyzing your code. This panel will update automatically.[/color]")
+	stack_answer.text = "\n\n".join(loading_lines)
+	stack_close_button.disabled = true
 
 	feedback_label.text = "Requesting your premium AI hint..."
 	feedback_label.add_theme_color_override("font_color", Color("61afef"))
@@ -1399,6 +1419,9 @@ func _request_premium_ai_hint():
 		_ai_hint_used = true
 		emit_signal("hint_used")
 
+	# Unlock close and refresh the panel with the actual hint
+	_premium_hint_loading = false
+	stack_close_button.disabled = false
 	_show_overflow_stack()
 	feedback_label.text = "Premium AI hint added to OverflowStack."
 	feedback_label.add_theme_color_override("font_color", Color("61afef"))
@@ -1439,6 +1462,55 @@ func _build_ai_context_payload(active_code: String) -> String:
 	parts.append("### USER_ACTIVE_SNIPPET")
 	parts.append(active_code)
 	return "\n".join(parts)
+
+func _strip_code_comments(code: String, language: String) -> String:
+	"""Remove hardcoded template comment lines from code before sending to AI.
+	These are pre-filled comments in the editor that are NOT the student's answer."""
+	var lines = code.split("\n")
+	var cleaned: Array[String] = []
+	var in_block_comment = false
+
+	for line in lines:
+		var trimmed = line.strip_edges()
+
+		# Skip empty lines
+		if trimmed == "":
+			continue
+
+		# Python / GDScript line comments
+		if language in ["python", "django"] and trimmed.begins_with("#"):
+			continue
+
+		# HTML comments <!-- ... -->
+		if language == "html":
+			if trimmed.begins_with("<!--") and trimmed.ends_with("-->"):
+				continue
+			if trimmed.begins_with("<!--"):
+				in_block_comment = true
+				continue
+			if in_block_comment:
+				if trimmed.ends_with("-->"):
+					in_block_comment = false
+				continue
+
+		# CSS block comments /* ... */
+		if trimmed.begins_with("/*") and trimmed.ends_with("*/"):
+			continue
+		if trimmed.begins_with("/*"):
+			in_block_comment = true
+			continue
+		if in_block_comment:
+			if trimmed.ends_with("*/"):
+				in_block_comment = false
+			continue
+
+		# Django template comments {# ... #}
+		if language == "django" and trimmed.begins_with("{#") and trimmed.ends_with("#}"):
+			continue
+
+		cleaned.append(line)
+
+	return "\n".join(cleaned).strip_edges()
 
 func _on_free_type_changed():
 	# Enable run button when player has typed something (legacy TextEdit)
@@ -1543,8 +1615,11 @@ func _run_free_type():
 
 	if topic == "ai_evaluator":
 		var student_text = submission.get("player_typed_only", submission.get("full_text", ""))
+		# Strip hardcoded template comments before sending to AI
+		student_text = _strip_code_comments(student_text, "python")
 		var context = "\n".join(current_challenge.get("instructions", []))
-		ApiManager.check_ai_evaluator(current_challenge.get("id", "ai_task"), student_text, context)
+		var ctype = current_challenge.get("challenge_type", current_challenge.get("id", "ai_task"))
+		ApiManager.check_ai_evaluator(ctype, student_text, context)
 		var result = await ApiManager.ai_evaluated
 		_handle_ai_evaluator_result(result)
 		return
@@ -1562,12 +1637,12 @@ func _handle_ai_evaluator_result(result: Dictionary):
 	if is_offline:
 		_ai_network_failures += 1
 		print("[DEBUG] AI Network Failure — Challenge: %s | Failure #%d" % [challenge_id, _ai_network_failures])
-		var retries_left = 3 - _ai_network_failures
+		var retries_left = 2 - _ai_network_failures
 
 		var warning_text = "[color=#e5c07b]⚠️ Cannot connect to the AI evaluation server.[/color]\n"
 		warning_text += "[color=#abb2bf]This attempt will NOT count against your grade.[/color]\n"
 
-		if _ai_network_failures >= 3:
+		if _ai_network_failures >= 2:
 			# ── Auto-skip: max retries hit ───────────────────────────────────────
 			warning_text += "\n[color=#e06c75]Max retries reached.[/color]\n"
 			warning_text += "[color=#e5c07b]This challenge has been [b]auto-skipped[/b].[/color]\n"
@@ -1587,6 +1662,22 @@ func _handle_ai_evaluator_result(result: Dictionary):
 					"query_ai_evaluator_3":
 						cd.ch2_y2s2_ai_mtm_skipped = true
 						print("[DEBUG] CharacterData: MTM challenge auto-skipped and flagged.")
+					"syntax_ai_data_types":
+						cd.ch2_y1s2_ai_data_types_skipped = true
+						cd.ch2_y1s2_ai_fully_offline = true
+						print("[DEBUG] CharacterData: Data Type Detective auto-skipped and flagged.")
+					"view_ai_url_routing":
+						cd.ch2_y2s1_ai_url_routing_skipped = true
+						cd.ch2_y2s1_ai_fully_offline = true
+						print("[DEBUG] CharacterData: URL Router auto-skipped and flagged.")
+					"auth_ai_checker":
+						cd.ch2_y3s2_ai_auth_checker_skipped = true
+						cd.ch2_y3s2_ai_fully_offline = true
+						print("[DEBUG] CharacterData: Auth Checker auto-skipped and flagged.")
+					"rest_ai_http_verbs":
+						cd.ch2_y3mid_ai_http_verbs_skipped = true
+						cd.ch2_y3mid_ai_fully_offline = true
+						print("[DEBUG] CharacterData: HTTP Verbs auto-skipped and flagged.")
 				# If all three were ultimately skipped, mark full offline run
 				if cd.ch2_y2s2_ai_oto_skipped and cd.ch2_y2s2_ai_otm_skipped and cd.ch2_y2s2_ai_mtm_skipped:
 					cd.ch2_y2s2_ai_fully_offline = true
@@ -1966,6 +2057,7 @@ func _show_overflow_stack():
 	else:
 		thread_lines.append("")
 		thread_lines.append("[color=#5c6370]Need a stronger nudge? Use your one premium AI hint for this challenge.[/color]")
+		thread_lines.append("[color=#c678dd]Pro Tip: You must input your thought code in the IDE first! The AI will analyze your exact attempt.[/color]")
 
 	stack_answer.text = "\n\n".join(thread_lines)
 	stack_answer.add_theme_font_size_override("normal_font_size", 13)
@@ -2328,12 +2420,23 @@ func _buff_encrypted_drive():
 	if _get_output_type() == "browser":
 		browser_preview.text = _get_browser_preview_content(challenge_id, correct_output)
 
+	# ── Display the correct answer in the code editor so the player can learn ──
+	var expected = current_challenge.get("expected_answers", [])
+	if not expected.is_empty():
+		var answer = expected[0]
+		if code_edit.visible:
+			code_edit.text = answer
+			code_edit.editable = false
+		elif free_type_edit.visible:
+			free_type_edit.text = answer
+			free_type_edit.editable = false
+
 	# Play correct SFX
 	if correct_sfx and correct_sfx.stream:
 		correct_sfx.play()
 
 	# Show results
-	feedback_label.text = "💾 Encrypted Drive activated! Solution uploaded."
+	feedback_label.text = "💾 Encrypted Drive activated! Solution uploaded. Review the answer above."
 	feedback_label.add_theme_color_override("font_color", Color("98c379"))
 	feedback_label.visible = true
 	run_button.disabled = true
@@ -2551,6 +2654,9 @@ func _setup_why_ui():
 	
 	why_overlay = overflow_overlay.duplicate()
 	why_overlay.name = "WhyOverlay"
+	# Explicitly copy the opaque panel style, as duplicate() does not copy dynamic overrides
+	if overflow_overlay.has_theme_stylebox_override("panel"):
+		why_overlay.add_theme_stylebox_override("panel", overflow_overlay.get_theme_stylebox("panel", "PanelContainer"))
 	self.add_child(why_overlay)
 	why_overlay.visible = false
 	

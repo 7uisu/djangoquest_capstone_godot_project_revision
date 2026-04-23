@@ -432,6 +432,96 @@ func _play_module_1_python_basics(skip_ide: bool):
 		await dialogue_box.dialogue_finished
 	await get_tree().create_timer(0.3).timeout
 
+	# ─── AI Minigame: Data Type Detective ─────────────────────────
+	_show_teaching_slide({
+		"icon": "📦",
+		"title": "Data Types",
+		"subtitle": "The building blocks of every variable",
+		"bullets": [
+			"[b]String[/b] — stores text (names, messages, addresses)",
+			"[b]Integer[/b] — stores whole numbers (age, score, quantity)",
+			"[b]Boolean[/b] — stores True/False (yes/no questions)",
+			"[b]List[/b] — stores multiple items together (shopping list, student names)"
+		],
+		"code": "name = 'Alice'       # String\nage = 20             # Integer\nis_enrolled = True   # Boolean\ngrades = [90, 85]    # List",
+		"header": "MODULE 1 — PYTHON BASICS",
+		"slide_num": "★ AI GAME",
+		"reference": "Source: Python Crash Course (Matthes, 2023)"
+	})
+	if dialogue_box:
+		_show_dialogue_with_log(dialogue_box, [
+			{ "name": "Professor Syntax", "text": "Before we move on… let me test your intuition." },
+			{ "name": "Professor Syntax", "text": "Python stores everything in [color=#f0c674]data types[/color]. Think of them as different kinds of boxes." },
+			{ "name": "Professor Syntax", "text": "Here are two examples:" },
+			{ "name": "Professor Syntax", "text": "[color=#f0c674]'My exact age'[/color] → That's a number. So it goes in an [color=#f0c674]Integer[/color] box." },
+			{ "name": "Professor Syntax", "text": "[color=#f0c674]'My middle name'[/color] → That's text. It belongs in a [color=#f0c674]String[/color] box." },
+			{ "name": "Professor Syntax", "text": "Now it's your turn. Give me [color=#f0c674]4 real-world things[/color] and tell me which box they belong in." },
+			{ "name": "Professor Syntax", "text": "One for [color=#f0c674]String[/color], one for [color=#f0c674]Integer[/color], one for [color=#f0c674]Boolean[/color], and one for [color=#f0c674]List[/color]." },
+			{ "name": "Professor Syntax", "text": "And no — you cannot use my examples." }
+		])
+		await dialogue_box.dialogue_finished
+
+	await _transition_from_teaching_to_ide(skip_ide)
+
+	if not skip_ide:
+		ui = await _ensure_challenge_ui()
+		var ai_data = _make_challenge(
+			"syntax_ai_data_types", "Data Type Detective", "ai_evaluator", "brainstorming.txt",
+			[
+				"🎯 GOAL: Classify 4 real-world things into Python data types.",
+				"",
+				"📦 The 4 Data Types:",
+				"  • String   — text (names, messages, addresses)",
+				"  • Integer  — whole numbers (age, score, quantity)",
+				"  • Boolean  — True or False (yes/no questions)",
+				"  • List     — multiple items (shopping list, top 3 songs)",
+				"",
+				"✅ EXAMPLE (how your answer should look):",
+				"  String:   My home address",
+				"  Integer:  The number of pets I own",
+				"  Boolean:  Did I eat breakfast today?",
+				"  List:     My favorite movies",
+				"",
+				"🚫 BANNED (do NOT use these):",
+				"  • 'My exact age' → Integer",
+				"  • 'My middle name' → String",
+				"",
+				"📝 YOUR TURN — supply one for each type:",
+				"  String:   # your answer",
+				"  Integer:  # your answer",
+				"  Boolean:  # your answer",
+				"  List:     # your answer"
+			],
+			[
+				"Classify 4 real-world things into: String, Integer, Boolean, List.",
+				"One example per type. Cannot reuse the tutorial examples."
+			],
+			"Type your 4 real-world examples here...",
+			[],
+			"System is evaluating...",
+			"Evaluation failed.",
+			["Think of everyday things — what type of 'box' would they fit in?"]
+		)
+		ai_data["files"] = {"brainstorming.txt": ""}
+		ai_data["active_file"] = "brainstorming.txt"
+		ai_data["topic"] = "ai_evaluator"
+		ai_data["challenge_type"] = "data_types"
+		ai_data["project_tree"] = {"loops.py": "file", "student.py": "file", "brainstorming.txt": "file"}
+		ai_data["instructions"] = ["data_types", "Classify 4 real-world things into Python data types: String, Integer, Boolean, List. Provide one example for each type."]
+
+		ui.load_challenge(ai_data)
+		_show_challenge_canvas()
+		ui.lock_typing(false)
+		await _await_challenge_done(ui)
+
+		if dialogue_box:
+			_show_dialogue_with_log(dialogue_box, [
+				{ "name": "Professor Syntax", "text": "Good. You can see the types behind real-world data." },
+				{ "name": "Professor Syntax", "text": "That instinct matters. Every variable you create in Django has a type." }
+			])
+			await dialogue_box.dialogue_finished
+		await get_tree().create_timer(0.3).timeout
+
 # ══════════════════════════════════════════════════════════════════════
 #  MODULE 2 — Object-Oriented Programming (Classes & Objects)
 # ══════════════════════════════════════════════════════════════════════
