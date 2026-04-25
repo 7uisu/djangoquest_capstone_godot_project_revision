@@ -97,6 +97,7 @@ func _on_professor_interacted():
 		if passed:
 			character_data.ch2_y3s2_removal_passed = true
 			character_data.ch2_y3s2_teaching_done = true
+			character_data.ch2_y3s2_teaching_done_at = Time.get_datetime_string_from_system()
 			character_data.ch2_y3s2_inc_triggered = false
 			character_data.ch2_y3s2_final_grade = 3.0
 			_dispatch_rewards()
@@ -293,6 +294,7 @@ func _start_lesson_sequence():
 	# Mark complete
 	if character_data and not is_learning_mode:
 		character_data.ch2_y3s2_teaching_done = true
+		character_data.ch2_y3s2_teaching_done_at = Time.get_datetime_string_from_system()
 	
 	# Unfreeze player
 	if player:
@@ -1428,6 +1430,7 @@ func _evaluate_and_finalize_grade() -> String:
 	if GradeCalculator.is_passing(final_grade):
 		if character_data:
 			character_data.ch2_y3s2_teaching_done = true
+			character_data.ch2_y3s2_teaching_done_at = Time.get_datetime_string_from_system()
 		_dispatch_rewards()
 		if dialogue_box:
 			dialogue_box.start([
@@ -1458,6 +1461,7 @@ func _evaluate_and_finalize_grade() -> String:
 				character_data.ch2_y3s2_final_grade = 3.0
 				character_data.ch2_y3s2_removal_passed = true
 				character_data.ch2_y3s2_teaching_done = true
+				character_data.ch2_y3s2_teaching_done_at = Time.get_datetime_string_from_system()
 				character_data.ch2_y3s2_inc_triggered = false
 			_dispatch_rewards()
 			if dialogue_box:

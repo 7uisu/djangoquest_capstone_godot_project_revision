@@ -4,7 +4,7 @@ extends CanvasLayer
 
 var is_open: bool = false
 var is_saving: bool = false
-var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "quest_log", "settings"
+var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "quest_log", "settings", "certificates"
 
 # ─── Root Nodes ──────────────────────────────────────────────────────────────
 var screen_panel: PanelContainer
@@ -22,6 +22,7 @@ var notes_content: Control
 var quest_log_content: Control
 var settings_content: Control
 var sis_content: Control
+var certificates_content: Control
 
 var _cred_label: Label
 
@@ -45,7 +46,7 @@ func open():
 	if _cred_label and cd:
 		_cred_label.text = str(cd.credits)
 	_show_desktop()
-	_update_sis_lock()
+	_update_college_locks()
 
 func close():
 	if is_saving: return
@@ -56,8 +57,8 @@ func close():
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm: qm.show_quest()
 
-func _update_sis_lock():
-	# Find the SIS button on the desktop grid and enable/disable dynamically
+func _update_college_locks():
+	# Find the SIS and Certificate buttons on the desktop grid and enable/disable dynamically
 	if not desktop_view:
 		return
 	var cd = get_node_or_null("/root/CharacterData")
@@ -65,9 +66,10 @@ func _update_sis_lock():
 		return
 	var should_lock = not cd.has_reached_college
 	for node in _get_all_desktop_buttons():
-		if node is Button and node.text.strip_edges() == "🎓":
-			node.disabled = should_lock
-			break
+		if node is Button:
+			var icon = node.text.strip_edges()
+			if icon == "🎓" or icon == "🏆":
+				node.disabled = should_lock
 
 func _get_all_desktop_buttons() -> Array:
 	var result = []
@@ -223,6 +225,7 @@ func _create_desktop() -> Control:
 		{"id": "notes", "name": "Notes", "icon": "📝", "color": Color(0.85, 0.75, 0.2), "desc": "Your knowledge base"},
 		{"id": "quest_log", "name": "Quest Log", "icon": "📋", "color": Color(0.3, 0.75, 0.4), "desc": "Track your quests"},
 		{"id": "settings", "name": "Settings", "icon": "⚙️", "color": Color(0.6, 0.35, 0.8), "desc": "Customize your IDE"},
+		{"id": "certificates", "name": "Certificates", "icon": "🏆", "color": Color(0.85, 0.65, 0.1), "desc": "View earned ECertificates"},
 	]
 
 	for app in apps:
@@ -268,10 +271,9 @@ func _create_app_icon(app: Dictionary) -> VBoxContainer:
 	btn.pressed.connect(func(): _open_app(app_id))
 	vbox.add_child(btn)
 
-	# Lock SIS if still in Ch1
-	if app_id == "sis":
+	# Lock SIS and Certificates if still in Ch1
+	if app_id == "sis" or app_id == "certificates":
 		var cd = get_node_or_null("/root/CharacterData")
-		# If they haven't finished the chapter 1 teaching/quiz, lock it
 		if cd and not cd.has_reached_college:
 			btn.disabled = true
 			btn.tooltip_text = "Locked until College."
@@ -362,12 +364,14 @@ func _create_app_view() -> Control:
 	quest_log_content = _build_quest_log()
 	settings_content = _build_settings()
 	sis_content = _build_sis()
+	certificates_content = _build_certificates()
 
 	app_content.add_child(retro_browser_content)
 	app_content.add_child(notes_content)
 	app_content.add_child(quest_log_content)
 	app_content.add_child(settings_content)
 	app_content.add_child(sis_content)
+	app_content.add_child(certificates_content)
 
 	return container
 
@@ -1246,6 +1250,381 @@ func _on_main_menu_pressed():
 
 # ─── Navigation ──────────────────────────────────────────────────────────────
 
+# ─── Certificates App ────────────────────────────────────────────────────────
+
+func _build_certificates() -> ScrollContainer:
+	var scroll = ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.visible = false
+
+	var vbox = VBoxContainer.new()
+	vbox.name = "CertsVBox"
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 12)
+	scroll.add_child(vbox)
+
+	_populate_certificates(vbox)
+	return scroll
+
+func _refresh_certificates():
+	if certificates_content == null: return
+	var scroll = certificates_content as ScrollContainer
+	if scroll == null: return
+	var vbox = scroll.get_child(0) as VBoxContainer
+	if vbox == null: return
+
+	for c in vbox.get_children():
+		c.queue_free()
+	await get_tree().process_frame
+	_populate_certificates(vbox)
+
+func _populate_certificates(vbox: VBoxContainer) -> void:
+	var cd = get_node_or_null("/root/CharacterData")
+
+	# Header
+	var header = Label.new()
+	header.text = "🏆 ECertificates"
+	header.add_theme_font_size_override("font_size", 16)
+	header.add_theme_color_override("font_color", Color(0.85, 0.65, 0.1))
+	vbox.add_child(header)
+
+	var desc = Label.new()
+	desc.text = "Certificates earned by completing each topic's coursework.\nDownload PDFs at djangoquest.com/profile"
+	desc.add_theme_font_size_override("font_size", 11)
+	desc.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65))
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(desc)
+
+	vbox.add_child(HSeparator.new())
+
+	# Topic certificate data
+	var topics = [
+		{"key": "y1s1", "topic": "HTML Basics"},
+		{"key": "y1s2", "topic": "Python Data Types"},
+		{"key": "y2s1", "topic": "Django Views & URL Routing"},
+		{"key": "y2s2", "topic": "Django ORM & Relationships"},
+		{"key": "y3s1", "topic": "Forms & Security"},
+		{"key": "y3s2", "topic": "Authentication & CRUD"},
+		{"key": "y3mid", "topic": "RESTful API Design"},
+	]
+
+	var all_done = true
+
+	for t in topics:
+		var done_flag = "ch2_%s_teaching_done" % t["key"]
+		var done_at_flag = "ch2_%s_teaching_done_at" % t["key"]
+		var is_done = cd and cd.get(done_flag)
+		if not is_done: all_done = false
+
+		var completed_at = ""
+		if is_done and cd.get(done_at_flag):
+			completed_at = str(cd.get(done_at_flag))
+
+		vbox.add_child(_create_cert_card(t["topic"], is_done, completed_at, false))
+
+	# Grand completion certificate
+	var grand_at = ""
+	if all_done and cd and cd.get("ch2_y3mid_teaching_done_at"):
+		grand_at = str(cd.get("ch2_y3mid_teaching_done_at"))
+	vbox.add_child(_create_cert_card("Full Completion — Mastery of Full-Stack Django", all_done, grand_at, true))
+
+func _create_cert_card(topic: String, completed: bool, completed_at: String, is_grand: bool) -> PanelContainer:
+	var card = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+
+	if completed:
+		if is_grand:
+			style.bg_color = Color(0.2, 0.16, 0.05)
+			style.border_color = Color(0.85, 0.65, 0.1)
+		else:
+			style.bg_color = Color(0.08, 0.14, 0.12)
+			style.border_color = Color(0.2, 0.6, 0.3)
+	else:
+		style.bg_color = Color(0.08, 0.08, 0.1)
+		style.border_color = Color(0.2, 0.2, 0.25)
+
+	style.set_border_width_all(2 if completed else 1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12)
+	card.add_theme_stylebox_override("panel", style)
+
+	var card_vbox = VBoxContainer.new()
+	card_vbox.add_theme_constant_override("separation", 4)
+	card.add_child(card_vbox)
+
+	# Icon + Topic row
+	var top = HBoxContainer.new()
+	top.add_theme_constant_override("separation", 8)
+	card_vbox.add_child(top)
+
+	var icon_label = Label.new()
+	icon_label.text = "🏆" if (completed and is_grand) else ("✅" if completed else "🔒")
+	icon_label.add_theme_font_size_override("font_size", 18 if is_grand else 14)
+	top.add_child(icon_label)
+
+	var topic_label = Label.new()
+	topic_label.text = topic
+	topic_label.add_theme_font_size_override("font_size", 15 if is_grand else 13)
+	topic_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3) if (completed and is_grand) else (Color(0.8, 0.9, 0.8) if completed else Color(0.4, 0.4, 0.45)))
+	topic_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	topic_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	top.add_child(topic_label)
+
+	if completed and completed_at != "":
+		var date_label = Label.new()
+		date_label.text = "Completed: " + completed_at
+		date_label.add_theme_font_size_override("font_size", 10)
+		date_label.add_theme_color_override("font_color", Color(0.4, 0.5, 0.4))
+		card_vbox.add_child(date_label)
+	elif not completed:
+		var lock_label = Label.new()
+		if is_grand:
+			lock_label.text = "Complete all 7 topics to unlock"
+		else:
+			lock_label.text = "Complete " + topic + " to unlock"
+		lock_label.add_theme_font_size_override("font_size", 10)
+		lock_label.add_theme_color_override("font_color", Color(0.35, 0.35, 0.4))
+		card_vbox.add_child(lock_label)
+
+	# Action row for completed certs
+	if completed:
+		var actions = HBoxContainer.new()
+		actions.add_theme_constant_override("separation", 8)
+		card_vbox.add_child(actions)
+
+		# View Certificate button
+		var view_btn = Button.new()
+		view_btn.text = "📜 View Certificate"
+		view_btn.add_theme_font_size_override("font_size", 10)
+		var btn_style = StyleBoxFlat.new()
+		btn_style.bg_color = Color(0.15, 0.25, 0.35)
+		btn_style.border_color = Color(0.3, 0.5, 0.7)
+		btn_style.set_border_width_all(1)
+		btn_style.set_corner_radius_all(4)
+		btn_style.set_content_margin_all(4)
+		view_btn.add_theme_stylebox_override("normal", btn_style)
+		var hover = btn_style.duplicate()
+		hover.bg_color = Color(0.2, 0.35, 0.5)
+		view_btn.add_theme_stylebox_override("hover", hover)
+		view_btn.add_theme_color_override("font_color", Color(0.7, 0.85, 1.0))
+		var cert_topic = topic
+		var cert_date = completed_at
+		var cert_grand = is_grand
+		view_btn.pressed.connect(func(): _show_certificate_viewer(cert_topic, cert_date, cert_grand))
+		actions.add_child(view_btn)
+
+		var dl_label = Label.new()
+		dl_label.text = "📥 Download PDF at djangoquest.com"
+		dl_label.add_theme_font_size_override("font_size", 9)
+		dl_label.add_theme_color_override("font_color", Color(0.3, 0.55, 0.9))
+		actions.add_child(dl_label)
+
+	return card
+
+# ── Certificate Viewer Popup ─────────────────────────────────────────────────
+
+func _show_certificate_viewer(topic: String, completed_at: String, is_grand: bool) -> void:
+	# Create a full-screen overlay inside the laptop
+	var overlay = Panel.new()
+	overlay.name = "CertViewer"
+	var overlay_style = StyleBoxFlat.new()
+	overlay_style.bg_color = Color(0, 0, 0, 0.88)
+	overlay.add_theme_stylebox_override("panel", overlay_style)
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	screen_panel.add_child(overlay)
+
+	# --- Outer border frame ---
+	var outer_frame = PanelContainer.new()
+	var outer_style = StyleBoxFlat.new()
+	outer_style.bg_color = Color(0.98, 0.96, 0.90)
+	outer_style.set_corner_radius_all(6)
+	outer_style.set_content_margin_all(8)
+	outer_frame.add_theme_stylebox_override("panel", outer_style)
+	outer_frame.set_anchors_preset(Control.PRESET_CENTER)
+	outer_frame.custom_minimum_size = Vector2(520, 370)
+	outer_frame.size = Vector2(520, 370)
+	outer_frame.position = Vector2(-260, -185)
+	overlay.add_child(outer_frame)
+
+	# --- Inner border frame ---
+	var inner_frame = PanelContainer.new()
+	var inner_style = StyleBoxFlat.new()
+	inner_style.bg_color = Color(0.98, 0.96, 0.90)
+	if is_grand:
+		inner_style.border_color = Color(0.72, 0.53, 0.04)
+	else:
+		inner_style.border_color = Color(0.1, 0.32, 0.46)
+	inner_style.set_border_width_all(3)
+	inner_style.set_corner_radius_all(4)
+	inner_style.set_content_margin_all(20)
+	inner_frame.add_theme_stylebox_override("panel", inner_style)
+	inner_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inner_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	outer_frame.add_child(inner_frame)
+
+	# --- Corner ornaments ---
+	var ornament_color = Color(0.72, 0.53, 0.04) if is_grand else Color(0.1, 0.32, 0.46)
+	for pos in [Vector2(14, 10), Vector2(496, 10), Vector2(14, 346), Vector2(496, 346)]:
+		var orn = Label.new()
+		orn.text = "✦"
+		orn.add_theme_font_size_override("font_size", 16)
+		orn.add_theme_color_override("font_color", Color(ornament_color.r, ornament_color.g, ornament_color.b, 0.5))
+		orn.position = pos
+		outer_frame.add_child(orn)
+
+	# --- Certificate content ---
+	var content = VBoxContainer.new()
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	content.add_theme_constant_override("separation", 5)
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	inner_frame.add_child(content)
+
+	# Logo
+	var logo_tex = load("res://icon.svg") as Texture2D
+	if logo_tex:
+		var logo = TextureRect.new()
+		logo.texture = logo_tex
+		logo.custom_minimum_size = Vector2(50, 50)
+		logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		content.add_child(logo)
+
+	# Branding
+	var brand = Label.new()
+	brand.text = "D J A N G O Q U E S T"
+	brand.add_theme_font_size_override("font_size", 10)
+	var accent = Color(0.1, 0.45, 0.72) if not is_grand else Color(0.54, 0.4, 0.08)
+	brand.add_theme_color_override("font_color", accent)
+	brand.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(brand)
+
+	# Title
+	var title = Label.new()
+	title.text = "Certificate of Completion" if not is_grand else "Grand Certificate of Mastery"
+	title.add_theme_font_size_override("font_size", 20)
+	var title_color = Color(0.08, 0.26, 0.38) if not is_grand else Color(0.42, 0.31, 0.07)
+	title.add_theme_color_override("font_color", title_color)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(title)
+
+	# Subtitle
+	var sub = Label.new()
+	sub.text = "DjangoQuest Educational Platform" if not is_grand else "Full-Stack Django Development"
+	sub.add_theme_font_size_override("font_size", 9)
+	sub.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(sub)
+
+	# Spacer
+	var sp1 = Control.new()
+	sp1.custom_minimum_size = Vector2(0, 6)
+	content.add_child(sp1)
+
+	# "This certifies that"
+	var cert_text = Label.new()
+	cert_text.text = "T H I S   C E R T I F I E S   T H A T"
+	cert_text.add_theme_font_size_override("font_size", 8)
+	cert_text.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+	cert_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(cert_text)
+
+	# Player name
+	var cd = get_node_or_null("/root/CharacterData")
+	var pname = "Student"
+	if cd and cd.player_name != "":
+		pname = cd.player_name
+
+	var name_lbl = Label.new()
+	name_lbl.text = pname
+	name_lbl.add_theme_font_size_override("font_size", 22)
+	name_lbl.add_theme_color_override("font_color", Color(0.1, 0.1, 0.12))
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(name_lbl)
+
+	# Underline separator
+	var sep1 = HSeparator.new()
+	sep1.custom_minimum_size = Vector2(280, 0)
+	sep1.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	content.add_child(sep1)
+
+	# "has successfully completed the coursework for"
+	var mid_text = Label.new()
+	mid_text.text = "has successfully completed the coursework for"
+	mid_text.add_theme_font_size_override("font_size", 9)
+	mid_text.add_theme_color_override("font_color", Color(0.3, 0.3, 0.3))
+	mid_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	content.add_child(mid_text)
+
+	# Topic (the star of the show)
+	var topic_lbl = Label.new()
+	topic_lbl.text = topic
+	topic_lbl.add_theme_font_size_override("font_size", 16)
+	topic_lbl.add_theme_color_override("font_color", accent)
+	topic_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	topic_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(topic_lbl)
+
+	# Spacer
+	var sp2 = Control.new()
+	sp2.custom_minimum_size = Vector2(0, 4)
+	content.add_child(sp2)
+
+	# Decorative divider
+	var sep2 = HSeparator.new()
+	sep2.custom_minimum_size = Vector2(100, 0)
+	sep2.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	content.add_child(sep2)
+
+	# Date
+	if completed_at != "":
+		var date_lbl = Label.new()
+		# Format date to MM/DD/YYYY if in YYYY-MM-DD format
+		var display_date = completed_at
+		if completed_at.length() >= 10 and completed_at[4] == "-":
+			var parts = completed_at.substr(0, 10).split("-")
+			if parts.size() == 3:
+				display_date = parts[1] + "/" + parts[2] + "/" + parts[0]
+		date_lbl.text = "Completed on " + display_date
+		date_lbl.add_theme_font_size_override("font_size", 9)
+		date_lbl.add_theme_color_override("font_color", Color(0.45, 0.45, 0.45))
+		date_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		content.add_child(date_lbl)
+
+	# Grand trophy
+	if is_grand:
+		var trophy = Label.new()
+		trophy.text = "🏆"
+		trophy.add_theme_font_size_override("font_size", 24)
+		trophy.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		content.add_child(trophy)
+
+	# Close button
+	var close_btn = Button.new()
+	close_btn.text = "✕ Close"
+	close_btn.add_theme_font_size_override("font_size", 11)
+	var close_style = StyleBoxFlat.new()
+	close_style.bg_color = Color(0.15, 0.15, 0.18)
+	close_style.border_color = Color(0.35, 0.35, 0.4)
+	close_style.set_border_width_all(1)
+	close_style.set_corner_radius_all(6)
+	close_style.set_content_margin_all(8)
+	close_btn.add_theme_stylebox_override("normal", close_style)
+	var close_hover = close_style.duplicate()
+	close_hover.bg_color = Color(0.25, 0.22, 0.28)
+	close_btn.add_theme_stylebox_override("hover", close_hover)
+	close_btn.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
+	close_btn.pressed.connect(func(): overlay.queue_free())
+	overlay.add_child(close_btn)
+	close_btn.anchor_left = 0.5
+	close_btn.anchor_right = 0.5
+	close_btn.anchor_top = 1.0
+	close_btn.anchor_bottom = 1.0
+	close_btn.position = Vector2(-35, -45)
+
+# ─── Navigation ──────────────────────────────────────────────────────────────
+
 func _show_desktop():
 	desktop_view.visible = true
 	app_view.visible = false
@@ -1261,6 +1640,7 @@ func _open_app(app_id: String):
 	quest_log_content.visible = false
 	settings_content.visible = false
 	sis_content.visible = false
+	certificates_content.visible = false
 
 	# Show the selected app
 	match app_id:
@@ -1280,6 +1660,10 @@ func _open_app(app_id: String):
 		"settings":
 			app_title_label.text = "⚙️ Settings"
 			settings_content.visible = true
+		"certificates":
+			app_title_label.text = "🏆 ECertificates"
+			_refresh_certificates()
+			certificates_content.visible = true
 
 func _back_to_desktop():
 	current_app = ""

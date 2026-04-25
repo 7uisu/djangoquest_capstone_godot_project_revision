@@ -271,6 +271,7 @@ func _start_lesson_sequence():
 	# Mark complete
 	if character_data and not is_learning_mode:
 		character_data.ch2_y1s1_teaching_done = true
+		character_data.ch2_y1s1_teaching_done_at = Time.get_datetime_string_from_system()
 		_dispatch_rewards()
 	
 	# Unfreeze player

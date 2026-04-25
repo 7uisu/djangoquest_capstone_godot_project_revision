@@ -231,6 +231,20 @@ func _run_laptop_tutorial(laptop) -> void:
 	_tutorial_overlay.queue_free()
 	_tutorial_overlay = null
 
+	# Step 3.5: Certificate notice
+	_tutorial_overlay = await _create_tutorial_overlay()
+	var cert_btn = _find_app_button(laptop, "certificates")
+	_tutorial_overlay.start_tutorial([
+		{
+			"text": "The [color=#f0c674]Certificates[/color] app will also unlock when you reach [color=#f0c674]College[/color]. Complete professors to earn ECertificates!",
+			"highlight_node": cert_btn,
+			"tooltip_side": "bottom"
+		}
+	])
+	await _tutorial_overlay.tutorial_finished
+	_tutorial_overlay.queue_free()
+	_tutorial_overlay = null
+
 	# Step 4: Spotlight the Save button
 	var save_btn = laptop.find_child("SaveButton", true, false)
 	if save_btn:
@@ -362,6 +376,7 @@ func _find_app_button(laptop, app_id: String) -> Control:
 				"retro_browser": "🌐",
 				"notes": "📝",
 				"settings": "⚙️",
+				"certificates": "🏆",
 			}
 			if search_names.has(app_id) and child.text.strip_edges() == search_names[app_id]:
 				return child

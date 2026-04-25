@@ -336,6 +336,20 @@ func _run_college_sis_tutorial(cd) -> void:
 			await overlay.tutorial_finished
 			overlay.queue_free()
 
+		# Spotlight the Certificate button
+		var cert_btn = _find_app_button(laptop, "🏆")
+		if cert_btn:
+			var cert_overlay = await _create_tutorial_overlay()
+			cert_overlay.start_tutorial([
+				{
+					"text": "The [color=#f0c674]Certificates[/color] app is now unlocked!\nComplete each professor's coursework to earn ECertificates.",
+					"highlight_node": cert_btn,
+					"tooltip_side": "bottom"
+				}
+			])
+			await cert_overlay.tutorial_finished
+			cert_overlay.queue_free()
+
 		# Spotlight the credit display
 		var credit_display = laptop.find_child("CreditDisplay", true, false)
 		if credit_display:

@@ -28,18 +28,25 @@ var ch1_spaghetti_guy_cutscene_done: bool = false
 
 # Chapter 2 (College) progress
 var ch2_y1s1_teaching_done: bool = false       # Year 1 Sem 1 all modules complete
+var ch2_y1s1_teaching_done_at: String = ""     # ISO datetime when completed
 var ch2_y1s1_current_module: int = 0           # 0-4 (which module player is on)
 var ch2_y1s2_teaching_done: bool = false       # Year 1 Sem 2 all modules complete
+var ch2_y1s2_teaching_done_at: String = ""     # ISO datetime when completed
 var ch2_y1s2_current_module: int = 0           # 0-2 (which module player is on)
 var ch2_y2s1_teaching_done: bool = false       # Year 2 Sem 1 all modules complete
+var ch2_y2s1_teaching_done_at: String = ""     # ISO datetime when completed
 var ch2_y2s1_current_module: int = 0           # 0-3 (which module player is on)
 var ch2_y2s2_teaching_done: bool = false       # Year 2 Sem 2 all modules complete
+var ch2_y2s2_teaching_done_at: String = ""     # ISO datetime when completed
 var ch2_y2s2_current_module: int = 0           # 0-3 (which module player is on)
 var ch2_y3s1_teaching_done: bool = false       # Year 3 Sem 1 all modules complete
+var ch2_y3s1_teaching_done_at: String = ""     # ISO datetime when completed
 var ch2_y3s1_current_module: int = 0           # 0-2 (which module player is on)
 var ch2_y3s2_teaching_done: bool = false       # Year 3 Sem 2 all modules complete
+var ch2_y3s2_teaching_done_at: String = ""     # ISO datetime when completed
 var ch2_y3s2_current_module: int = 0           # 0-1 (which module player is on)
 var ch2_y3mid_teaching_done: bool = false      # Year 3 Midyear all modules complete
+var ch2_y3mid_teaching_done_at: String = ""    # ISO datetime when completed
 var ch2_y3mid_current_module: int = 0          # 0-1 (which module player is on)
 
 # ─── Grade / Retake Tracking (per professor semester) ────────────────────────
@@ -209,18 +216,25 @@ func reset_data():
 	ch1_convenience_store_cutscene_done = false
 	ch1_spaghetti_guy_cutscene_done = false
 	ch2_y1s1_teaching_done = false
+	ch2_y1s1_teaching_done_at = ""
 	ch2_y1s1_current_module = 0
 	ch2_y1s2_teaching_done = false
+	ch2_y1s2_teaching_done_at = ""
 	ch2_y1s2_current_module = 0
 	ch2_y2s1_teaching_done = false
+	ch2_y2s1_teaching_done_at = ""
 	ch2_y2s1_current_module = 0
 	ch2_y2s2_teaching_done = false
+	ch2_y2s2_teaching_done_at = ""
 	ch2_y2s2_current_module = 0
 	ch2_y3s1_teaching_done = false
+	ch2_y3s1_teaching_done_at = ""
 	ch2_y3s1_current_module = 0
 	ch2_y3s2_teaching_done = false
+	ch2_y3s2_teaching_done_at = ""
 	ch2_y3s2_current_module = 0
 	ch2_y3mid_teaching_done = false
+	ch2_y3mid_teaching_done_at = ""
 	ch2_y3mid_current_module = 0
 	# Grade / Retake tracking reset
 	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
@@ -275,18 +289,25 @@ func to_save_dict() -> Dictionary:
 		"ch1_spaghetti_guy_cutscene_done": ch1_spaghetti_guy_cutscene_done,
 		# Chapter 2 — semesters
 		"ch2_y1s1_teaching_done": ch2_y1s1_teaching_done,
+		"ch2_y1s1_teaching_done_at": ch2_y1s1_teaching_done_at,
 		"ch2_y1s1_current_module": ch2_y1s1_current_module,
 		"ch2_y1s2_teaching_done": ch2_y1s2_teaching_done,
+		"ch2_y1s2_teaching_done_at": ch2_y1s2_teaching_done_at,
 		"ch2_y1s2_current_module": ch2_y1s2_current_module,
 		"ch2_y2s1_teaching_done": ch2_y2s1_teaching_done,
+		"ch2_y2s1_teaching_done_at": ch2_y2s1_teaching_done_at,
 		"ch2_y2s1_current_module": ch2_y2s1_current_module,
 		"ch2_y2s2_teaching_done": ch2_y2s2_teaching_done,
+		"ch2_y2s2_teaching_done_at": ch2_y2s2_teaching_done_at,
 		"ch2_y2s2_current_module": ch2_y2s2_current_module,
 		"ch2_y3s1_teaching_done": ch2_y3s1_teaching_done,
+		"ch2_y3s1_teaching_done_at": ch2_y3s1_teaching_done_at,
 		"ch2_y3s1_current_module": ch2_y3s1_current_module,
 		"ch2_y3s2_teaching_done": ch2_y3s2_teaching_done,
+		"ch2_y3s2_teaching_done_at": ch2_y3s2_teaching_done_at,
 		"ch2_y3s2_current_module": ch2_y3s2_current_module,
 		"ch2_y3mid_teaching_done": ch2_y3mid_teaching_done,
+		"ch2_y3mid_teaching_done_at": ch2_y3mid_teaching_done_at,
 		"ch2_y3mid_current_module": ch2_y3mid_current_module,
 	}
 	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
@@ -354,18 +375,25 @@ func from_save_dict(data: Dictionary):
 	ch1_spaghetti_guy_cutscene_done = data.get("ch1_spaghetti_guy_cutscene_done", false)
 	# Chapter 2 — semesters
 	ch2_y1s1_teaching_done = data.get("ch2_y1s1_teaching_done", false)
+	ch2_y1s1_teaching_done_at = str(data.get("ch2_y1s1_teaching_done_at", ""))
 	ch2_y1s1_current_module = int(data.get("ch2_y1s1_current_module", 0))
 	ch2_y1s2_teaching_done = data.get("ch2_y1s2_teaching_done", false)
+	ch2_y1s2_teaching_done_at = str(data.get("ch2_y1s2_teaching_done_at", ""))
 	ch2_y1s2_current_module = int(data.get("ch2_y1s2_current_module", 0))
 	ch2_y2s1_teaching_done = data.get("ch2_y2s1_teaching_done", false)
+	ch2_y2s1_teaching_done_at = str(data.get("ch2_y2s1_teaching_done_at", ""))
 	ch2_y2s1_current_module = int(data.get("ch2_y2s1_current_module", 0))
 	ch2_y2s2_teaching_done = data.get("ch2_y2s2_teaching_done", false)
+	ch2_y2s2_teaching_done_at = str(data.get("ch2_y2s2_teaching_done_at", ""))
 	ch2_y2s2_current_module = int(data.get("ch2_y2s2_current_module", 0))
 	ch2_y3s1_teaching_done = data.get("ch2_y3s1_teaching_done", false)
+	ch2_y3s1_teaching_done_at = str(data.get("ch2_y3s1_teaching_done_at", ""))
 	ch2_y3s1_current_module = int(data.get("ch2_y3s1_current_module", 0))
 	ch2_y3s2_teaching_done = data.get("ch2_y3s2_teaching_done", false)
+	ch2_y3s2_teaching_done_at = str(data.get("ch2_y3s2_teaching_done_at", ""))
 	ch2_y3s2_current_module = int(data.get("ch2_y3s2_current_module", 0))
 	ch2_y3mid_teaching_done = data.get("ch2_y3mid_teaching_done", false)
+	ch2_y3mid_teaching_done_at = str(data.get("ch2_y3mid_teaching_done_at", ""))
 	ch2_y3mid_current_module = int(data.get("ch2_y3mid_current_module", 0))
 	# Grade / Retake tracking
 	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:

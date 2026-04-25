@@ -1326,6 +1326,7 @@ func _evaluate_and_finalize_grade() -> String:
 	if GradeCalculator.is_passing(raw):
 		var qm = get_node_or_null("/root/QuestManager")
 		character_data.ch2_y1s2_teaching_done = true
+		character_data.ch2_y1s2_teaching_done_at = Time.get_datetime_string_from_system()
 		_dispatch_rewards()
 		
 		if dialogue_box:
@@ -1357,6 +1358,7 @@ func _evaluate_and_finalize_grade() -> String:
 			character_data.ch2_y1s2_removal_passed = true
 			character_data.ch2_y1s2_final_grade = 3.0
 			character_data.ch2_y1s2_teaching_done = true
+			character_data.ch2_y1s2_teaching_done_at = Time.get_datetime_string_from_system()
 			_dispatch_rewards()
 			if dialogue_box:
 				dialogue_box.start([
@@ -1365,6 +1367,7 @@ func _evaluate_and_finalize_grade() -> String:
 				])
 				await dialogue_box.dialogue_finished
 			character_data.ch2_y1s2_teaching_done = true
+			character_data.ch2_y1s2_teaching_done_at = Time.get_datetime_string_from_system()
 			await _autosave_progress()
 			return "inc_pass"
 		else:

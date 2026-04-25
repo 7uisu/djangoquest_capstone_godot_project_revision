@@ -120,6 +120,7 @@ func _on_professor_interacted():
 		if passed:
 			character_data.ch2_y2s2_removal_passed = true
 			character_data.ch2_y2s2_teaching_done = true
+			character_data.ch2_y2s2_teaching_done_at = Time.get_datetime_string_from_system()
 			character_data.ch2_y2s2_inc_triggered = false
 			character_data.ch2_y2s2_final_grade = 3.0
 			_dispatch_rewards()
@@ -1697,6 +1698,7 @@ func _evaluate_and_finalize_grade() -> String:
 
 	if GradeCalculator.is_passing(final_grade):
 		character_data.ch2_y2s2_teaching_done = true
+		character_data.ch2_y2s2_teaching_done_at = Time.get_datetime_string_from_system()
 		_dispatch_rewards()
 		if dialogue_box:
 			dialogue_box.start([
@@ -1725,6 +1727,7 @@ func _evaluate_and_finalize_grade() -> String:
 			character_data.ch2_y2s2_final_grade = 3.0
 			character_data.ch2_y2s2_removal_passed = true
 			character_data.ch2_y2s2_teaching_done = true
+			character_data.ch2_y2s2_teaching_done_at = Time.get_datetime_string_from_system()
 			character_data.ch2_y2s2_inc_triggered = false
 			_dispatch_rewards()
 			if dialogue_box:
