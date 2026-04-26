@@ -502,8 +502,9 @@ func _play_module_1_models(skip_ide: bool):
 		"✅ Success! Table column 'name' defined.\n  Column type: VARCHAR(100)\n  Nullable: False",
 		"Error: Invalid Field Definition. Did you use models.CharField?",
 		[
-			"You need to define the class variable: name",
-			"Set it equal to models.CharField(max_length=100)"
+			"The format is 'field_name = models.FieldType(parameter=value)'.",
+			"Use 'name' as the field name, and 'models.CharField' as the type.",
+			"Set 'max_length=100' inside the CharField parentheses."
 		]
 	)
 	
@@ -514,9 +515,9 @@ func _play_module_1_models(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Query", "text": "Define the [color=#f0c674]name[/color] field for our Student model." },
-			{ "name": "Professor Query", "text": "It should be a CharField that can hold up to 100 characters." },
-			{ "name": "Professor Query", "text": "Type: [color=#f0c674]name = models.CharField(max_length=100)[/color]" }
+			{ "name": "Professor Query", "text": "Use the format [color=#f0c674]field_name = models.FieldType(param=value)[/color]." },
+			{ "name": "Professor Query", "text": "Define a [color=#f0c674]name[/color] field using [color=#f0c674]models.CharField[/color]." },
+			{ "name": "Professor Query", "text": "Set the [color=#f0c674]max_length[/color] parameter to 100." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -583,9 +584,9 @@ func _play_module_1_models(skip_ide: bool):
 			"✅ Success! Fields mapped properly to VARCHAR, TEXT, and BOOLEAN.",
 			"Error: Invalid Field Definition. Check spelling and capitalization.",
 			[
-				"For Title: title = models.CharField(max_length=200)",
-				"For Synopsis: synopsis = models.TextField()",
-				"For is_published: is_published = models.BooleanField(default=False)"
+				"The format for fields is 'models.FieldType(options)'.",
+				"Title is 'models.CharField(max_length=200)', Synopsis is 'models.TextField()'.",
+				"is_published should be 'models.BooleanField()'."
 			]
 		)
 		ch_data["files"] = {
@@ -606,8 +607,8 @@ func _play_module_1_models(skip_ide: bool):
 		
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor Query", "text": "Replace the blanks with the correct Django Field constraints." },
-				{ "name": "Professor Query", "text": "Look closely at [color=#f0c674]models.py[/color] and read the comments to deduce the correct Model field." },
+				{ "name": "Professor Query", "text": "Use the format [color=#f0c674]models.FieldType()[/color] to fill the blanks." },
+				{ "name": "Professor Query", "text": "You will need [color=#f0c674]CharField[/color], [color=#f0c674]TextField[/color], and [color=#f0c674]BooleanField[/color]." },
 			])
 			await dialogue_box.dialogue_finished
 		
@@ -897,8 +898,9 @@ func _play_module_2_orm(skip_ide: bool):
 		"✅ QuerySet generated successfully!\n  <QuerySet [<Student: Alice>, <Student: Bob>]>\n  2 records matched.",
 		"Error: QuerySet invalid. Use the model's objects manager.",
 		[
-			"Call the default manager: Student.objects",
-			"Use the filter method: .filter(grade='A')"
+			"The format is 'Model.objects.filter(field=value)'.",
+			"Use 'Student' as the model and 'grade' as the field.",
+			"Set the grade equal to the string 'A'."
 		]
 	)
 	
@@ -909,8 +911,8 @@ func _play_module_2_orm(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Query", "text": "Get all students who earned an [color=#f0c674]A[/color] grade." },
-			{ "name": "Professor Query", "text": "Type: [color=#f0c674]Student.objects.filter(grade='A')[/color]" }
+			{ "name": "Professor Query", "text": "Use the format [color=#f0c674]Model.objects.filter(field=value)[/color]." },
+			{ "name": "Professor Query", "text": "Get all students where [color=#f0c674]grade[/color] equals [color=#f0c674]'A'[/color]." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -1004,8 +1006,8 @@ func _play_module_3_admin(skip_ide: bool):
 		"✅ Success! Student Model registered.\n  Admin panel: /admin/blog/student/\n  Actions: Add, Change, Delete, View",
 		"Error: Not registered correctly. Did you use admin.site.register?",
 		[
-			"Invoke the admin site registration: admin.site.register()",
-			"Pass 'Student' into it: admin.site.register(Student)"
+			"The format is 'admin.site.register(ModelClass)'.",
+			"Pass 'Student' into the parentheses to register it."
 		]
 	)
 	
@@ -1016,8 +1018,8 @@ func _play_module_3_admin(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Query", "text": "Register the Student model to the admin panel." },
-			{ "name": "Professor Query", "text": "Type: [color=#f0c674]admin.site.register(Student)[/color]" }
+			{ "name": "Professor Query", "text": "Use the format [color=#f0c674]admin.site.register(ModelClass)[/color]." },
+			{ "name": "Professor Query", "text": "Register the [color=#f0c674]Student[/color] model." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -1110,8 +1112,8 @@ func _play_module_4_mvt(skip_ide: bool):
 		"✅ Correct! The View successfully bridges the Database and the Template.\n  Context: {'students': <QuerySet [...]>}\n  Template: list.html",
 		"Error: Could not retrieve records. Use objects.all()",
 		[
-			"Use the Student model provided.",
-			"Call: Student.objects.all()"
+			"The format is 'Model.objects.all()'.",
+			"Use the 'Student' model to retrieve all records."
 		]
 	)
 	
@@ -1122,8 +1124,8 @@ func _play_module_4_mvt(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Query", "text": "Retrieve all student records from the database." },
-			{ "name": "Professor Query", "text": "Type: [color=#f0c674]Student.objects.all()[/color]" }
+			{ "name": "Professor Query", "text": "Use the format [color=#f0c674]Model.objects.all()[/color] to fetch the data." },
+			{ "name": "Professor Query", "text": "Retrieve all [color=#f0c674]Student[/color] records." }
 		])
 		await dialogue_box.dialogue_finished
 	

@@ -473,9 +473,9 @@ func _play_module_1_apis_json(skip_ide: bool):
 		"✅ Serializer created successfully!\n  PostSerializer → Post model\n  Fields: id, title, content\n  Output: {\"id\": 1, \"title\": \"Hello\", \"content\": \"World\"}",
 		"SerializerError: Invalid field definition — check your fields list!",
 		[
-			"Define which fields to expose as a Python list",
-			"Use: fields = ['id', 'title', 'content']",
-			"Type: fields = ['id', 'title', 'content']"
+			"The format is 'fields = [\"field1\", \"field2\", \"field3\"]'.",
+			"Define the fields variable as a list of strings.",
+			"The list should contain 'id', 'title', and 'content'."
 		]
 	)
 	
@@ -486,9 +486,9 @@ func _play_module_1_apis_json(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor REST", "text": "Define the [color=#f0c674]fields[/color] list for the serializer." },
+			{ "name": "Professor REST", "text": "Use the format [color=#f0c674]fields = ['a', 'b', 'c'][/color]." },
 			{ "name": "Professor REST", "text": "Include [color=#f0c674]id[/color], [color=#f0c674]title[/color], and [color=#f0c674]content[/color]." },
-			{ "name": "Professor REST", "text": "Type: [color=#f0c674]fields = ['id', 'title', 'content'][/color]" }
+			{ "name": "Professor REST", "text": "Set them as strings inside a Python list." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -680,9 +680,9 @@ func _play_module_2_token_auth(skip_ide: bool):
 		"✅ Token Authentication configured!\n  DRF Settings Updated\n  Auth Class: TokenAuthentication\n  All API endpoints now require a valid token.",
 		"ConfigurationError: Invalid auth class — check the path to TokenAuthentication!",
 		[
-			"Add the full dotted path as a string",
-			"The path is: rest_framework.authentication.TokenAuthentication",
-			"Type: 'rest_framework.authentication.TokenAuthentication',"
+			"The format is '\"module.path.ClassName\",'.",
+			"Add the string 'rest_framework.authentication.TokenAuthentication' to the list.",
+			"Don't forget the quotes and comma."
 		]
 	)
 	
@@ -693,9 +693,9 @@ func _play_module_2_token_auth(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor REST", "text": "Add [color=#f0c674]TokenAuthentication[/color] to the authentication classes." },
-			{ "name": "Professor REST", "text": "Use the full path: [color=#f0c674]rest_framework.authentication.TokenAuthentication[/color]" },
-			{ "name": "Professor REST", "text": "Type: [color=#f0c674]'rest_framework.authentication.TokenAuthentication',[/color]" }
+			{ "name": "Professor REST", "text": "Use the format [color=#f0c674]'module.path.ClassName',[/color] inside the list." },
+			{ "name": "Professor REST", "text": "The path is: [color=#f0c674]rest_framework.authentication.TokenAuthentication[/color]" },
+			{ "name": "Professor REST", "text": "Make sure to include the quotes." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -763,9 +763,9 @@ func _play_module_3_viewsets_routers(skip_ide: bool):
 			"✅ Full REST API generated!\n  GET    /api/posts/      → List\n  POST   /api/posts/      → Create\n  GET    /api/posts/{id}/  → Retrieve\n  PUT    /api/posts/{id}/  → Update\n  DELETE /api/posts/{id}/  → Delete",
 			"Error: Ensure queryset and serializer_class are set, and the router registers the viewset.",
 			[
-				"In views.py: queryset = Post.objects.all()",
-				"In views.py: serializer_class = PostSerializer",
-				"In urls.py: router.register('posts', PostViewSet)"
+				"In views.py format: 'queryset = Model.objects.all()' and 'serializer_class = ModelSerializer'.",
+				"In urls.py format: 'router.register(\"prefix\", ViewSet)'.",
+				"Register 'posts' to PostViewSet."
 			]
 		)
 		ch_data["files"] = {
@@ -789,8 +789,8 @@ func _play_module_3_viewsets_routers(skip_ide: bool):
 
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor REST", "text": "In [color=#f0c674]views.py[/color], set [color=#f0c674]queryset[/color] and [color=#f0c674]serializer_class[/color]." },
-				{ "name": "Professor REST", "text": "In [color=#f0c674]urls.py[/color], register the ViewSet with the router." }
+				{ "name": "Professor REST", "text": "In views: [color=#f0c674]queryset = Model.objects.all()[/color] and [color=#f0c674]serializer_class = ModelSerializer[/color]." },
+				{ "name": "Professor REST", "text": "In urls: use [color=#f0c674]router.register('prefix', ViewSet)[/color] to route [color=#f0c674]posts[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 

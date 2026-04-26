@@ -442,8 +442,9 @@ func _play_module_1_web_basics(skip_ide: bool):
 		"200 OK — Page loaded successfully!",
 		"400 Bad Request — Check your HTTP method and path format!",
 		[
-			"The most common HTTP method for viewing pages is GET.",
-			"Format: GET /home/ HTTP/1.1"
+			"The format is 'METHOD PATH PROTOCOL'.",
+			"Use 'GET' for the METHOD, and '/home/' for the PATH.",
+			"Use 'HTTP/1.1' as the PROTOCOL."
 		]
 	)
 	
@@ -493,9 +494,9 @@ func _play_module_1_web_basics(skip_ide: bool):
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Markup", "text": "Let's try it! Write an [color=#f0c674]HTTP GET[/color] request." },
-			{ "name": "Professor Markup", "text": "The format is: [color=#f0c674]GET /home/ HTTP/1.1[/color]" },
-			{ "name": "Professor Markup", "text": "Type it in and hit ▶ Run!" }
+			{ "name": "Professor Markup", "text": "Use the format: [color=#f0c674]METHOD PATH PROTOCOL[/color]." },
+			{ "name": "Professor Markup", "text": "Use [color=#f0c674]GET[/color] for the METHOD, and [color=#f0c674]/home/[/color] for the PATH." },
+			{ "name": "Professor Markup", "text": "End it with the protocol [color=#f0c674]HTTP/1.1[/color]!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -597,8 +598,9 @@ func _play_module_2_html(skip_ide: bool):
 		"✅ Page rendered: Hello (heading) + World (paragraph)",
 		"SyntaxError: Missing or mismatched tags — check your angle brackets!",
 		[
-			"Start with <body> and end with </body>.",
-			"Inside body, add <h1>Hello</h1> and <p>World</p>"
+			"The format is '<body><tag>Text</tag></body>'.",
+			"Use '<h1>' for 'Hello' and '<p>' for 'World'.",
+			"Ensure the text is enclosed in the body tags."
 		]
 	)
 	
@@ -608,9 +610,9 @@ func _play_module_2_html(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Markup", "text": "Add the [color=#f0c674]body[/color], a [color=#f0c674]heading[/color], and a [color=#f0c674]paragraph[/color] to this HTML document." },
-			{ "name": "Professor Markup", "text": "Type: [color=#f0c674]<body><h1>Hello</h1><p>World</p></body>[/color]" },
-			{ "name": "Professor Markup", "text": "Don't forget to [color=#f0c674]close every tag[/color] you open!" }
+			{ "name": "Professor Markup", "text": "Use the format [color=#f0c674]<body><tag>Text</tag></body>[/color]." },
+			{ "name": "Professor Markup", "text": "Add an [color=#f0c674]<h1>[/color] heading for 'Hello', and a [color=#f0c674]<p>[/color] paragraph for 'World'." },
+			{ "name": "Professor Markup", "text": "Don't forget to close every tag!" }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -708,8 +710,9 @@ func _play_module_3_css(skip_ide: bool):
 		"✅ Box styled — margin: 20px, padding: 10px applied!",
 		"Error: Invalid CSS property — check your syntax (property: value;)",
 		[
-			"CSS uses the format: property: value;",
-			"Type: margin: 20px; and on the next line: padding: 10px;"
+			"The format is 'property: value;'.",
+			"Set 'margin: 20px;' and 'padding: 10px;'.",
+			"Don't forget the semicolons at the end of each rule."
 		]
 	)
 	
@@ -719,9 +722,9 @@ func _play_module_3_css(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Markup", "text": "Time to style! Add [color=#f0c674]margin[/color] and [color=#f0c674]padding[/color] to this box." },
-			{ "name": "Professor Markup", "text": "Type: [color=#f0c674]margin: 20px;[/color] and [color=#f0c674]padding: 10px;[/color]" },
-			{ "name": "Professor Markup", "text": "Remember: [color=#f0c674]margin[/color] is outside, [color=#f0c674]padding[/color] is inside!" }
+			{ "name": "Professor Markup", "text": "Use the format [color=#f0c674]property: value;[/color] inside the box." },
+			{ "name": "Professor Markup", "text": "Set margin to [color=#f0c674]20px[/color] and padding to [color=#f0c674]10px[/color]." },
+			{ "name": "Professor Markup", "text": "Remember: [color=#f0c674]margin[/color] is outside, [color=#f0c674]padding[/color] is inside." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -818,8 +821,9 @@ func _play_module_4_flexbox(skip_ide: bool):
 		"✅ Items are now centered using Flexbox!",
 		"Error: Invalid layout — make sure you use display: flex first!",
 		[
-			"First, make the container a flex container with: display: flex;",
-			"Then center items with: justify-content: center;"
+			"The format is 'display: type;' and 'justify-content: alignment;'.",
+			"Set display to 'flex'.",
+			"Set justify-content to 'center'."
 		]
 	)
 	
@@ -829,8 +833,8 @@ func _play_module_4_flexbox(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Markup", "text": "Make this container use [color=#f0c674]Flexbox[/color] and center the items." },
-			{ "name": "Professor Markup", "text": "Type: [color=#f0c674]display: flex;[/color] and [color=#f0c674]justify-content: center;[/color]" },
+			{ "name": "Professor Markup", "text": "Use the format [color=#f0c674]property: value;[/color]." },
+			{ "name": "Professor Markup", "text": "Set [color=#f0c674]display: flex;[/color] and [color=#f0c674]justify-content: center;[/color]." },
 			{ "name": "Professor Markup", "text": "Two lines. That's all it takes to center things properly!" }
 		])
 		await dialogue_box.dialogue_finished
@@ -930,8 +934,9 @@ func _play_module_5_responsiveness(skip_ide: bool):
 		"✅ Media query active — layout adapts for small screens!",
 		"Error: Invalid media query syntax — check your @media rule!",
 		[
-			"The syntax is: @media (condition) { }",
-			"Type: @media (max-width: 600px) { }"
+			"The format is '@media (condition) {}'.",
+			"Use 'max-width: 600px' as the condition inside the parentheses.",
+			"Ensure the curly braces are placed correctly."
 		]
 	)
 	
@@ -941,8 +946,8 @@ func _play_module_5_responsiveness(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Markup", "text": "Write a [color=#f0c674]media query[/color] that targets screens [color=#f0c674]600 pixels[/color] or smaller." },
-			{ "name": "Professor Markup", "text": "Type: [color=#f0c674]@media (max-width: 600px) { }[/color]" },
+			{ "name": "Professor Markup", "text": "Use the format [color=#f0c674]@media (condition) {}[/color]." },
+			{ "name": "Professor Markup", "text": "Set the condition to [color=#f0c674]max-width: 600px[/color]." },
 			{ "name": "Professor Markup", "text": "This is how every [color=#f0c674]responsive[/color] website works!" }
 		])
 		await dialogue_box.dialogue_finished

@@ -473,9 +473,8 @@ func _play_module_1_authentication(skip_ide: bool):
 		"✅ Authentication successful!\n  User: alice\n  Session: Started\n  Status: Logged in",
 		"AuthenticationError: Invalid credentials — check your authenticate() call!",
 		[
-			"Use the authenticate function with request and credentials",
-			"Pass username and password as keyword arguments",
-			"Type: authenticate(request, username=username, password=password)"
+			"The format is 'user = authenticate(request, username=variable, password=variable)'.",
+			"Fill in the two variable arguments with the data from the request."
 		]
 	)
 	
@@ -486,9 +485,8 @@ func _play_module_1_authentication(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Auth", "text": "Write the [color=#f0c674]authenticate()[/color] call." },
-			{ "name": "Professor Auth", "text": "Pass [color=#f0c674]request[/color], [color=#f0c674]username=username[/color], and [color=#f0c674]password=password[/color]." },
-			{ "name": "Professor Auth", "text": "Type: [color=#f0c674]authenticate(request, username=username, password=password)[/color]" }
+			{ "name": "Professor Auth", "text": "Use the format: [color=#f0c674]user = authenticate(request, username=x, password=y)[/color]." },
+			{ "name": "Professor Auth", "text": "Pass in the [color=#f0c674]request[/color] object, and assign the pulled [color=#f0c674]username[/color] and [color=#f0c674]password[/color]." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -678,9 +676,9 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 		"✅ Permission check passed!\n  User: alice\n  Post Owner: alice\n  Action: Allowed",
 		"PermissionError: Ownership check failed — use request.user == object.owner",
 		[
-			"Compare the logged-in user with the object's owner",
-			"Use: if request.user == post.owner:",
-			"Type: if request.user == post.owner:"
+			"The format is 'if condition:'.",
+			"The condition should be 'request.user == object.owner'.",
+			"Substitute 'post.owner' for the object's owner."
 		]
 	)
 	
@@ -691,9 +689,9 @@ func _play_module_2_crud_permissions(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Auth", "text": "Write the [color=#f0c674]ownership check[/color]." },
-			{ "name": "Professor Auth", "text": "Compare [color=#f0c674]request.user[/color] with [color=#f0c674]post.owner[/color]." },
-			{ "name": "Professor Auth", "text": "Type: [color=#f0c674]if request.user == post.owner:[/color]" }
+			{ "name": "Professor Auth", "text": "Use the format [color=#f0c674]if user == owner:[/color] to perform the check." },
+			{ "name": "Professor Auth", "text": "Compare [color=#f0c674]request.user[/color] with [color=#f0c674]post.owner[/color] using '=='." },
+			{ "name": "Professor Auth", "text": "Don't forget the colon." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -762,8 +760,8 @@ func _play_module_3_abstract_user(skip_ide: bool):
 			"✅ CustomUser model created with phone field!\n  AUTH_USER_MODEL set correctly.",
 			"Error: Ensure you inherit from AbstractUser and set AUTH_USER_MODEL.",
 			[
-				"In models.py: class CustomUser(AbstractUser) with phone field.",
-				"In settings.py: AUTH_USER_MODEL = 'accounts.CustomUser'"
+				"In models.py format: 'class CustomUser(AbstractUser): phone = models.CharField(...)'.",
+				"In settings.py format: 'AUTH_USER_MODEL = \"app.Model\"'."
 			]
 		)
 		ch_data["files"] = {
@@ -788,8 +786,8 @@ func _play_module_3_abstract_user(skip_ide: bool):
 
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor Auth", "text": "In [color=#f0c674]models.py[/color], inherit from AbstractUser and add a phone field." },
-				{ "name": "Professor Auth", "text": "In [color=#f0c674]settings.py[/color], point AUTH_USER_MODEL to your new model." }
+				{ "name": "Professor Auth", "text": "In models.py: [color=#f0c674]class CustomUser(AbstractUser):[/color] and add a [color=#f0c674]phone[/color] field." },
+				{ "name": "Professor Auth", "text": "In settings.py: [color=#f0c674]AUTH_USER_MODEL = 'accounts.CustomUser'[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 
@@ -852,8 +850,8 @@ func _play_module_4_password_hashing(skip_ide: bool):
 			"✅ Password updated!\n  Hash: pbkdf2_sha256$260000$...\n  Raw password is NEVER stored.",
 			"Error: Don't assign password directly. Use set_password().",
 			[
-				"Use the set_password method on the user object.",
-				"Type: user.set_password('new_secure_pass')"
+				"The format is 'user.set_password(\"password\")'.",
+				"Pass the new password 'new_secure_pass' as the string argument."
 			]
 		)
 		ch_data["project_tree"] = {"venv": {}, "mysite": {"settings.py": "file", "urls.py": "file"}, "accounts": {"__init__.py": "file", "models.py": "file", "views.py": "file"}, "manage.py": "file"}
@@ -863,8 +861,8 @@ func _play_module_4_password_hashing(skip_ide: bool):
 
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor Auth", "text": "Change Alice's password using [color=#f0c674]set_password()[/color]." },
-				{ "name": "Professor Auth", "text": "Type: [color=#f0c674]user.set_password('new_secure_pass')[/color]" }
+				{ "name": "Professor Auth", "text": "Use the format: [color=#f0c674]user.set_password('password')[/color]." },
+				{ "name": "Professor Auth", "text": "Pass in [color=#f0c674]'new_secure_pass'[/color] so it hashes it properly." }
 			])
 			await dialogue_box.dialogue_finished
 

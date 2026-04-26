@@ -401,9 +401,9 @@ func _play_module_1_python_basics(skip_ide: bool):
 		"0\n1\n2\n3\n4",
 		"SyntaxError: invalid syntax — check your for loop structure!",
 		[
-			"The syntax is: for variable in range(number):",
-			"Don't forget the colon at the end! Then indent the next line.",
-			"Type: for i in range(5):\\n    print(i)"
+			"The format is 'for variable in range(n):'.",
+			"Use 'i' as your variable, and 'range(5)' for the numbers.",
+			"Indent the next line and use the print function."
 		]
 	)
 	
@@ -415,7 +415,7 @@ func _play_module_1_python_basics(skip_ide: bool):
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor Syntax", "text": "Write a [color=#f0c674]for loop[/color] that prints numbers 0 through 4." },
 			{ "name": "Professor Syntax", "text": "Use [color=#f0c674]range(5)[/color] to generate the numbers." },
-			{ "name": "Professor Syntax", "text": "Type: [color=#f0c674]for i in range(5):[/color] then on the next line: [color=#f0c674]print(i)[/color]" }
+			{ "name": "Professor Syntax", "text": "Set up the loop using the structure [color=#f0c674]for item in collection:[/color]." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -611,9 +611,9 @@ func _play_module_2_oop(skip_ide: bool):
 		"✅ Class Student created with constructor!",
 		"SyntaxError: invalid class definition — check your indentation and colons!",
 		[
-			"Start with: class Student:",
-			"Inside the class, define: def __init__(self, name):",
-			"Inside __init__, store: self.name = name"
+			"The format is 'class ClassName:'.",
+			"The constructor format is 'def __init__(self, param):'.",
+			"Inside the constructor, assign the parameter using 'self.param = param'."
 		]
 	)
 	
@@ -624,8 +624,8 @@ func _play_module_2_oop(skip_ide: bool):
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor Syntax", "text": "Create a [color=#f0c674]class[/color] called [color=#f0c674]Student[/color]." },
-			{ "name": "Professor Syntax", "text": "Give it an [color=#f0c674]__init__[/color] method that accepts [color=#f0c674]name[/color]." },
-			{ "name": "Professor Syntax", "text": "Store it as [color=#f0c674]self.name[/color]. Three lines. No excuses." }
+			{ "name": "Professor Syntax", "text": "Set up the constructor using [color=#f0c674]def __init__(self, name):[/color] and assign [color=#f0c674]self.name = name[/color]." },
+			{ "name": "Professor Syntax", "text": "Three lines. No excuses." }
 		])
 		await dialogue_box.dialogue_finished
 	
@@ -724,9 +724,9 @@ func _play_module_3_http_requests(skip_ide: bool):
 		"200 OK — Data received successfully!",
 		"ConnectionError: Could not reach the server — check your URL and method!",
 		[
-			"Use the requests library: requests.get(url)",
-			"Store the result in a variable: response = requests.get('...')",
-			"Type: response = requests.get('https://api.example.com/data')"
+			"The format is 'response = requests.get(url)'.",
+			"Pass the URL string as the argument inside the parentheses.",
+			"Assign the result of the function call to a variable named 'response'."
 		]
 	)
 	
@@ -736,9 +736,9 @@ func _play_module_3_http_requests(skip_ide: bool):
 	
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
-			{ "name": "Professor Syntax", "text": "Write a [color=#f0c674]GET request[/color] using the [color=#f0c674]requests[/color] library." },
+			{ "name": "Professor Syntax", "text": "Use the format [color=#f0c674]response = requests.get('url')[/color]." },
 			{ "name": "Professor Syntax", "text": "The URL is: [color=#f0c674]'https://api.example.com/data'[/color]" },
-			{ "name": "Professor Syntax", "text": "Store the result in a variable called [color=#f0c674]response[/color]." }
+			{ "name": "Professor Syntax", "text": "Make sure you store the result in the [color=#f0c674]response[/color] variable." }
 		])
 		await dialogue_box.dialogue_finished
 	

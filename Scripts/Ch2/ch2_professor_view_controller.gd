@@ -399,9 +399,9 @@ venv\\Scripts\\activate  # Windows",
 			"✅ Virtual environment 'venv' created successfully!",
 			"CommandError: invalid command — use python -m venv <name>",
 			[
-				"The command uses the venv module: python -m venv",
-				"Then the name of the folder: venv",
-				"Type: python -m venv venv"
+				"Run the python module associated with virtual environments.",
+				"Specify the standard library module with the '-m' flag: '-m venv'.",
+				"Provide the same name for the directory to hold the environment: 'venv'."
 			]
 		)
 		ch_data["project_tree"] = {}
@@ -413,9 +413,10 @@ venv\\Scripts\\activate  # Windows",
 		
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Student", "text": "The command is 'python -m venv venv'? Why 'venv' twice?" },
+				{ "name": "Student", "text": "The command requires 'python', the '-m' flag, the 'venv' module, and the name 'venv'?" },
 				{ "name": "Professor View", "text": "The first is the built-in module. The second is the folder name. You could name that folder 'apple', but naming it 'venv' is the universal standard." },
-				{ "name": "Professor View", "text": "Create it. Type: [color=#f0c674]python -m venv venv[/color]" }
+				{ "name": "Professor View", "text": "The format is [color=#f0c674]python -m <module> <name>[/color]." },
+				{ "name": "Professor View", "text": "Run the built-in [color=#f0c674]venv[/color] module and name the directory [color=#f0c674]venv[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 		
@@ -475,9 +476,9 @@ venv\\Scripts\\activate  # Windows",
 			"✅ Virtual environment activated!\n  (venv) C:\\Users\\hansu\\Documents\\Capstone\\DjangoQuest-Backend> _\n  All pip installs will now go into venv/",
 			"CommandError: invalid activation command — use venv\\Scripts\\activate",
 			[
-				"Run the activate script located in the Scripts folder",
-				"The path is: venv\\Scripts\\activate",
-				"Type: venv\\Scripts\\activate"
+				"Run the activate script located within the environment folder.",
+				"It sits inside 'venv', then inside the 'Scripts' directory.",
+				"Check your backslashes for the Windows path."
 			]
 		)
 		ch_data_act["project_tree"] = {"venv": {}}
@@ -486,8 +487,8 @@ venv\\Scripts\\activate  # Windows",
 		ui_act.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Activate the virtual environment." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]venv\\Scripts\\activate[/color]" }
+				{ "name": "Professor View", "text": "The path format for Windows is [color=#f0c674]<folder>\\Scripts\\activate[/color]." },
+				{ "name": "Professor View", "text": "Run the [color=#f0c674]activate[/color] script from the [color=#f0c674]Scripts[/color] directory inside [color=#f0c674]venv[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 		ui_act.lock_typing(false)
@@ -548,9 +549,9 @@ venv\\Scripts\\activate  # Windows",
 			"✅ Collecting django\n  Downloading Django-5.0-py3-none-any.whl (8.1 MB)\nSuccessfully installed Django-5.0 asgiref-3.7.2 sqlparse-0.4.4",
 			"ERROR: Could not find a version that satisfies the requirement. Check your command.",
 			[
-				"Use pip to install packages: pip install <package>",
-				"The package name is: django",
-				"Type: pip install django"
+				"Your package manager is called 'pip'.",
+				"Combine the 'install' command with the name of the framework.",
+				"Ensure you spell 'django' correctly."
 			]
 		)
 		ch_data["project_tree"] = {"venv": {}}
@@ -559,8 +560,8 @@ venv\\Scripts\\activate  # Windows",
 		ui.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Install Django inside your virtual environment." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]pip install django[/color]" }
+				{ "name": "Professor View", "text": "The format is [color=#f0c674]pip install <package>[/color]." },
+				{ "name": "Professor View", "text": "Use [color=#f0c674]pip[/color] to install the [color=#f0c674]django[/color] package." }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
@@ -619,9 +620,9 @@ venv\\Scripts\\activate  # Windows",
 			"✅ Project 'mysite' created successfully!",
 			"CommandError: invalid command — use django-admin startproject <name>",
 			[
-				"The command starts with: django-admin",
-				"Then the action: startproject",
-				"Type: django-admin startproject mysite"
+				"Use the django-admin tool.",
+				"Combine it with the startproject action.",
+				"Provide 'mysite' as the name parameter."
 			]
 		)
 		ch_data["project_tree"] = {"venv": {}}
@@ -634,7 +635,8 @@ venv\\Scripts\\activate  # Windows",
 				{ "name": "Professor View", "text": "Create a new Django project called [color=#f0c674]mysite[/color]." },
 				{ "name": "Student", "text": "Do we have to name it 'mysite'?" },
 				{ "name": "Professor View", "text": "No, you can name the project anything. But 'mysite' is standard convention for learning." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]django-admin startproject mysite[/color]" }
+				{ "name": "Professor View", "text": "The format is [color=#f0c674]django-admin <command> <name>[/color]." },
+				{ "name": "Professor View", "text": "Use [color=#f0c674]django-admin[/color] with the [color=#f0c674]startproject[/color] command to create it." }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
@@ -656,8 +658,8 @@ venv\\Scripts\\activate  # Windows",
 			"✅ Changed directory to mysite/",
 			"CommandError: invalid command — use cd <name>",
 			[
-				"The command to change directory is: cd",
-				"Type: cd mysite"
+				"The command to change directory contains two letters.",
+				"Pass the name of the project folder to it."
 			]
 		)
 		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
@@ -667,8 +669,8 @@ venv\\Scripts\\activate  # Windows",
 		ui.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Before you can run any commands, you must enter the project." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]cd mysite[/color]" }
+				{ "name": "Professor View", "text": "The format is [color=#f0c674]cd <directory>[/color]." },
+				{ "name": "Professor View", "text": "Navigate into it using the [color=#f0c674]cd[/color] command followed by the project name." }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
@@ -731,8 +733,8 @@ Running migrations:
   Applying auth.0001_initial... OK",
 			"CommandError: invalid command — use python manage.py migrate",
 			[
-				"The command uses manage.py.",
-				"Type: python manage.py migrate"
+				"Your project's command center is manage.py.",
+				"Execute manage.py with python and append 'migrate'."
 			]
 		)
 		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
@@ -741,8 +743,8 @@ Running migrations:
 		ui.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Apply the default migrations." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]python manage.py migrate[/color]" }
+				{ "name": "Professor View", "text": "The format is [color=#f0c674]python manage.py <command>[/color]." },
+				{ "name": "Professor View", "text": "Run [color=#f0c674]manage.py[/color] through python, passing the [color=#f0c674]migrate[/color] command." }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
@@ -771,8 +773,8 @@ Running migrations:
 			"✅ Django version 5.0, using settings 'mysite.settings'\nStarting development server at http://127.0.0.1:8000/\nQuit the server with CONTROL-C.",
 			"CommandError: invalid command — use python manage.py runserver",
 			[
-				"The command uses manage.py.",
-				"Type: python manage.py runserver"
+				"Run the manage.py script using Python.",
+				"Pass 'runserver' as the argument."
 			]
 		)
 		ch_data2["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
@@ -781,7 +783,8 @@ Running migrations:
 		ui.lock_typing(true)
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]python manage.py runserver[/color]" }
+				{ "name": "Professor View", "text": "Use the format [color=#f0c674]python manage.py <command>[/color]." },
+				{ "name": "Professor View", "text": "Make Python run [color=#f0c674]manage.py[/color] with the [color=#f0c674]runserver[/color] argument." }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
@@ -831,8 +834,8 @@ Running migrations:
 			"✅ App 'blog' created successfully!",
 			"CommandError: invalid command — use python manage.py startapp <name>",
 			[
-				"The command uses manage.py: python manage.py",
-				"Type: python manage.py startapp blog"
+				"Run manage.py using Python.",
+				"Use the action 'startapp' with the argument 'blog'."
 			]
 		)
 		ch_data["project_tree"] = {"venv": {}, "mysite": {"__init__.py": "file", "asgi.py": "file", "settings.py": "file", "urls.py": "file", "wsgi.py": "file"}, "manage.py": "file"}
@@ -845,7 +848,8 @@ Running migrations:
 				{ "name": "Professor View", "text": "Create an app called [color=#f0c674]blog[/color] using manage.py." },
 				{ "name": "Student", "text": "And just like 'mysite', I assume we could name this app whatever feature we are building? Like 'store' or 'users'?" },
 				{ "name": "Professor View", "text": "Exactly. Whatever feature it will hold. For this module, we build a blog." },
-				{ "name": "Professor View", "text": "Type: [color=#f0c674]python manage.py startapp blog[/color]" }
+				{ "name": "Professor View", "text": "The format is [color=#f0c674]python manage.py startapp <name>[/color]." },
+				{ "name": "Professor View", "text": "Pass the [color=#f0c674]startapp[/color] command to [color=#f0c674]manage.py[/color] with the name [color=#f0c674]blog[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 		ui.lock_typing(false)
@@ -1065,9 +1069,9 @@ func _play_module_2_views_routing(skip_ide: bool):
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor View", "text": "This time you're editing [color=#f0c674]all three files[/color]." },
-			{ "name": "Professor View", "text": "In [color=#f0c674]urls.py[/color]: add [color=#f0c674]path('home/', views.home)[/color]" },
-			{ "name": "Professor View", "text": "In [color=#f0c674]views.py[/color]: add [color=#f0c674]return HttpResponse('Welcome!')[/color]" },
-			{ "name": "Professor View", "text": "In [color=#f0c674]templates/home.html[/color]: add [color=#f0c674]<h1>Welcome!</h1>[/color]" },
+			{ "name": "Professor View", "text": "In [color=#f0c674]urls.py[/color]: construct [color=#f0c674]path('route', views.function)[/color]." },
+			{ "name": "Professor View", "text": "In [color=#f0c674]views.py[/color]: use [color=#f0c674]return HttpResponse('Text')[/color]." },
+			{ "name": "Professor View", "text": "In [color=#f0c674]templates/home.html[/color]: format the heading as [color=#f0c674]<h1>Text</h1>[/color]." },
 			{ "name": "Professor View", "text": "Switch between tabs to edit each file. All three must be correct." }
 		])
 		await dialogue_box.dialogue_finished
@@ -1294,9 +1298,9 @@ func _play_module_3_templates(skip_ide: bool):
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor View", "text": "Now connect [color=#f0c674]all three files[/color] again — this time with templates." },
-			{ "name": "Professor View", "text": "In [color=#f0c674]views.py[/color]: return [color=#f0c674]render(request, 'home.html', context)[/color]" },
-			{ "name": "Professor View", "text": "In [color=#f0c674]templates/home.html[/color]: insert [color=#f0c674]{{ user.name }}[/color] after 'Hello, '" },
-			{ "name": "Professor View", "text": "In [color=#f0c674]urls.py[/color]: add [color=#f0c674]path('home/', views.home)[/color]" },
+			{ "name": "Professor View", "text": "In [color=#f0c674]views.py[/color]: return [color=#f0c674]render(request, 'file.html', context)[/color]." },
+			{ "name": "Professor View", "text": "In [color=#f0c674]templates/home.html[/color]: use [color=#f0c674]{{ variable }}[/color] to display [color=#f0c674]user.name[/color]." },
+			{ "name": "Professor View", "text": "In [color=#f0c674]urls.py[/color]: construct [color=#f0c674]path('route', views.function)[/color]." },
 			{ "name": "Professor View", "text": "Switch tabs and complete all three. That's how Django connects everything." }
 		])
 		await dialogue_box.dialogue_finished
@@ -1398,9 +1402,9 @@ func _play_module_4_static_files(skip_ide: bool):
 		"✅ Static files loaded!\n  CSS and JS are now available in your template.",
 		"TemplateSyntaxError: 'static' is not a registered tag — did you forget {% load static %}?",
 		[
-			"Django needs you to explicitly load the static system",
-			"The tag goes at the very top of your template",
-			"Type: {% load static %}"
+			"Django requires you to explicitly bring in the static file system.",
+			"Use the Django template tag syntax '{% %}' to load the 'static' library.",
+			"This tag must be placed at the very top of the HTML file."
 		]
 	)
 	ch_data["files"] = {
@@ -1419,7 +1423,7 @@ func _play_module_4_static_files(skip_ide: bool):
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Professor View", "text": "Load Django's static file system into your template." },
-			{ "name": "Professor View", "text": "Use the template tag: [color=#f0c674]{% load static %}[/color]" },
+			{ "name": "Professor View", "text": "Use the tag format [color=#f0c674]{% load module %}[/color]." },
 			{ "name": "Professor View", "text": "This goes at the [color=#f0c674]very top[/color] of your HTML file." }
 		])
 		await dialogue_box.dialogue_finished
@@ -2018,9 +2022,9 @@ func _play_module_5_generic_views(skip_ide: bool):
 			"✅ Success! ListView successfully routed and rendered.",
 			"Error: Ensure you hit all 3 files. Use BookListView in urls, and object_list in the template.",
 			[
-				"In views.py: inherit from ListView and set 'model = Book'.",
-				"In urls.py: use BookListView.as_view().",
-				"In book_list.html: loop using {% for book in object_list %}."
+				"In views.py, specify the 'model' attribute to link the view to the Book class.",
+				"In urls.py, call the as_view() method on your generic view class to use it as a route handler.",
+				"In book_list.html, iterate through 'object_list' using a Django template loop."
 			]
 		)
 		ch_data["files"] = {
@@ -2048,8 +2052,8 @@ func _play_module_5_generic_views(skip_ide: bool):
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
 				{ "name": "Professor View", "text": "Let's build the R in CRUD. Read All." },
-				{ "name": "Professor View", "text": "In views.py, finish the [color=#f0c674]ListView[/color] class." },
-				{ "name": "Professor View", "text": "In urls.py, use [color=#f0c674].as_view()[/color] to route it. In book_list.html, loop through [color=#f0c674]object_list[/color]." }
+				{ "name": "Professor View", "text": "In views: define [color=#f0c674]class Name(ListView):[/color] and [color=#f0c674]model = Book[/color]." },
+				{ "name": "Professor View", "text": "In urls: use [color=#f0c674]path('route', View.as_view())[/color]. In html: use [color=#f0c674]{% for item in list %}[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 		
@@ -2093,7 +2097,9 @@ func _play_module_5_generic_views(skip_ide: bool):
 			"✅ Success! DetailView successfully routed via Primary Key.",
 			"Error: Use <int:pk> in the URL path, and BookDetailView.as_view().",
 			[
-				"In urls.py: path('book/<int:pk>/', BookDetailView.as_view(), name='book-detail')"
+				"Construct a path starting with 'book/', followed by the primary key integer parameter '<int:pk>/'.",
+				"Route it to the BookDetailView using the as_view() method.",
+				"Optionally provide a name for the route, such as 'book-detail'."
 			]
 		)
 		ch_data["files"] = {
@@ -2114,7 +2120,7 @@ func _play_module_5_generic_views(skip_ide: bool):
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
 				{ "name": "Professor View", "text": "I have written the DetailView class for you." },
-				{ "name": "Professor View", "text": "I need you to open [color=#f0c674]urls.py[/color] and properly map the [color=#f0c674]<int:pk>[/color] URL parameter to [color=#f0c674]BookDetailView.as_view()[/color]." }
+				{ "name": "Professor View", "text": "In urls.py: the path format requires the parameter [color=#f0c674]<int:pk>[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 		
@@ -2158,8 +2164,8 @@ func _play_module_5_generic_views(skip_ide: bool):
 			"✅ Success! C.R.U.D is fully complete.",
 			"Error: Specify 'fields' as a list containing 'name', and reverse_lazy for the success_url.",
 			[
-				"In views.py: fields = ['name']",
-				"In views.py: success_url = reverse_lazy('books')"
+				"Initialize the 'fields' list containing just the 'name' string.",
+				"Set 'success_url' to the result of 'reverse_lazy' pointing to the 'books' route."
 			]
 		)
 		ch_data["files"] = {
@@ -2180,7 +2186,7 @@ func _play_module_5_generic_views(skip_ide: bool):
 		if dialogue_box:
 			_show_dialogue_with_log(dialogue_box, [
 				{ "name": "Professor View", "text": "Declare the required components to validate and lock our [color=#f0c674]CreateView[/color]." },
-				{ "name": "Professor View", "text": "Set [color=#f0c674]fields[/color] to an array containing 'name', and use [color=#f0c674]reverse_lazy('books')[/color] to route them upon success." }
+				{ "name": "Professor View", "text": "Set [color=#f0c674]fields = ['name'][/color] and [color=#f0c674]success_url = reverse_lazy('route')[/color]." }
 			])
 			await dialogue_box.dialogue_finished
 		

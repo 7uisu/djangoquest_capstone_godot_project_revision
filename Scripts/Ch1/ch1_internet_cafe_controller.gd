@@ -291,8 +291,9 @@ func _start_cutscene():
 		"Hello, World!",
 		"SyntaxError: invalid syntax — check your spelling and quotes!",
 		[
-			"Remember, the function is called `print` (all lowercase).",
-			"You need parentheses and quotes! Like this: print('Your Text Here')"
+			"The format is 'print(\"Text\")'.",
+			"Use 'Hello, World!' as the text.",
+			"Don't forget the quotes and parentheses."
 		]
 	)
 
@@ -304,7 +305,8 @@ func _start_cutscene():
 		_show_dialogue_with_log(dialogue_box, [
 			{ "name": "Spaghetti Guy", "text": "Alright! The very first thing you learn in any language is how to [color=#f0c674]print[/color] something to the screen." },
 			{ "name": "Spaghetti Guy", "text": "In Python, you use the [color=#f0c674]print()[/color] function." },
-			{ "name": "Spaghetti Guy", "text": "Type exactly: [color=#f0c674]print('Hello, World!')[/color]" },
+			{ "name": "Spaghetti Guy", "text": "The format is [color=#f0c674]print('Your text here')[/color]." },
+			{ "name": "Spaghetti Guy", "text": "Use it to output [color=#f0c674]'Hello, World!'[/color]." },
 			{ "name": "Spaghetti Guy", "text": "Don't forget the [color=#f0c674]parentheses[/color] and the [color=#f0c674]quotes[/color]! Then hit ▶ Run!" }
 		])
 		await dialogue_box.dialogue_finished
@@ -339,8 +341,9 @@ func _start_cutscene():
 		"Variable 'name' created with value: DjangoQuest",
 		"NameError: name is not defined — make sure you use the = sign!",
 		[
-			"A variable needs a name, an equals sign, and a value.",
-			"The value 'DjangoQuest' needs surrounding quotes because it's text."
+			"The format is 'variable = value'.",
+			"Use 'name' as the variable and 'DjangoQuest' as the value.",
+			"Don't forget the quotes around DjangoQuest!"
 		]
 	)
 
@@ -351,8 +354,8 @@ func _start_cutscene():
 			{ "name": "Spaghetti Guy", "text": "Now let's learn about [color=#f0c674]variables[/color]." },
 			{ "name": "Spaghetti Guy", "text": "[color=#f0c674]Variables[/color] are like containers that hold data." },
 			{ "name": "Spaghetti Guy", "text": "In Python, you just write the [color=#f0c674]name[/color], an [color=#f0c674]equals sign[/color], and the [color=#f0c674]value[/color]." },
-			{ "name": "Spaghetti Guy", "text": "Type: [color=#f0c674]name = 'DjangoQuest'[/color]" },
-			{ "name": "Spaghetti Guy", "text": "No special keyword needed! Then hit ▶ Run." }
+			{ "name": "Spaghetti Guy", "text": "The format is [color=#f0c674]variable = 'value'[/color]." },
+			{ "name": "Spaghetti Guy", "text": "Create one named [color=#f0c674]name[/color] and assign it the text [color=#f0c674]'DjangoQuest'[/color]. No special keyword needed! Then hit ▶ Run." }
 		])
 		await dialogue_box.dialogue_finished
 
@@ -384,8 +387,9 @@ func _start_cutscene():
 		"DjangoQuest",
 		"SyntaxError: unexpected character — don't put quotes around variable names!",
 		[
-			"You still use the `print()` function just like in the first challenge.",
-			"Put the variable `name` inside the parentheses, but WITHOUT quotes around it!"
+			"The format is 'print(variable)'.",
+			"Place 'name' inside the print statement.",
+			"Do not use quotes around the variable name."
 		]
 	)
 
@@ -396,8 +400,9 @@ func _start_cutscene():
 			{ "name": "Spaghetti Guy", "text": "Now let's combine both things we learned!" },
 			{ "name": "Spaghetti Guy", "text": "You already have a [color=#f0c674]variable[/color] called [color=#f0c674]'name'[/color] set to 'DjangoQuest'." },
 			{ "name": "Spaghetti Guy", "text": "Use [color=#f0c674]print()[/color] but put the variable name INSIDE — [color=#f0c674]no quotes[/color] this time!" },
-			{ "name": "Spaghetti Guy", "text": "Type: [color=#f0c674]print(name)[/color]" },
-			{ "name": "Spaghetti Guy", "text": "Notice: no quotes around 'name' — because it's a [color=#f0c674]variable[/color], not text!" }
+			{ "name": "Spaghetti Guy", "text": "Use the format [color=#f0c674]print(variable)[/color]." },
+			{ "name": "Spaghetti Guy", "text": "Call the [color=#f0c674]print()[/color] function and pass [color=#f0c674]name[/color] as the argument." },
+			{ "name": "Spaghetti Guy", "text": "Notice: no quotes around 'name' — because it's a [color=#f0c674]variable[/color], not literal text!" }
 		])
 		await dialogue_box.dialogue_finished
 
