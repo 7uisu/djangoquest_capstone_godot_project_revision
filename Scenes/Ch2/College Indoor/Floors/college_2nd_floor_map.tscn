@@ -1091,77 +1091,77 @@ npc_texture = ExtResource("19_66o5b")
 y_sort_enabled = true
 
 [node name="NPCFemaleCollegeStudent09" parent="Students" unique_id=2113900145 instance=ExtResource("1_fbase")]
-position = Vector2(-18, 234)
+position = Vector2(507, -123)
 npc_texture = ExtResource("3_tex")
 speaker_name = "Female Student 09"
 
 [node name="NPCFemaleCollegeStudent10" parent="Students" unique_id=545686870 instance=ExtResource("1_fbase")]
-position = Vector2(257, 374)
+position = Vector2(22, 400)
 npc_texture = ExtResource("4_tex")
 speaker_name = "Female Student 10"
 
 [node name="NPCFemaleCollegeStudent11" parent="Students" unique_id=-133312049 instance=ExtResource("1_fbase")]
-position = Vector2(181, 381)
+position = Vector2(219, 397)
 npc_texture = ExtResource("5_tex")
 speaker_name = "Female Student 11"
 
 [node name="NPCFemaleCollegeStudent12" parent="Students" unique_id=1367684021 instance=ExtResource("1_fbase")]
-position = Vector2(83, 392)
+position = Vector2(381, 241)
 npc_texture = ExtResource("6_tex")
 speaker_name = "Female Student 12"
 
 [node name="NPCFemaleCollegeStudent13" parent="Students" unique_id=-192822325 instance=ExtResource("1_fbase")]
-position = Vector2(-31, 384)
+position = Vector2(549, 193)
 npc_texture = ExtResource("7_tex")
 speaker_name = "Female Student 13"
 
 [node name="NPCFemaleCollegeStudent14" parent="Students" unique_id=-1187923298 instance=ExtResource("1_fbase")]
-position = Vector2(212, 670)
+position = Vector2(550, 656)
 npc_texture = ExtResource("8_tex")
 speaker_name = "Female Student 14"
 
 [node name="NPCFemaleCollegeStudent15" parent="Students" unique_id=-1966613630 instance=ExtResource("1_fbase")]
-position = Vector2(-18, 688)
+position = Vector2(381, 730)
 npc_texture = ExtResource("9_tex")
 speaker_name = "Female Student 15"
 
 [node name="NPCMaleCollegeStudent08" parent="Students" unique_id=471327879 instance=ExtResource("2_mbase")]
-position = Vector2(247, 769)
+position = Vector2(385, 967)
 npc_texture = ExtResource("10_tex")
 speaker_name = "Male Student 08"
 
 [node name="NPCMaleCollegeStudent09" parent="Students" unique_id=1235721823 instance=ExtResource("2_mbase")]
-position = Vector2(149, 766)
+position = Vector2(544, 806)
 npc_texture = ExtResource("11_tex")
 speaker_name = "Male Student 09"
 
 [node name="NPCMaleCollegeStudent10" parent="Students" unique_id=2080497833 instance=ExtResource("2_mbase")]
-position = Vector2(78, 771)
+position = Vector2(216, 980)
 npc_texture = ExtResource("12_tex")
 speaker_name = "Male Student 10"
 
 [node name="NPCMaleCollegeStudent11" parent="Students" unique_id=500463384 instance=ExtResource("2_mbase")]
-position = Vector2(-9, 781)
+position = Vector2(-10, 959)
 npc_texture = ExtResource("13_tex")
 speaker_name = "Male Student 11"
 
 [node name="NPCMaleCollegeStudent12" parent="Students" unique_id=2009738229 instance=ExtResource("2_mbase")]
-position = Vector2(260, 923)
+position = Vector2(671, 1158)
 npc_texture = ExtResource("14_tex")
 speaker_name = "Male Student 12"
 
 [node name="NPCMaleCollegeStudent13" parent="Students" unique_id=86943267 instance=ExtResource("2_mbase")]
-position = Vector2(161, 902)
+position = Vector2(265, 1152)
 npc_texture = ExtResource("15_tex")
 speaker_name = "Male Student 13"
 
 [node name="NPCMaleCollegeStudent14" parent="Students" unique_id=-4648963 instance=ExtResource("2_mbase")]
-position = Vector2(67, 906)
+position = Vector2(417, 1158)
 npc_texture = ExtResource("16_tex")
 speaker_name = "Male Student 14"
 
 [node name="NPCMaleCollegeStudent15" parent="Students" unique_id=65016584 instance=ExtResource("2_mbase")]
-position = Vector2(-27, 918)
+position = Vector2(378, 474)
 npc_texture = ExtResource("17_tex")
 speaker_name = "Male Student 15"
 
