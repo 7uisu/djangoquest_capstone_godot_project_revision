@@ -64,9 +64,8 @@ func _sit_down(player):
 	if shadow:
 		shadow.visible = false
 
-	# Update label to show stand-up prompt
-	if interaction_label:
-		interaction_label.text = "(F) to Stand"
+	# Hide the label while seated — it will reappear on stand-up
+	_hide_label()
 
 func _stand_up(player):
 	is_occupied = false
@@ -80,10 +79,12 @@ func _stand_up(player):
 	if shadow:
 		shadow.visible = true
 
-	# Update label back
+	# Re-show label now that the player is standing (or hide if they walked away)
 	if interaction_label:
 		interaction_label.text = interaction_text
-	if not player_is_inside:
+	if player_is_inside:
+		_show_label()
+	else:
 		_hide_label()
 
 # --- Label fade helpers (same pattern as door.gd) ---

@@ -115,7 +115,12 @@ func _on_professor_interacted():
 		return
 	
 	if character_data and character_data.ch2_y1s1_teaching_done:
-		# Post-completion dialogue
+		# ── Thesis Complete → OJT Dialogue ────────────────────────
+		if character_data.get("thesis_completed") and dialogue_box:
+			_show_ojt_dialogue()
+			return
+
+		# Post-completion dialogue (normal)
 		if dialogue_box:
 			dialogue_box.start([
 				{ "name": "Professor Markup", "text": "You've completed all my lessons for this semester. Well done!" },
@@ -1082,32 +1087,16 @@ func _autosave_progress():
 		player.block_ui_input = true
 		player.set_physics_process(false)
 
-	var canvas = CanvasLayer.new()
-	canvas.layer = 100
-	var bg = ColorRect.new()
-	bg.color = Color(0, 0, 0, 0.8)
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var lbl = Label.new()
-	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lbl.add_theme_font_size_override("font_size", 28)
-	canvas.add_child(bg)
-	canvas.add_child(lbl)
-	get_tree().current_scene.add_child(canvas)
-
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	var overlay = LoadingOverlay.create(get_tree(), "Auto Saving, please wait...")
 	await get_tree().create_timer(2.5).timeout
-
-	if is_instance_valid(canvas):
-		canvas.queue_free()
+	if is_instance_valid(overlay):
+		await overlay.dismiss()
 
 	if player:
 		player.can_move = true
 		player.block_ui_input = false
 		player.set_physics_process(true)
-
-
 func _make_challenge(id: String, title: String, topic: String, file_name: String,
 	code_lines: Array, mission_steps: Array, placeholder: String,
 	expected_answers: Array, correct_output: String, error_output: String,
@@ -1653,3 +1642,77 @@ func _on_slide_glossary_clicked(meta) -> void:
 	# Add to root so layer=100 puts it above slides (50) and dialogue (60)
 	get_tree().root.add_child(popup)
 	popup.show_definition(term)
+
+# ─── Post-Thesis OJT Dialogue ───────────────────────────────────────────────
+
+func _show_ojt_dialogue() -> void:
+	if not dialogue_box:
+		dialogue_box = _get_dialogue_box()
+	if not dialogue_box:
+		return
+
+	if player:
+		player.can_move = false
+
+	dialogue_box.start([
+		{ "name": "Professor Markup", "text": "..." },
+		{ "name": "Professor Markup", "text": "You actually did it." },
+		{ "name": "Professor Markup", "text": "You defended your thesis." },
+		{ "name": "Professor Markup", "text": "I'll be honest — there were moments I wasn't sure you'd make it." },
+		{ "name": "Student", "text": "...neither was I." },
+		{ "name": "Professor Markup", "text": "But you did. And that's what matters." },
+		{ "name": "Professor Markup", "text": "As your adviser, I'm proud of you." },
+		{ "name": "Professor Markup", "text": "Now… there's one more thing." },
+		{ "name": "Professor Markup", "text": "Your [color=#f0c674]OJT[/color] — On-the-Job Training." },
+		{ "name": "Professor Markup", "text": "You'll be working at a real company. Applying everything you've learned." },
+		{ "name": "Professor Markup", "text": "But before that — make sure you don't have anything else to do here." },
+		{ "name": "Professor Markup", "text": "Talk to your friends, revisit your lessons, explore the campus…" },
+		{ "name": "Professor Markup", "text": "Once you start your OJT, there's no coming back for a while." },
+		{ "name": "Professor Markup", "text": "After you finish your OJT, come back to me. I'll be waiting." },
+		{ "name": "Professor Markup", "text": "And then… [color=#f0c674]graduation[/color]." },
+		{
+			"name": "Professor Markup",
+			"text": "So — are you ready to proceed with your OJT?",
+			"choices": ["Yes, let's go!", "Not yet, I want to explore more"]
+		}
+	])
+	dialogue_box.choice_selected.connect(_on_ojt_choice_markup, CONNECT_ONE_SHOT)
+
+func _on_ojt_choice_markup(choice_index: int) -> void:
+	if not dialogue_box:
+		dialogue_box = _get_dialogue_box()
+
+	if choice_index == 0:
+		# Yes — go to OJT
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Markup", "text": "Alright. Head to the office — they're expecting you." },
+				{ "name": "Professor Markup", "text": "After your OJT, come back to me for [color=#f0c674]graduation[/color]." },
+				{ "name": "Professor Markup", "text": "Good luck out there." }
+			])
+			await dialogue_box.dialogue_finished
+
+		# Fade transition to Ch3
+		var scene_transition = get_node_or_null("/root/SceneTransition")
+		if scene_transition:
+			scene_transition.transition_to_scene(
+				"res://Scenes/Ch3/main_office_3_floor_map.tscn",
+				Vector2(610.0, 571.0),
+				"none"
+			)
+	else:
+		# No — stay and explore
+		if dialogue_box:
+			dialogue_box.start([
+				{ "name": "Professor Markup", "text": "Take your time." },
+				{ "name": "Professor Markup", "text": "When you're ready, talk to me again." },
+				{ "name": "Professor Markup", "text": "I'll be here." }
+			])
+			await dialogue_box.dialogue_finished
+
+		# Unfreeze player
+		if player:
+			player.can_move = true
+			player.can_interact = true
+			player.set_physics_process(true)
+			player.block_ui_input = false

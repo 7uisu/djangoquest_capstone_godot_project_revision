@@ -734,12 +734,6 @@ tile_map_data = PackedByteArray("AAAjAAwAAAABAGMAAAAjAA0AAAABAGQAAAAkAAwAAAABAGc
 
 [node name="IceCreamShopObjects1" parent="." unique_id=1837654719 instance=ExtResource("12_vq2fa")]
 
-[node name="SlidingDoor" parent="." unique_id=1618620930 instance=ExtResource("14_4ee67")]
-position = Vector2(608, 194)
-
-[node name="SlidingDoor2" parent="." unique_id=567775171 instance=ExtResource("14_4ee67")]
-position = Vector2(608, 482)
-
 [node name="FrontDoor1" parent="." unique_id=765459355 instance=ExtResource("15_dqpyt")]
 position = Vector2(-336, 296)
 
@@ -791,5 +785,16 @@ position = Vector2(544, -32)
 [node name="ElevatorDoor2" parent="." unique_id=1764153215 instance=ExtResource("17_4tc6l")]
 position = Vector2(672, -32)
 
-[node name="Player" parent="." unique_id=833241429 instance=ExtResource("13_u21ej")]
-position = Vector2(560, 63)
+[node name="YSortLayer" type="Node2D" parent="." unique_id=2047253618]
+y_sort_enabled = true
+
+[node name="SlidingDoor" parent="YSortLayer" unique_id=1618620930 instance=ExtResource("14_4ee67")]
+y_sort_enabled = true
+position = Vector2(608, 194)
+
+[node name="SlidingDoor2" parent="YSortLayer" unique_id=567775171 instance=ExtResource("14_4ee67")]
+y_sort_enabled = true
+position = Vector2(608, 482)
+
+[node name="Player" parent="YSortLayer" unique_id=833241429 instance=ExtResource("13_u21ej")]
+position = Vector2(610, 571)

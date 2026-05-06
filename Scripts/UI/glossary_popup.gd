@@ -130,7 +130,7 @@ func show_definition(term: String) -> void:
 		_source_label.text = ""
 
 func _input(event):
-	# Block ALL keyboard input while popup is open to prevent dialogue from advancing via Space/E
+	# Block ALL input while popup is open to prevent dialogue from advancing
 	if event is InputEventKey and event.pressed:
 		if event.keycode == KEY_ESCAPE:
 			queue_free()

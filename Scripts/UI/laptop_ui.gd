@@ -23,6 +23,7 @@ var quest_log_content: Control
 var settings_content: Control
 var sis_content: Control
 var certificates_content: Control
+var achievements_content: Control
 
 var _cred_label: Label
 
@@ -226,6 +227,7 @@ func _create_desktop() -> Control:
 		{"id": "quest_log", "name": "Quest Log", "icon": "📋", "color": Color(0.3, 0.75, 0.4), "desc": "Track your quests"},
 		{"id": "settings", "name": "Settings", "icon": "⚙️", "color": Color(0.6, 0.35, 0.8), "desc": "Customize your IDE"},
 		{"id": "certificates", "name": "Certificates", "icon": "🏆", "color": Color(0.85, 0.65, 0.1), "desc": "View earned ECertificates"},
+		{"id": "achievements", "name": "Achievements", "icon": "🏅", "color": Color(0.9, 0.55, 0.1), "desc": "Your earned badges"},
 	]
 
 	for app in apps:
@@ -365,6 +367,7 @@ func _create_app_view() -> Control:
 	settings_content = _build_settings()
 	sis_content = _build_sis()
 	certificates_content = _build_certificates()
+	achievements_content = _build_achievements()
 
 	app_content.add_child(retro_browser_content)
 	app_content.add_child(notes_content)
@@ -372,6 +375,7 @@ func _create_app_view() -> Control:
 	app_content.add_child(settings_content)
 	app_content.add_child(sis_content)
 	app_content.add_child(certificates_content)
+	app_content.add_child(achievements_content)
 
 	return container
 
@@ -829,6 +833,80 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 	else:
 		vbox.add_child(_create_locked_prof_card("Professor REST — APIs & Modern Systems"))
 
+	# ─── Thesis Defense (Panelists) ───────────────────────────────────────────
+	if cd and cd.thesis_panelist_progress > 0:
+		var t_sep = HSeparator.new()
+		var t_sep_style = StyleBoxLine.new()
+		t_sep_style.color = Color(0.7, 0.4, 0.2, 0.5)
+		t_sep_style.thickness = 2
+		t_sep.add_theme_stylebox_override("separator", t_sep_style)
+		vbox.add_child(t_sep)
+
+		var t_header = Label.new()
+		t_header.text = "🎓 Thesis Defense"
+		t_header.add_theme_font_size_override("font_size", 16)
+		t_header.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
+		vbox.add_child(t_header)
+
+		# Panelist 1
+		if cd.thesis_panelist_progress >= 1:
+			vbox.add_child(_create_active_prof_card(
+				"Panelist Cruz — Django Project Setup",
+				cd.thesis_panelist_1_grade,
+				cd.thesis_panelist_1_retakes,
+				false,
+				true,
+				{},
+				false
+			))
+		else:
+			vbox.add_child(_create_locked_prof_card("Panelist Cruz — Django Project Setup"))
+
+		# Panelist 2
+		if cd.thesis_panelist_progress >= 2:
+			vbox.add_child(_create_active_prof_card(
+				"Panelist Santos — Data & Models",
+				cd.thesis_panelist_2_grade,
+				cd.thesis_panelist_2_retakes,
+				false,
+				true,
+				{},
+				false
+			))
+		else:
+			vbox.add_child(_create_locked_prof_card("Panelist Santos — Data & Models"))
+
+		# Panelist 3
+		if cd.thesis_panelist_progress >= 3:
+			vbox.add_child(_create_active_prof_card(
+				"Panelist Reyes — System Debugging (Final Boss)",
+				cd.thesis_panelist_3_grade,
+				cd.thesis_panelist_3_retakes,
+				false,
+				true,
+				{},
+				false
+			))
+		else:
+			vbox.add_child(_create_locked_prof_card("Panelist Reyes — System Debugging (Final Boss)"))
+
+		# Combined thesis grade
+		if cd.thesis_completed:
+			var combined = (cd.thesis_panelist_1_grade + cd.thesis_panelist_2_grade + cd.thesis_panelist_3_grade) / 3.0
+			var combined_snap = _snap_thesis_grade(combined)
+			var combined_card = _create_active_prof_card(
+				"📊 Combined Thesis Grade",
+				combined_snap,
+				0,
+				false,
+				true,
+				{},
+				false
+			)
+			vbox.add_child(combined_card)
+	elif cd and cd.student_seq_progress.get("y3mid", 0) >= 5:
+		vbox.add_child(_create_locked_prof_card("🎓 Thesis Defense — Locked (complete all professors first)"))
+
 	# ─── Learning Mode Sandbox Grades ──────────────────────────────────────────
 	if cd and cd.get("learning_mode_grades") and not cd.learning_mode_grades.is_empty():
 		var lm_sep = HSeparator.new()
@@ -893,13 +971,27 @@ func _calculate_gwa() -> String:
 		total_grades += float(cd.ch2_y3mid_final_grade)
 		count += 1
 
+	# Include thesis defense combined grade if completed
+	if cd.thesis_completed:
+		var combined = (cd.thesis_panelist_1_grade + cd.thesis_panelist_2_grade + cd.thesis_panelist_3_grade) / 3.0
+		total_grades += _snap_thesis_grade(combined)
+		count += 1
+
 	if count == 0:
 		return "N/A"
 
 	var gwa = total_grades / count
 	return "%.2f" % gwa
 
-func _create_active_prof_card(prof_name: String, grade: float, retakes: int, removal_passed: bool, is_passing: bool, ai_data: Dictionary = {}) -> PanelContainer:
+func _snap_thesis_grade(avg: float) -> float:
+	if avg <= 1.125: return 1.0
+	elif avg <= 1.375: return 1.25
+	elif avg <= 1.75: return 1.5
+	elif avg <= 2.25: return 2.0
+	elif avg <= 2.75: return 2.5
+	else: return 3.0
+
+func _create_active_prof_card(prof_name: String, grade: float, retakes: int, removal_passed: bool, is_passing: bool, ai_data: Dictionary = {}, show_inc: bool = true) -> PanelContainer:
 	var card = PanelContainer.new()
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.16, 0.22, 1.0)
@@ -927,7 +1019,8 @@ func _create_active_prof_card(prof_name: String, grade: float, retakes: int, rem
 
 	_add_grid_row(grid, "Final Grade:", "%.2f" % grade, Color(0.4, 0.9, 0.5) if is_passing else Color(0.9, 0.4, 0.4))
 	_add_grid_row(grid, "Retakes:", str(retakes), Color(0.8, 0.8, 0.8))
-	_add_grid_row(grid, "INC (Removal Exam):", "Passed" if removal_passed else ("Failed" if grade == 5.0 and retakes > 0 else "N/A"), Color(0.8, 0.8, 0.8))
+	if show_inc:
+		_add_grid_row(grid, "INC (Removal Exam):", "Passed" if removal_passed else ("Failed" if grade == 5.0 and retakes > 0 else "N/A"), Color(0.8, 0.8, 0.8))
 
 	# ─── AI Minigame Monitoring Section ───────────────────────────────────────
 	# Only shown when ai_data is provided (currently: Prof Query — Relationship Architecture)
@@ -1142,7 +1235,7 @@ func _create_taskbar() -> PanelContainer:
 	credit_icon.custom_minimum_size = Vector2(14, 14)
 	credit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	credit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	var cred_tex = load("res://Textures/School Textures/Items/Interactable/CreditCard-32x32.png")
+	var cred_tex = load("res://Textures/School Textures/Items/Interactable/Credit-32x32.png")
 	if cred_tex:
 		credit_icon.texture = cred_tex
 	credit_hbox.add_child(credit_icon)
@@ -1216,7 +1309,16 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
 		sm.save_game()
+		
+		# Show the loading overlay
+		var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+		var overlay = LoadingOverlay.create(get_tree(), "Manual Saving, please wait...")
+		
 		await get_tree().create_timer(2.0).timeout
+		
+		if is_instance_valid(overlay):
+			await overlay.dismiss()
+			
 		btn.text = "✅ Saved!"
 		btn.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
 		await get_tree().create_timer(1.5).timeout
@@ -1486,7 +1588,8 @@ func _show_certificate_viewer(topic: String, completed_at: String, is_grand: boo
 	if logo_tex:
 		var logo = TextureRect.new()
 		logo.texture = logo_tex
-		logo.custom_minimum_size = Vector2(50, 50)
+		logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		logo.custom_minimum_size = Vector2(160, 40)
 		logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		content.add_child(logo)
@@ -1629,6 +1732,140 @@ func _show_desktop():
 	desktop_view.visible = true
 	app_view.visible = false
 
+# ─── Achievements App ────────────────────────────────────────────────────────
+
+# Master list of all achievements (same order as server)
+const ALL_ACHIEVEMENTS = [
+	{"key": "ch1_complete", "name": "📜 Origin Story", "desc": "Completed Chapter 1"},
+	{"key": "ch1_perfect", "name": "🧠 History Buff", "desc": "Perfect Ch1 quiz score"},
+	{"key": "first_professor", "name": "🎓 Freshman Year", "desc": "Beat your first professor"},
+	{"key": "all_professors", "name": "👨‍🎓 Dean's Lister", "desc": "Conquered all 7 professors"},
+	{"key": "honor_roll", "name": "🏅 Honor Roll", "desc": "Story GWA ≤ 1.75"},
+	{"key": "no_retakes", "name": "⚡ First Try", "desc": "Beat a professor with 0 retakes"},
+	{"key": "comeback_kid", "name": "💪 Comeback Kid", "desc": "Passed a removal exam"},
+	{"key": "thesis_started", "name": "📋 Panel Ready", "desc": "Beat your first panelist"},
+	{"key": "thesis_defended", "name": "🎓 Thesis Defended", "desc": "Defended your thesis"},
+	{"key": "thesis_magna", "name": "🌟 Magna Cum Laude", "desc": "Thesis GWA ≤ 1.5"},
+	{"key": "item_shopper", "name": "🛒 Shopaholic", "desc": "Used a shop item"},
+	{"key": "challenge_10", "name": "🔥 Code Warrior", "desc": "10+ challenges completed"},
+	{"key": "challenge_25", "name": "💎 Code Legend", "desc": "25+ challenges completed"},
+	{"key": "community_helper", "name": "🤝 Community Helper", "desc": "Helped 15+ students"},
+	{"key": "full_clear", "name": "🏆 100% Complete", "desc": "100% story progress"},
+]
+
+var _achievements_grid: GridContainer
+
+func _build_achievements() -> ScrollContainer:
+	var scroll = ScrollContainer.new()
+	scroll.visible = false
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var vbox = VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 16)
+	scroll.add_child(vbox)
+
+	# Header
+	var header = Label.new()
+	header.text = "🏅 Your Achievements"
+	header.add_theme_font_size_override("font_size", 18)
+	header.add_theme_color_override("font_color", Color(0.95, 0.8, 0.3))
+	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(header)
+
+	# Counter label
+	var counter = Label.new()
+	counter.name = "AchievementCounter"
+	counter.text = "0 / 15 Unlocked"
+	counter.add_theme_font_size_override("font_size", 12)
+	counter.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
+	counter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(counter)
+
+	# Grid
+	_achievements_grid = GridContainer.new()
+	_achievements_grid.columns = 3
+	_achievements_grid.add_theme_constant_override("h_separation", 10)
+	_achievements_grid.add_theme_constant_override("v_separation", 10)
+	_achievements_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_child(_achievements_grid)
+
+	return scroll
+
+func _refresh_achievements():
+	if not _achievements_grid:
+		return
+
+	# Clear old cards
+	for c in _achievements_grid.get_children():
+		c.queue_free()
+
+	var cd = get_node_or_null("/root/CharacterData")
+	var unlocked_keys: Array = cd.unlocked_achievements if cd else []
+	var count = 0
+
+	for ach in ALL_ACHIEVEMENTS:
+		var is_unlocked = ach["key"] in unlocked_keys
+		if is_unlocked:
+			count += 1
+
+		var card = PanelContainer.new()
+		card.custom_minimum_size = Vector2(0, 80)
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+		var card_style = StyleBoxFlat.new()
+		card_style.set_corner_radius_all(8)
+		card_style.set_content_margin_all(8)
+		if is_unlocked:
+			card_style.bg_color = Color(0.18, 0.15, 0.05)
+			card_style.border_color = Color(0.9, 0.7, 0.1, 0.6)
+			card_style.set_border_width_all(2)
+		else:
+			card_style.bg_color = Color(0.08, 0.08, 0.12)
+			card_style.border_color = Color(0.2, 0.2, 0.25)
+			card_style.set_border_width_all(1)
+		card.add_theme_stylebox_override("panel", card_style)
+
+		var card_vbox = VBoxContainer.new()
+		card_vbox.add_theme_constant_override("separation", 2)
+		card_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		card.add_child(card_vbox)
+
+		# Icon / Name
+		var name_label = Label.new()
+		if is_unlocked:
+			name_label.text = ach["name"]
+			name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.3))
+		else:
+			name_label.text = "🔒 ???"
+			name_label.add_theme_color_override("font_color", Color(0.35, 0.35, 0.4))
+		name_label.add_theme_font_size_override("font_size", 12)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		card_vbox.add_child(name_label)
+
+		# Description
+		var desc_label = Label.new()
+		if is_unlocked:
+			desc_label.text = ach["desc"]
+			desc_label.add_theme_color_override("font_color", Color(0.7, 0.72, 0.8))
+		else:
+			desc_label.text = "Keep playing to unlock!"
+			desc_label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.35))
+		desc_label.add_theme_font_size_override("font_size", 9)
+		desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		card_vbox.add_child(desc_label)
+
+		_achievements_grid.add_child(card)
+
+	# Update counter
+	var counter = achievements_content.find_child("AchievementCounter", true, false)
+	if counter:
+		counter.text = "%d / %d Unlocked" % [count, ALL_ACHIEVEMENTS.size()]
+
+
 func _open_app(app_id: String):
 	current_app = app_id
 	desktop_view.visible = false
@@ -1641,6 +1878,7 @@ func _open_app(app_id: String):
 	settings_content.visible = false
 	sis_content.visible = false
 	certificates_content.visible = false
+	achievements_content.visible = false
 
 	# Show the selected app
 	match app_id:
@@ -1664,6 +1902,10 @@ func _open_app(app_id: String):
 			app_title_label.text = "🏆 ECertificates"
 			_refresh_certificates()
 			certificates_content.visible = true
+		"achievements":
+			app_title_label.text = "🏅 Achievements"
+			_refresh_achievements()
+			achievements_content.visible = true
 
 func _back_to_desktop():
 	current_app = ""

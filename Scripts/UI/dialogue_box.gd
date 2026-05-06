@@ -91,11 +91,18 @@ func _on_toggle_button_pressed():
 func _input(event):
 	if not is_active:
 		return
-		
+
+	# ── Block all input while a glossary popup is open ────────────────
+	if _is_glossary_popup_open():
+		return
+
 	var is_left_click = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
 
 	if not panel.visible:
-		if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept") or is_left_click:
+		# When hidden, only keyboard (interact / ui_accept) can unhide.
+		# Left-clicks are IGNORED so the player can tap glossary terms on
+		# the teaching slide behind the hidden dialogue box.
+		if event.is_action_pressed("interact") or event.is_action_pressed("ui_accept"):
 			panel.visible = true
 			if toggle_button:
 				toggle_button.text = "👁 Hide"
@@ -255,6 +262,14 @@ func _start_indicator_blink():
 	_indicator_tween.tween_property(continue_indicator, "modulate:a", 1.0, 0.5)
 
 # ─── Glossary ───────────────────────────────────────────────────────────────
+
+## Returns true if any glossary popup is currently visible anywhere in the tree.
+func _is_glossary_popup_open() -> bool:
+	# GlossaryPopup uses layer=200 and is added to get_tree().root
+	for child in get_tree().root.get_children():
+		if child is CanvasLayer and child.has_method("show_definition"):
+			return true
+	return false
 
 # Called when a player clicks a [url=term]word[/url] in dialogue BBCode.
 # Usage in dialogue lines: "Django uses [url=mvt]MVT architecture[/url]."

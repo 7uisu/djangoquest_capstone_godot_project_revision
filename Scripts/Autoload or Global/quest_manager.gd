@@ -169,14 +169,30 @@ func refresh_college_quest() -> void:
 	if not path.ends_with("college_map.tscn"):
 		return
 	var cd = _character_data
+	
+	# Trigger the map to activate student sequence if needed
+	if scene.has_method("check_and_activate_student_sequences"):
+		scene.check_and_activate_student_sequences()
+
+	# Helper: check if professor's students are also done
+	var _sp = cd.student_seq_progress
 	if not cd.ch2_y1s1_teaching_done:
 		set_quest("ch2:_html_fundamentals", "Find Professor Markup for your first College module.", "NPCMaleCollegeProf01")
+	elif _sp.get("y1s1", 0) < 5:
+		# Students not done yet — quest is handled by StudentQuizController
+		pass
 	elif not cd.ch2_y1s2_teaching_done:
 		set_quest("ch2:_css_styling", "Speak with Professor Syntax to learn about styling websites.", "NPCFemaleCollegeProf01")
+	elif _sp.get("y1s2", 0) < 5:
+		pass
 	elif not cd.ch2_y2s1_teaching_done:
 		set_quest("ch2:_django_views", "Locate Professor View to start working with backend templates.", "NPCMaleCollegeProf02")
+	elif _sp.get("y2s1", 0) < 5:
+		pass
 	elif not cd.ch2_y2s2_teaching_done:
 		set_quest("ch2:_database_models", "Find Professor Query to learn about databases and ORMs.", "NPCMaleCollegeProf03")
+	elif _sp.get("y2s2", 0) < 5:
+		pass
 	elif not cd.ch2_y3s1_teaching_done:
 		set_quest("ch2:_finding_token", "Head to the 2nd Floor to meet Professor Token.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s2_teaching_done:
@@ -184,7 +200,12 @@ func refresh_college_quest() -> void:
 	elif not cd.ch2_y3mid_teaching_done:
 		set_quest("ch2:_finding_rest", "Head to the 2nd Floor to meet Professor REST.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	else:
-		clear_quest()
+		# All professors done — check thesis state
+		var cd2 = cd
+		if cd2.get("thesis_completed"):
+			set_quest("ch2:_talk_to_markup_ojt", "🎓 Thesis defended! Talk to Professor Markup about your OJT.", "NPCMaleCollegeProf01")
+		else:
+			clear_quest()
 
 
 func refresh_college_2nd_floor_quest() -> void:
@@ -197,17 +218,40 @@ func refresh_college_2nd_floor_quest() -> void:
 	if not path.ends_with("college_2nd_floor_map.tscn"):
 		return
 	var cd = _character_data
-	# Only show 2nd floor quests if all 1st floor profs are done
+	
+	# Trigger the map to activate student sequence if needed
+	if scene.has_method("check_and_activate_student_sequences"):
+		scene.check_and_activate_student_sequences()
+
+	var _sp = cd.student_seq_progress
+	# Only show 2nd floor quests if all 1st floor profs AND their students are done
 	if not (cd.ch2_y1s1_teaching_done and cd.ch2_y1s2_teaching_done and cd.ch2_y2s1_teaching_done and cd.ch2_y2s2_teaching_done):
 		set_quest("ch2:_missing_prerequisites", "Return to the 1st Floor and finish your earlier modules first.", ["CollegeStairsLeft", "CollegeStairsRight"])
+	elif _sp.get("y1s1", 0) < 5 or _sp.get("y1s2", 0) < 5 or _sp.get("y2s1", 0) < 5 or _sp.get("y2s2", 0) < 5:
+		set_quest("ch2:_missing_student_prereqs", "Return to the 1st Floor and help all classmates first.", ["CollegeStairsLeft", "CollegeStairsRight"])
 	elif not cd.ch2_y3s1_teaching_done:
 		set_quest("ch2:_deployment_basics", "Speak with Professor Token about deploying your website.", "NPCMaleCollegeProf04")
+	elif _sp.get("y3s1", 0) < 5:
+		pass
 	elif not cd.ch2_y3s2_teaching_done:
 		set_quest("ch2:_user_authentication", "Find Professor Auth to learn how to secure your app.", "NPCFemaleCollegeProf02")
+	elif _sp.get("y3s2", 0) < 5:
+		pass
 	elif not cd.ch2_y3mid_teaching_done:
 		set_quest("ch2:_api_architecture", "Speak with Professor REST to master application interfaces.", "NPCFemaleCollegeProf03")
+	elif _sp.get("y3mid", 0) < 5:
+		pass
 	else:
-		clear_quest()
+		# All professors + students done — check panelist progress
+		var tp = cd.thesis_panelist_progress
+		if tp >= 3 or cd.thesis_completed:
+			set_quest("ch2:_go_to_markup", "🎓 Thesis defended! Go to the 1st Floor and talk to Professor Markup.", ["CollegeStairsLeft", "CollegeStairsRight"])
+		elif tp == 2:
+			set_quest("ch2:_final_panelist", "⚔️ Face the final panelist, Reyes!", "NPCPanelist03")
+		elif tp == 1:
+			set_quest("ch2:_panelist_santos", "📋 Panelist Santos is waiting to evaluate you.", "NPCPanelist02")
+		else:
+			set_quest("ch2:_panelist_cruz", "📋 Defend your thesis! Talk to Panelist Cruz.", "NPCPanelist01")
 
 
 # Called when the player clicks a quest entry in the Laptop UI

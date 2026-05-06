@@ -73,7 +73,7 @@ custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "🎒 Use Item"
 
-[node name="MainContent" type="HSplitContainer" parent="IDEScreen" unique_id=1943070014]
+[node name="MainContent" type="HBoxContainer" parent="IDEScreen" unique_id=1943070014]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -91,6 +91,7 @@ size_flags_stretch_ratio = 0.25
 
 [node name="MissionScroll" type="ScrollContainer" parent="IDEScreen/MainContent/MissionPanel" unique_id=1832495508]
 layout_mode = 2
+horizontal_scroll_mode = 0
 
 [node name="MissionVBox" type="VBoxContainer" parent="IDEScreen/MainContent/MissionPanel/MissionScroll" unique_id=698626451]
 layout_mode = 2

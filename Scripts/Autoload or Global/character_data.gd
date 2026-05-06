@@ -14,6 +14,7 @@ var has_seen_laptop_tutorial: bool = false
 var has_seen_ide_tutorial: bool = false
 var has_seen_college_sis_tutorial: bool = false
 var has_seen_overflow_stack_tutorial: bool = false
+var has_seen_shop_tutorial: bool = false
 var has_reached_college: bool = false
 
 # Chapter 1 progress
@@ -48,6 +49,21 @@ var ch2_y3s2_current_module: int = 0           # 0-1 (which module player is on)
 var ch2_y3mid_teaching_done: bool = false      # Year 3 Midyear all modules complete
 var ch2_y3mid_teaching_done_at: String = ""    # ISO datetime when completed
 var ch2_y3mid_current_module: int = 0          # 0-1 (which module player is on)
+
+# ─── Student Application Sequence Tracking ───────────────────────────────────
+# Per-professor: how many of the 5 students (4 regular + 1 mini-boss) are done
+var student_seq_progress: Dictionary = {}  # e.g. {"y1s1": 3, "y1s2": 5}
+var student_seq_active_professor: String = ""  # which prof's students are currently active
+var student_seq_active_npcs: Array = []  # node names of the 5 randomly chosen NPCs
+var student_seq_miniboss_npc: String = ""  # node name of the mini-boss NPC
+var student_seq_names: Array = [] # node names tracking in current sequence
+var student_seq_completed_indices: Array = [] # explicitly track beaten students
+
+# Retake tracking per professor's student challenges (for analytics)
+var student_retakes: Dictionary = {}  # e.g. {"y1s1": 2, "y2s1": 0}
+
+# Item usage tracking for future achievement
+var used_item_in_college: bool = false  # flips true the moment ANY item is consumed
 
 # ─── Grade / Retake Tracking (per professor semester) ────────────────────────
 # Y1S1 — Professor Markup (HTML, CSS, Web Basics)
@@ -177,6 +193,18 @@ var ch2_y3mid_bonus_item_earned: bool = false
 var ch2_y3mid_inc_triggered: bool = false
 var ch2_y3mid_removal_passed: bool = false
 
+# ─── Thesis Defense (Panelist System) ────────────────────────────────────────
+var thesis_panelist_progress: int = 0       # 0=locked, 1=P1 done, 2=P2 done, 3=all done
+var thesis_panelist_1_grade: float = 0.0
+var thesis_panelist_2_grade: float = 0.0
+var thesis_panelist_3_grade: float = 0.0
+var thesis_panelist_1_retakes: int = 0
+var thesis_panelist_2_retakes: int = 0
+var thesis_panelist_3_retakes: int = 0
+var thesis_completed: bool = false
+var thesis_completed_at: String = ""
+var thesis_spotlight_shown: bool = false
+
 # Challenges completed counter (for teacher dashboard tracking)
 var challenges_completed: int = 0
 
@@ -194,6 +222,9 @@ var unlocked_books_and_minigames: Array[bool] = [true, false, false, false]
 # Tracks which world items have been picked up (by node name) to prevent respawn
 var picked_up_items: Array = []
 
+# Achievements unlocked (list of achievement key strings, synced from server)
+var unlocked_achievements: Array = []
+
 func reset_data():
 	selected_gender = ""
 	player_name = ""
@@ -206,6 +237,7 @@ func reset_data():
 	has_seen_ide_tutorial = false
 	has_seen_college_sis_tutorial = false
 	has_seen_overflow_stack_tutorial = false
+	has_seen_shop_tutorial = false
 	has_reached_college = false
 	ch1_teaching_done = false
 	ch1_quiz_done = false
@@ -253,6 +285,26 @@ func reset_data():
 	unlocked_levels = [true, false, false, false]
 	unlocked_books_and_minigames = [true, false, false, false]
 	picked_up_items = []
+	unlocked_achievements = []
+	student_seq_progress = {}
+	student_seq_active_professor = ""
+	student_seq_active_npcs = []
+	student_seq_miniboss_npc = ""
+	student_seq_names = []
+	student_seq_completed_indices = []
+	student_retakes = {}
+	used_item_in_college = false
+	# Thesis Defense reset
+	thesis_panelist_progress = 0
+	thesis_panelist_1_grade = 0.0
+	thesis_panelist_2_grade = 0.0
+	thesis_panelist_3_grade = 0.0
+	thesis_panelist_1_retakes = 0
+	thesis_panelist_2_retakes = 0
+	thesis_panelist_3_retakes = 0
+	thesis_completed = false
+	thesis_completed_at = ""
+	thesis_spotlight_shown = false
 
 func set_all_data(name: String, gender: String, ul1: bool, ul2: bool, ul3: bool, ul4: bool,
 	ubam1: bool, ubam2: bool, ubam3: bool, ubam4: bool):
@@ -277,6 +329,7 @@ func to_save_dict() -> Dictionary:
 		"has_seen_ide_tutorial": has_seen_ide_tutorial,
 		"has_seen_college_sis_tutorial": has_seen_college_sis_tutorial,
 		"has_seen_overflow_stack_tutorial": has_seen_overflow_stack_tutorial,
+		"has_seen_shop_tutorial": has_seen_shop_tutorial,
 		"has_reached_college": has_reached_college,
 		# Chapter 1
 		"ch1_teaching_done": ch1_teaching_done,
@@ -346,6 +399,28 @@ func to_save_dict() -> Dictionary:
 		"unlocked_book_and_minigame_4": unlocked_books_and_minigames[3],
 		# Picked up world items
 		"picked_up_items": picked_up_items,
+		# Student sequence
+		"student_seq_progress": student_seq_progress,
+		"student_seq_active_professor": student_seq_active_professor,
+		"student_seq_active_npcs": student_seq_active_npcs,
+		"student_seq_miniboss_npc": student_seq_miniboss_npc,
+		"student_seq_names": student_seq_names,
+		"student_seq_completed_indices": student_seq_completed_indices,
+		"student_retakes": student_retakes,
+		"used_item_in_college": used_item_in_college,
+		# Thesis Defense
+		"thesis_panelist_progress": thesis_panelist_progress,
+		"thesis_panelist_1_grade": thesis_panelist_1_grade,
+		"thesis_panelist_2_grade": thesis_panelist_2_grade,
+		"thesis_panelist_3_grade": thesis_panelist_3_grade,
+		"thesis_panelist_1_retakes": thesis_panelist_1_retakes,
+		"thesis_panelist_2_retakes": thesis_panelist_2_retakes,
+		"thesis_panelist_3_retakes": thesis_panelist_3_retakes,
+		"thesis_completed": thesis_completed,
+		"thesis_completed_at": thesis_completed_at,
+		"thesis_spotlight_shown": thesis_spotlight_shown,
+		# Achievements
+		"unlocked_achievements": unlocked_achievements,
 	})
 	return d
 
@@ -363,6 +438,7 @@ func from_save_dict(data: Dictionary):
 	has_seen_ide_tutorial = data.get("has_seen_ide_tutorial", false)
 	has_seen_college_sis_tutorial = data.get("has_seen_college_sis_tutorial", false)
 	has_seen_overflow_stack_tutorial = data.get("has_seen_overflow_stack_tutorial", false)
+	has_seen_shop_tutorial = data.get("has_seen_shop_tutorial", false)
 	has_reached_college = data.get("has_reached_college", false)
 	# Chapter 1
 	ch1_teaching_done = data.get("ch1_teaching_done", false)
@@ -438,6 +514,27 @@ func from_save_dict(data: Dictionary):
 	]
 	# Picked up world items
 	picked_up_items = data.get("picked_up_items", [])
+	# Student sequence
+	student_seq_progress = data.get("student_seq_progress", {})
+	student_seq_active_professor = data.get("student_seq_active_professor", "")
+	student_seq_active_npcs = data.get("student_seq_active_npcs", [])
+	student_seq_miniboss_npc = data.get("student_seq_miniboss_npc", "")
+	student_seq_names = data.get("student_seq_names", [])
+	student_seq_completed_indices = data.get("student_seq_completed_indices", [])
+	student_retakes = data.get("student_retakes", {})
+	used_item_in_college = data.get("used_item_in_college", false)
+	# Thesis Defense
+	thesis_panelist_progress = int(data.get("thesis_panelist_progress", 0))
+	thesis_panelist_1_grade = float(data.get("thesis_panelist_1_grade", 0.0))
+	thesis_panelist_2_grade = float(data.get("thesis_panelist_2_grade", 0.0))
+	thesis_panelist_3_grade = float(data.get("thesis_panelist_3_grade", 0.0))
+	thesis_panelist_1_retakes = int(data.get("thesis_panelist_1_retakes", 0))
+	thesis_panelist_2_retakes = int(data.get("thesis_panelist_2_retakes", 0))
+	thesis_panelist_3_retakes = int(data.get("thesis_panelist_3_retakes", 0))
+	thesis_completed = data.get("thesis_completed", false)
+	thesis_completed_at = str(data.get("thesis_completed_at", ""))
+	thesis_spotlight_shown = data.get("thesis_spotlight_shown", false)
+	unlocked_achievements = data.get("unlocked_achievements", [])
 	apply_debug_skips()
 
 # --- Convenience getters/setters for backward compatibility ---
@@ -506,6 +603,7 @@ func unlock_book(level_number: int):
 @export var DEBUG_SKIP_TO_TOKEN_PROFESSOR: bool = false
 @export var DEBUG_SKIP_TO_VIEW_PROFESSOR: bool = false
 @export var DEBUG_SKIP_TO_QUERY_PROFESSOR: bool = false
+@export var DEBUG_SKIP_TO_PANELIST: bool = false
 
 func _ready():
 	apply_debug_skips()
@@ -514,53 +612,95 @@ func apply_debug_skips():
 	if DEBUG_SKIP_TO_REST_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s1_final_grade = 1.50
+		student_seq_progress["y1s1"] = 5
 		ch2_y1s2_teaching_done = true
 		ch2_y1s2_final_grade = 2.25
+		student_seq_progress["y1s2"] = 5
 		ch2_y2s1_teaching_done = true
 		ch2_y2s1_final_grade = 1.75
+		student_seq_progress["y2s1"] = 5
 		ch2_y2s2_teaching_done = true
 		ch2_y2s2_final_grade = 2.25
+		student_seq_progress["y2s2"] = 5
 		ch2_y3s1_teaching_done = true
 		ch2_y3s1_final_grade = 2.75
+		student_seq_progress["y3s1"] = 5
 		ch2_y3s2_teaching_done = true
 		ch2_y3s2_final_grade = 2.00
+		student_seq_progress["y3s2"] = 5
 		print("DEBUG: All professors prior to REST skipped (Y1S1 -> Y3S2 done with mock grades).")
 	elif DEBUG_SKIP_TO_AUTH_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s1_final_grade = 1.50
+		student_seq_progress["y1s1"] = 5
 		ch2_y1s2_teaching_done = true
 		ch2_y1s2_final_grade = 2.25
+		student_seq_progress["y1s2"] = 5
 		ch2_y2s1_teaching_done = true
 		ch2_y2s1_final_grade = 1.75
+		student_seq_progress["y2s1"] = 5
 		ch2_y2s2_teaching_done = true
 		ch2_y2s2_final_grade = 2.25
+		student_seq_progress["y2s2"] = 5
 		ch2_y3s1_teaching_done = true
 		ch2_y3s1_final_grade = 2.75
+		student_seq_progress["y3s1"] = 5
 		print("DEBUG: Skipped to Professor Auth. Mock grades injected.")
 	elif DEBUG_SKIP_TO_TOKEN_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s1_final_grade = 1.50
+		student_seq_progress["y1s1"] = 5
 		ch2_y1s2_teaching_done = true
 		ch2_y1s2_final_grade = 2.25
+		student_seq_progress["y1s2"] = 5
 		ch2_y2s1_teaching_done = true
 		ch2_y2s1_final_grade = 1.75
+		student_seq_progress["y2s1"] = 5
 		ch2_y2s2_teaching_done = true
 		ch2_y2s2_final_grade = 2.25
+		student_seq_progress["y2s2"] = 5
 		print("DEBUG: Skipped to Professor Token. Mock grades injected.")
 	elif DEBUG_SKIP_TO_VIEW_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s1_final_grade = 1.50
+		student_seq_progress["y1s1"] = 5
 		ch2_y1s2_teaching_done = true
 		ch2_y1s2_final_grade = 2.25
+		student_seq_progress["y1s2"] = 5
 		print("DEBUG: Skipped to Professor View. Mock grades injected.")
 	elif DEBUG_SKIP_TO_QUERY_PROFESSOR:
 		ch2_y1s1_teaching_done = true
 		ch2_y1s1_final_grade = 1.50
+		student_seq_progress["y1s1"] = 5
 		ch2_y1s2_teaching_done = true
 		ch2_y1s2_final_grade = 2.25
+		student_seq_progress["y1s2"] = 5
 		ch2_y2s1_teaching_done = true
 		ch2_y2s1_final_grade = 1.75
+		student_seq_progress["y2s1"] = 5
 		print("DEBUG: Skipped to Professor Query. Mock grades injected.")
+	elif DEBUG_SKIP_TO_PANELIST:
+		# Skip ALL professors + ALL students to jump straight to panelists
+		for key in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
+			set("ch2_%s_teaching_done" % key, true)
+			set("ch2_%s_final_grade" % key, 1.75)
+			student_seq_progress[key] = 5
+		thesis_spotlight_shown = false
+		print("DEBUG: All professors + students skipped. Panelists ready.")
+
+	var any_skip = DEBUG_SKIP_TO_REST_PROFESSOR or DEBUG_SKIP_TO_AUTH_PROFESSOR or DEBUG_SKIP_TO_TOKEN_PROFESSOR or DEBUG_SKIP_TO_VIEW_PROFESSOR or DEBUG_SKIP_TO_QUERY_PROFESSOR or DEBUG_SKIP_TO_PANELIST
+	if any_skip:
+		has_seen_tutorial = true
+		has_reached_college = true
+		ch1_teaching_done = true
+		ch1_quiz_done = true
+		ch1_post_quiz_dialogue_done = true
+		ch1_convenience_store_cutscene_done = true
+		ch1_spaghetti_guy_cutscene_done = true
+		has_seen_controls_tutorial = true
+		has_seen_inventory_tutorial = true
+		has_seen_laptop_tutorial = true
+		has_seen_ide_tutorial = true
 
 # ─── Currency Helpers ────────────────────────────────────────────────────────
 

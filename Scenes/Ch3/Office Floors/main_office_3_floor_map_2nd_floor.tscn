@@ -802,5 +802,12 @@ current_floor = "2nd Floor"
 position = Vector2(672, -32)
 current_floor = "2nd Floor"
 
-[node name="Player" parent="." unique_id=833241429 instance=ExtResource("16_d33mj")]
-position = Vector2(601, 407)
+[node name="YSortLayer" type="Node2D" parent="." unique_id=1019581831]
+y_sort_enabled = true
+
+[node name="SlidingDoor" parent="YSortLayer" unique_id=186882951 instance=ExtResource("13_tsjvr")]
+y_sort_enabled = true
+position = Vector2(608, 194)
+
+[node name="Player" parent="YSortLayer" unique_id=833241429 instance=ExtResource("16_d33mj")]
+position = Vector2(560, 63)

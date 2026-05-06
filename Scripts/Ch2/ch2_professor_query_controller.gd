@@ -1848,25 +1848,11 @@ func _autosave_progress():
 		player.block_ui_input = true
 		player.set_physics_process(false)
 
-	var canvas = CanvasLayer.new()
-	canvas.layer = 100
-	var bg = ColorRect.new()
-	bg.color = Color(0, 0, 0, 0.8)
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var lbl = Label.new()
-	lbl.text = "⏳ Syncing grades to DjangoQuest SIS..."
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	lbl.add_theme_font_size_override("font_size", 28)
-	canvas.add_child(bg)
-	canvas.add_child(lbl)
-	get_tree().current_scene.add_child(canvas)
-
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	var overlay = LoadingOverlay.create(get_tree(), "Auto Saving, please wait...")
 	await get_tree().create_timer(2.5).timeout
-
-	if is_instance_valid(canvas):
-		canvas.queue_free()
+	if is_instance_valid(overlay):
+		await overlay.dismiss()
 
 	if player:
 		player.can_move = true

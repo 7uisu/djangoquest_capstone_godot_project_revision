@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cjwlxjgby1fm1"]
 
 [ext_resource type="Texture2D" uid="uid://6h8f80ibssuo" path="res://Textures/3_Animated_objects/32x32/spritesheets/animated_door_glass_sliding_32x32.png" id="1_7dol3"]
+[ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_ii4m4"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_ii4m4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ecno"]
@@ -135,9 +136,10 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5nw87"]
-size = Vector2(64, 57)
+size = Vector2(64, 11)
 
 [node name="SlidingDoor" type="Area2D" unique_id=1618620930]
+script = ExtResource("1_ii4m4")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2019052992]
 position = Vector2(0, 13.5)
@@ -172,5 +174,9 @@ collision_layer = 16
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=1667654599]
-position = Vector2(0, 0.5)
+y_sort_enabled = true
+position = Vector2(0, 23.5)
 shape = SubResource("RectangleShape2D_5nw87")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

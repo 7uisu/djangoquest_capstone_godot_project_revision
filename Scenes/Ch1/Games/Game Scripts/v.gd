@@ -67,16 +67,21 @@ var answer_locked = false  # NEW: prevent re-drawing after selection
 var is_in_tutorial = true  # NEW: show tutorial first
 
 # UI nodes
-@onready var question_label = $QuestionLabel
-@onready var option_labels = [$OptionA, $OptionB, $OptionC, $OptionD]
+@onready var question_label = $UI_Layer/VBoxContainer/QuestionContainer/QuestionLabel
+@onready var option_labels = [
+	$UI_Layer/VBoxContainer/OptionsGrid/OptionA,
+	$UI_Layer/VBoxContainer/OptionsGrid/OptionB,
+	$UI_Layer/VBoxContainer/OptionsGrid/OptionC,
+	$UI_Layer/VBoxContainer/OptionsGrid/OptionD
+]
 @onready var drawing_area = $DrawingArea
-@onready var next_button = $NextButton
-@onready var score_label = $ScoreLabel
-@onready var restart_button = $RestartButton
-@onready var progress_label = $ProgressLabel        # NEW
-@onready var feedback_label = $FeedbackLabel        # NEW
-@onready var correct_sfx = $CorrectSFX              # NEW
-@onready var wrong_sfx = $WrongSFX                  # NEW
+@onready var next_button = $UI_Layer/VBoxContainer/BottomBar/NextButton
+@onready var score_label = $UI_Layer/VBoxContainer/TopBar/ScoreLabel
+@onready var restart_button = $UI_Layer/VBoxContainer/BottomBar/RestartButton
+@onready var progress_label = $UI_Layer/VBoxContainer/TopBar/ProgressLabel
+@onready var feedback_label = $UI_Layer/VBoxContainer/FeedbackLabel
+@onready var correct_sfx = $CorrectSFX
+@onready var wrong_sfx = $WrongSFX
 
 func _ready():
 	setup_ui()
@@ -363,9 +368,10 @@ func show_final_score():
 	restart_button.visible = false
 	
 	# Show continue button to return to school map
-	if has_node("ContinueButton"):
-		$ContinueButton.visible = true
-		$ContinueButton.grab_focus()
+	var continue_btn = get_node_or_null("UI_Layer/VBoxContainer/BottomBar/ContinueButton")
+	if continue_btn:
+		continue_btn.visible = true
+		continue_btn.grab_focus()
 	
 	drawing_points.clear()
 	drawing_area.queue_redraw()

@@ -19,6 +19,7 @@ var is_free_type: bool = false  # true when challenge uses free typing instead o
 var is_terminal: bool = false   # true for terminal command challenges
 var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
+var is_student_sequence: bool = false # explicitly for the rapid-fire NPC loop
 
 var _attempts: int = 0  # tracks incorrect submissions
 var _ai_network_failures: int = 0
@@ -1081,6 +1082,14 @@ func _on_run_pressed():
 	is_completed = true
 	timer_running = false
 
+	# Immediately update timer display so player sees it stopped
+	if timer_label.visible:
+		timer_label.text = "✅ Done"
+		timer_label.add_theme_color_override("font_color", Color("98c379"))
+		timer_label.modulate.a = 1.0
+		if _timer_pulse_tween and _timer_pulse_tween.is_valid():
+			_timer_pulse_tween.kill()
+
 	var options = current_challenge.get("options", [])
 	var is_correct = false
 	if selected_option < options.size():
@@ -1119,7 +1128,7 @@ func _on_run_pressed():
 	for i in range(buttons.size()):
 		var btn = buttons[i] as Button
 		btn.disabled = true
-		if options[i].get("correct", false):
+		if is_correct and options[i].get("correct", false):
 			var style = StyleBoxFlat.new()
 			style.bg_color = Color("1a3a2a")
 			style.border_color = Color("98c379")
@@ -1129,7 +1138,7 @@ func _on_run_pressed():
 			btn.add_theme_stylebox_override("normal", style)
 			btn.add_theme_stylebox_override("disabled", style)
 			btn.add_theme_color_override("font_disabled_color", Color("98c379"))
-		elif i == selected_option:
+		elif not is_correct and i == selected_option:
 			var style = StyleBoxFlat.new()
 			style.bg_color = Color("3a1a1a")
 			style.border_color = Color("e06c75")
@@ -1163,6 +1172,12 @@ func _on_time_up():
 
 	if wrong_sfx.stream:
 		wrong_sfx.play()
+
+	emit_signal("challenge_failed")
+
+	if is_student_sequence:
+		# For timed student NPC challenges, skip the popup entirely and instantly proceed
+		return
 
 	await get_tree().create_timer(1.5).timeout
 	_show_results(false)
@@ -1562,6 +1577,16 @@ func _on_continue_pressed():
 func _show_results(success: bool):
 	# Always show results on the IDE, never the browser
 	_switch_to_ide_instant()
+
+	if is_student_sequence:
+		# For timed student NPC challenges, skip the popup entirely.
+		# If success, emit completion to advance. If failure, the failure signal was already emitted.
+		if success:
+			_challenge_active = false
+			emit_signal("challenge_completed", true, current_challenge.get("id", ""))
+		# DO NOT CALL queue_free() so the student_quiz_controller can reuse this instance
+		return
+
 	results_overlay.visible = true
 
 	if success:
@@ -1590,6 +1615,21 @@ func _show_results(success: bool):
 	results_text.add_theme_color_override("font_color", Color("abb2bf"))
 
 	# Animate in
+	results_overlay.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(results_overlay, "modulate:a", 1.0, 0.3)
+
+func show_custom_result(custom_title: String, custom_body: String, button_text: String):
+	_switch_to_ide_instant()
+	results_overlay.visible = true
+	results_title.text = custom_title
+	results_title.add_theme_color_override("font_color", Color("e06c75"))
+	results_text.text = custom_body
+	results_text.add_theme_color_override("font_color", Color("abb2bf"))
+	continue_button.visible = true
+	continue_button.text = button_text
+	close_button.visible = false
+	
 	results_overlay.modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(results_overlay, "modulate:a", 1.0, 0.3)
@@ -1797,21 +1837,42 @@ func _handle_server_result(result: Dictionary):
 func _run_free_type_local(submission: Dictionary, expected_answers):
 	"""Offline fallback: local multi-pass validation (no server needed)."""
 	var is_correct = false
-
+	var topic = current_challenge.get("topic", "python")
+	
+	# ── Determine language for comment stripping ──────────────────────────────
+	var lang = "python"
+	if topic in ["html", "css", "django"]:
+		lang = topic
+	
 	# ── Multi-tab validation: expected_answers is a dict {filename: [answers]} ──
 	if expected_answers is Dictionary and submission.has("all_files"):
 		var all_files = submission["all_files"]
 		var all_tabs_pass = true
 		for file_name in expected_answers.keys():
-			var file_content = str(all_files.get(file_name, "")).strip_edges()
+			var raw_content = str(all_files.get(file_name, "")).strip_edges()
+			
+			# Detect file language from extension
+			var file_lang = "python"
+			if file_name.ends_with(".html"):
+				file_lang = "html"
+			elif file_name.ends_with(".css"):
+				file_lang = "css"
+			
+			var file_content = _strip_code_comments(raw_content, file_lang).strip_edges()
+			
+			# Guard: if stripping leaves nothing, player only has comments — fail
+			if file_content == "":
+				all_tabs_pass = false
+				break
+			
 			var file_answers = expected_answers[file_name]
 			var tab_pass = false
 			for answer in file_answers:
-				var ans = str(answer).strip_edges()
-				if file_content == ans or ans in file_content:
+				var cleaned_ans = _strip_code_comments(str(answer), file_lang).strip_edges()
+				if file_content == cleaned_ans or cleaned_ans in file_content:
 					tab_pass = true
 					break
-				if _normalize_whitespace(file_content) == _normalize_whitespace(ans) or _normalize_whitespace(ans) in _normalize_whitespace(file_content):
+				if _normalize_whitespace(file_content) == _normalize_whitespace(cleaned_ans) or _normalize_whitespace(cleaned_ans) in _normalize_whitespace(file_content):
 					tab_pass = true
 					break
 			if not tab_pass:
@@ -1819,34 +1880,80 @@ func _run_free_type_local(submission: Dictionary, expected_answers):
 				break
 		is_correct = all_tabs_pass
 	else:
-		# ── Single-tab validation (original logic) ──
-		var full_text = submission.get("full_text", "")
-		var player_typed_only = submission.get("player_typed_only", "")
-		for answer in expected_answers:
-			var ans = str(answer).strip_edges()
-			# Exact match of typed text
-			if player_typed_only == ans:
-				is_correct = true
-				break
-			# Exact match of full content
-			if full_text.strip_edges() == ans:
-				is_correct = true
-				break
-			# Substring match
-			if full_text.find(ans) != -1:
-				is_correct = true
-				break
-			# Normalized whitespace comparison
-			if _normalize_whitespace(player_typed_only) == _normalize_whitespace(ans):
-				is_correct = true
-				break
-			if _normalize_whitespace(full_text.strip_edges()) == _normalize_whitespace(ans):
-				is_correct = true
-				break
+		# ── Single-tab validation ──────────────────────────────────────────────
+		var raw_full = submission.get("full_text", "")
+		var raw_typed = submission.get("player_typed_only", "")
+		
+		# Strip ALL comment lines before comparing — prevents uncommented 
+		# instruction templates from accidentally matching expected answers
+		var full_text = _strip_code_comments(raw_full, lang).strip_edges()
+		var player_typed_only = _strip_code_comments(raw_typed, lang).strip_edges()
+		
+		# Guard: if the entire submission is just comments, always fail
+		if full_text == "" and player_typed_only == "":
+			is_correct = false
+		else:
+			for answer in expected_answers:
+				var cleaned_ans = _strip_code_comments(str(answer), lang).strip_edges()
+				# Exact match of typed text
+				if player_typed_only == cleaned_ans:
+					is_correct = true
+					break
+				# Exact match of full content
+				if full_text == cleaned_ans:
+					is_correct = true
+					break
+				# Substring match (comment-stripped)
+				if cleaned_ans != "" and cleaned_ans in full_text:
+					is_correct = true
+					break
+				# Normalized whitespace comparison
+				if _normalize_whitespace(player_typed_only) == _normalize_whitespace(cleaned_ans):
+					is_correct = true
+					break
+				if _normalize_whitespace(full_text) == _normalize_whitespace(cleaned_ans):
+					is_correct = true
+					break
 
 	terminal_output.bbcode_enabled = true
 
 	var custom_error = ""
+
+	# ── Anti-Cheat: Did they uncomment the instructions? ──
+	# If the raw instruction text (without the comment '#') is still in the 
+	# stripped player submission, it means they deleted the '#' to cheat the parser.
+	if is_correct:
+		var all_instructions = []
+		var code_lines = current_challenge.get("code_lines", [])
+		for raw_line in code_lines:
+			var trimmed = str(raw_line).strip_edges()
+			if trimmed.begins_with("#"):
+				all_instructions.append(trimmed.substr(1).strip_edges())
+		
+		# Also check files if multi-tab
+		var files = current_challenge.get("files", {})
+		for f_content in files.values():
+			for f_line in str(f_content).split("\n"):
+				var trimmed = str(f_line).strip_edges()
+				if trimmed.begins_with("#"):
+					all_instructions.append(trimmed.substr(1).strip_edges())
+				elif trimmed.begins_with("<!--"):
+					all_instructions.append(trimmed.replace("<!--", "").replace("-->", "").strip_edges())
+					
+		# Check against the player's stripped code
+		# For multi-tab, we just merge all tabs for a quick check
+		var concat_stripped_code = ""
+		if submission.has("all_files"):
+			for f in submission["all_files"].values():
+				concat_stripped_code += " " + _strip_code_comments(str(f), "python")
+		else:
+			concat_stripped_code = _strip_code_comments(submission.get("full_text", ""), "python")
+			
+		for inst in all_instructions:
+			if inst.length() > 5 and concat_stripped_code.find(inst) != -1:
+				is_correct = false
+				custom_error = "SyntaxError: Please do not uncomment the instruction lines."
+				break
 
 	if is_correct:
 		# ── Indentation Check ──
@@ -2396,12 +2503,21 @@ func _buff_syntax_glasses():
 func _buff_os_premium():
 	# Auto-type the first half of the expected answer
 	var expected = current_challenge.get("expected_answers", [])
-	if expected.is_empty():
+	var answer_text = ""
+	
+	if typeof(expected) == TYPE_ARRAY and not expected.is_empty():
+		answer_text = expected[0]
+	elif typeof(expected) == TYPE_DICTIONARY:
+		answer_text = "# Code structure started...\n# Don't forget your imports and functions!"
+
+	if answer_text == "":
 		feedback_label.text = "💳 No answer to auto-complete!"
 		return
 
-	var answer = expected[0]
-	var half = answer.substr(0, int(answer.length() * 0.5))
+	var half = answer_text
+	if typeof(expected) == TYPE_ARRAY:
+		half = answer_text.substr(0, int(answer_text.length() * 0.5))
+
 	if code_edit.visible:
 		code_edit.text = half
 	else:
@@ -2422,13 +2538,20 @@ func _buff_encrypted_drive():
 
 	# ── Display the correct answer in the code editor so the player can learn ──
 	var expected = current_challenge.get("expected_answers", [])
-	if not expected.is_empty():
-		var answer = expected[0]
+	var answer_text = ""
+	
+	if typeof(expected) == TYPE_ARRAY and not expected.is_empty():
+		answer_text = expected[0]
+	elif typeof(expected) == TYPE_DICTIONARY:
+		if current_challenge.get("topic") == "ai_evaluator":
+			answer_text = "# AI Evaluator passed via Encrypted Drive.\n# Your concepts matched the required architecture."
+		
+	if answer_text != "":
 		if code_edit.visible:
-			code_edit.text = answer
+			code_edit.text = answer_text
 			code_edit.editable = false
 		elif free_type_edit.visible:
-			free_type_edit.text = answer
+			free_type_edit.text = answer_text
 			free_type_edit.editable = false
 
 	# Play correct SFX

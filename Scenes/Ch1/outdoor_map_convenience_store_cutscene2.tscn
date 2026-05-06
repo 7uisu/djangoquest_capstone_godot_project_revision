@@ -56815,7 +56815,7 @@ tile_set = SubResource("TileSet_omfgt")
 tile_set = SubResource("TileSet_yyg45")
 
 [node name="BusFastTravel" parent="." unique_id=1322523405 instance=ExtResource("12_mihdh")]
-position = Vector2(767, 1184)
+position = Vector2(412, 1110)
 destination_names = ["Internet Cafe"]
 destination_positions = Array[Vector2]([Vector2(5809, 1389)])
 

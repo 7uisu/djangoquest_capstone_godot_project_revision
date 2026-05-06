@@ -4,7 +4,8 @@
 extends Control
 
 @onready var email_input: LineEdit = $CenterContainer/VBoxContainer/EmailInput
-@onready var password_input: LineEdit = $CenterContainer/VBoxContainer/PasswordInput
+@onready var password_input: LineEdit = $CenterContainer/VBoxContainer/PasswordHBox/PasswordInput
+@onready var toggle_password_btn: Button = $CenterContainer/VBoxContainer/PasswordHBox/TogglePasswordBtn
 @onready var login_button: Button = $CenterContainer/VBoxContainer/LoginButton
 @onready var guest_button: Button = $CenterContainer/VBoxContainer/GuestButton
 @onready var quit_button: Button = $CenterContainer/VBoxContainer/QuitButton
@@ -15,6 +16,11 @@ func _ready():
 	guest_button.pressed.connect(_on_guest_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	ApiManager.login_completed.connect(_on_login_completed)
+	
+	email_input.text_changed.connect(_on_input_changed)
+	password_input.text_changed.connect(_on_input_changed)
+	toggle_password_btn.toggled.connect(_on_toggle_password)
+	_update_login_button_state()
 
 	# Add hint about making guest saves permanent
 	var hint = Label.new()
@@ -53,7 +59,7 @@ func _on_login_pressed():
 	ApiManager.login(email, password)
 
 func _on_login_completed(success: bool, message: String):
-	login_button.disabled = false
+	_update_login_button_state()
 	guest_button.disabled = false
 	status_label.text = message
 
@@ -114,3 +120,21 @@ func _on_quit_pressed():
 		"Are you sure you want to quit?", 
 		func(): get_tree().quit()
 	)
+
+func _on_input_changed(_text: String):
+	_update_login_button_state()
+
+func _on_toggle_password(button_pressed: bool):
+	password_input.secret = not button_pressed
+	if button_pressed:
+		toggle_password_btn.text = "✖️"
+	else:
+		toggle_password_btn.text = "👁️"
+
+func _update_login_button_state():
+	if email_input.text.strip_edges() == "" or password_input.text.strip_edges() == "":
+		login_button.disabled = true
+		login_button.modulate = Color(0.5, 0.5, 0.5, 0.5) # Dark and transparent
+	else:
+		login_button.disabled = false
+		login_button.modulate = Color(1.0, 1.0, 1.0, 1.0) # Bright and clickable

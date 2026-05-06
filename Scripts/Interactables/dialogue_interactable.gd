@@ -42,6 +42,7 @@ const CHAT_BUBBLE_SCENE = preload("res://Scenes/UI/chat_bubble.tscn")
 var player_is_inside: bool = false
 var _label_tween: Tween = null
 var _chat_bubble_instance: Control = null
+var passive_label_text: String = ""
 
 # Queue of dialogue groups: each is { "mode": DialogueMode, "lines": Array }
 var _dialogue_queue: Array = []
@@ -210,8 +211,18 @@ func _hide_label():
 		return
 	_kill_label_tween()
 	_label_tween = create_tween()
-	_label_tween.tween_property(interaction_label, "modulate:a", 0.0, 0.15)
-	_label_tween.tween_callback(func(): interaction_label.visible = false)
+	if passive_label_text != "":
+		interaction_label.text = passive_label_text
+		interaction_label.visible = true
+		_label_tween.tween_property(interaction_label, "modulate:a", 1.0, 0.15)
+	else:
+		_label_tween.tween_property(interaction_label, "modulate:a", 0.0, 0.15)
+		_label_tween.tween_callback(func(): interaction_label.visible = false)
+
+func set_passive_label(text: String) -> void:
+	passive_label_text = text
+	if not player_is_inside:
+		_hide_label() # Will trigger showing the passive label
 
 func _kill_label_tween():
 	if _label_tween and _label_tween.is_valid():

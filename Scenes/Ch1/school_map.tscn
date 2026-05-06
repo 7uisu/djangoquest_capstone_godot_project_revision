@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" uid="uid://c7oy7ceah68qu" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_door_1.tscn" id="10_60tn0"]
 [ext_resource type="Texture2D" uid="uid://buxh5d7nl47ms" path="res://Textures/Modern_Office_Revamped_v1/Modern_Office_32x32.png" id="10_mwrpm"]
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="11_2htki"]
-[ext_resource type="Texture2D" uid="uid://bmilup1pvwkxw" path="res://Textures/Paper Texture/Paper Texture1.jpg" id="12_10o3i"]
 [ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="13_utip4"]
 [ext_resource type="PackedScene" uid="uid://enpb32ac1lhm" path="res://Scenes/Ch1/Interactive Objects/Door/school_front_door_1.tscn" id="14_bokrp"]
 [ext_resource type="Script" uid="uid://c08g5g7gvdo8j" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/map_door.gd" id="14_mapdoor"]
@@ -769,7 +768,6 @@ dialogue_line_2 = "What do you think you're doing here huh?"
 [node name="SHSTeacherInteractable" parent="." unique_id=1025152090 instance=ExtResource("10_2htki")]
 position = Vector2(128, 551)
 speaker_name = "Professor"
-speaker_portrait = ExtResource("12_10o3i")
 dialogue_line_2 = "anyone?"
 dialogue_line_2_mode = 1
 

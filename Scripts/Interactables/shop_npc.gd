@@ -99,6 +99,12 @@ func _open_shop():
 	_shop_ui_instance.shop_closed.connect(_on_shop_closed)
 	_shop_ui_instance.open()
 
+	# ── First-time Shop Spotlight Tutorial ────────────────────────────
+	var cd = get_node_or_null("/root/CharacterData")
+	if cd and not cd.has_seen_shop_tutorial:
+		await get_tree().create_timer(0.5).timeout
+		await _run_shop_tutorial(cd)
+
 func _on_shop_closed():
 	_is_shop_open = false
 	if _shop_ui_instance:
@@ -158,6 +164,80 @@ func _get_dialogue_box():
 		return box
 
 	return null
+
+# ─── Shop Spotlight Tutorial ─────────────────────────────────────────────────
+
+const TUTORIAL_OVERLAY_SCRIPT = preload("res://Scripts/UI/tutorial_overlay.gd")
+
+func _run_shop_tutorial(cd) -> void:
+	if not _shop_ui_instance or not is_instance_valid(_shop_ui_instance):
+		return
+
+	# Find the main panel (the PanelContainer that holds everything)
+	var shop_panel: Control = null
+	for child in _shop_ui_instance.get_children():
+		if child is PanelContainer:
+			shop_panel = child
+			break
+
+	if not shop_panel:
+		cd.has_seen_shop_tutorial = true
+		return
+
+	# Step 1: Spotlight the whole shop panel — explain the concept
+	var overlay1 = await _create_shop_overlay()
+	overlay1.start_tutorial([
+		{
+			"text": "Welcome to the [color=#f0c674]IT Supply Closet[/color]!\n\nThis is where you spend your hard-earned [color=#f0c674]Credits[/color] on helpful items.\nItems can give you advantages during coding challenges.",
+			"highlight_node": shop_panel,
+			"tooltip_side": "left"
+		}
+	])
+	await overlay1.tutorial_finished
+	overlay1.queue_free()
+
+	# Step 2: Spotlight the credit label (if accessible)
+	if _shop_ui_instance and is_instance_valid(_shop_ui_instance) and "_credit_label" in _shop_ui_instance:
+		var credit_lbl = _shop_ui_instance._credit_label
+		if credit_lbl and is_instance_valid(credit_lbl):
+			var overlay2 = await _create_shop_overlay()
+			overlay2.start_tutorial([
+				{
+					"text": "This is your [color=#f0c674]Credit Balance[/color].\nYou earn credits by completing professor lessons and helping students around campus.",
+					"highlight_node": credit_lbl,
+					"tooltip_side": "bottom"
+				}
+			])
+			await overlay2.tutorial_finished
+			overlay2.queue_free()
+
+	# Step 3: Spotlight the first item row (if any items exist)
+	if _shop_ui_instance and is_instance_valid(_shop_ui_instance) and "_item_container" in _shop_ui_instance:
+		var item_cont = _shop_ui_instance._item_container
+		if item_cont and is_instance_valid(item_cont) and item_cont.get_child_count() > 1:
+			var first_card = item_cont.get_child(1)
+			if first_card and first_card is PanelContainer:
+				var overlay3 = await _create_shop_overlay()
+				overlay3.start_tutorial([
+					{
+						"text": "Each item card shows its [color=#f0c674]name[/color], [color=#f0c674]description[/color], and [color=#f0c674]price[/color].\nClick [color=#f0c674]Buy[/color] to purchase — items go straight into your inventory!",
+						"highlight_node": first_card,
+						"tooltip_side": "right"
+					}
+				])
+				await overlay3.tutorial_finished
+				overlay3.queue_free()
+
+	cd.has_seen_shop_tutorial = true
+
+func _create_shop_overlay():
+	var overlay = CanvasLayer.new()
+	overlay.set_script(TUTORIAL_OVERLAY_SCRIPT)
+	overlay.layer = 150
+	overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().current_scene.add_child(overlay)
+	await get_tree().process_frame
+	return overlay
 
 # ─── Sprite Helper ───────────────────────────────────────────────────────────
 

@@ -160,6 +160,9 @@ func _input(event):
 				for area in interaction_area.get_overlapping_areas():
 					if area.has_method("interact"):
 						print("Player: F pressed, interacting with: ", area.name)
+						# Hide the "Press [F]" label immediately
+						if area.has_method("_hide_label"):
+							area._hide_label()
 						area.interact()
 						break
 		return

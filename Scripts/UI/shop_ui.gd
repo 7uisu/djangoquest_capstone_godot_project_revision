@@ -117,7 +117,7 @@ func _create_header() -> PanelContainer:
 	credit_icon.custom_minimum_size = Vector2(20, 20)
 	credit_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	credit_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	var icon_tex = load("res://Textures/School Textures/Items/Interactable/CreditCard-32x32.png")
+	var icon_tex = load("res://Textures/School Textures/Items/Interactable/Credit-32x32.png")
 	if icon_tex:
 		credit_icon.texture = icon_tex
 	credit_hbox.add_child(credit_icon)
