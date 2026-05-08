@@ -23,7 +23,11 @@ func save_game() -> void:
 
 	var save_data: Dictionary = cd.to_save_dict()
 	# Add scene path so we can restore position
-	save_data["current_scene_path"] = get_tree().current_scene.scene_file_path
+	var current = get_tree().current_scene
+	if current:
+		save_data["current_scene_path"] = current.scene_file_path
+	else:
+		save_data["current_scene_path"] = save_data.get("current_scene_path", "res://Scenes/Ch1/school_map.tscn")
 	save_data["timestamp"] = Time.get_unix_time_from_system()
 
 	# Save tracked quest
@@ -74,6 +78,10 @@ func save_game() -> void:
 
 
 func load_game() -> bool:
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	if LoadingOverlay:
+		_pending_overlay = LoadingOverlay.create(get_tree(), "Loading...")
+	
 	var file_path: String = _get_save_path()
 
 	# For logged-in users, prefer cloud data if available and newer
@@ -94,6 +102,9 @@ func load_game() -> bool:
 	if save_data.is_empty():
 		printerr("SaveManager: No save data found at %s" % file_path)
 		emit_signal("load_completed", false)
+		if _pending_overlay and is_instance_valid(_pending_overlay):
+			_pending_overlay.queue_free()
+			_pending_overlay = null
 		return false
 
 	_apply_save(save_data)
@@ -158,9 +169,18 @@ func promote_guest_to_account() -> void:
 	if not guest_data.is_empty():
 		guest_data["api_username"] = ApiManager.get_username()
 		_write_json(ACCOUNT_SAVE_FILE, guest_data)
-		# Load the save immediately so we have the state to save to cloud
-		_apply_save(guest_data)
-		save_game()
+
+		# Restore CharacterData from the guest save WITHOUT changing scenes.
+		# The login screen will navigate to main_menu on its own.
+		var cd = get_node_or_null("/root/CharacterData")
+		if cd:
+			cd.from_save_dict(guest_data)
+
+		# Upload to cloud so the save is synced
+		if ApiManager.is_logged_in():
+			ApiManager.upload_save(guest_data)
+
+		print("SaveManager: Promoted guest save to account '%s'." % ApiManager.get_username())
 
 
 func check_cloud_save() -> void:
@@ -250,12 +270,15 @@ func _apply_save(save_data: Dictionary) -> void:
 	if px != null and py != null:
 		_pending_position = Vector2(float(px), float(py))
 		get_tree().process_frame.connect(_deferred_set_player_position, CONNECT_ONE_SHOT)
+	else:
+		get_tree().process_frame.connect(_deferred_clear_overlay, CONNECT_ONE_SHOT)
 
 	print("SaveManager: Save loaded.")
 	emit_signal("load_completed", true)
 
 
 var _pending_position: Vector2 = Vector2.ZERO
+var _pending_overlay = null
 
 func _deferred_set_player_position():
 	# Wait one more frame so the scene's _ready() has finished
@@ -266,6 +289,15 @@ func _deferred_set_player_position():
 		if player:
 			player.global_position = _pending_position
 			print("SaveManager: Player position restored to %s" % _pending_position)
+	if _pending_overlay and is_instance_valid(_pending_overlay):
+		_pending_overlay.queue_free()
+		_pending_overlay = null
+
+func _deferred_clear_overlay():
+	await get_tree().process_frame
+	if _pending_overlay and is_instance_valid(_pending_overlay):
+		_pending_overlay.queue_free()
+		_pending_overlay = null
 
 
 func _write_json(path: String, data: Dictionary) -> bool:

@@ -391,5 +391,3 @@ func _on_ai_evaluator_response(result: int, response_code: int, _headers: Packed
 		"success": json.get("success", false),
 		"feedback": json.get("feedback", "No feedback provided by AI.")
 	})
-
-

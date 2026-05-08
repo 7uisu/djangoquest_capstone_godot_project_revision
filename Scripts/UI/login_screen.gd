@@ -43,6 +43,8 @@ func _ready():
 		await get_tree().create_timer(0.8).timeout
 		get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
 
+var _loading_overlay = null
+
 func _on_login_pressed():
 	var email = email_input.text.strip_edges()
 	var password = password_input.text.strip_edges()
@@ -56,9 +58,16 @@ func _on_login_pressed():
 	guest_button.disabled = true
 	status_label.text = "Logging in..."
 	status_label.add_theme_color_override("font_color", Color(0.65, 0.82, 1.0))
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	if LoadingOverlay:
+		_loading_overlay = LoadingOverlay.create(get_tree(), "Loading...")
 	ApiManager.login(email, password)
 
 func _on_login_completed(success: bool, message: String):
+	if _loading_overlay and is_instance_valid(_loading_overlay):
+		_loading_overlay.queue_free()
+		_loading_overlay = null
+
 	_update_login_button_state()
 	guest_button.disabled = false
 	status_label.text = message
