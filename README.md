@@ -2,6 +2,12 @@
 
 This is the 3D educational game client for DjangoQuest, built in the Godot Engine. It connects to the DjangoQuest backend for real-time cloud saves, authentication, and platform announcements.
 
+## How the Projects Connect
+This platform has three main parts that work together:
+1. **Godot Game Client (This Repository)**: The actual 3D game.
+2. **[Backend Server](https://github.com/7uisu/DjangoQuest-Backend.git)**: The core database. The game talks to this to log you in and save your progress.
+3. **[Frontend Website](https://github.com/7uisu/DjangoQuest-Frontend.git)**: The website where teachers can see their students' game progress.
+
 ## Prerequisites
 - **Godot Engine 4.x** (Download from [https://godotengine.org/](https://godotengine.org/))
 - The [DjangoQuest Backend](../DjangoQuest-Backend) must be running at `http://localhost:8000/`. The game relies on this for logging in, saving progress, and fetching dialogue/achievements.
@@ -9,8 +15,9 @@ This is the 3D educational game client for DjangoQuest, built in the Godot Engin
 ## Getting Started
 
 1. **Clone the repository**
+   You can clone via SSH or HTTPS:
    ```bash
-   git clone <repository_url>
+   git clone git@github.com:7uisu/djangoquest_capstone_godot_project_revision.git
    cd djangoquest_capstone_godot_project_revision
    ```
 
