@@ -13,7 +13,7 @@ signal unenroll_completed(success: bool, message: String)
 signal save_uploaded(success: bool, message: String)
 signal save_downloaded(success: bool, data: Dictionary)
 signal save_deleted(success: bool, message: String)
-signal code_checked(result: Dictionary)  # {success, output, ai_hint, judge0_output}
+signal code_checked(result: Dictionary)  # {success, output, ai_hint, judge0_output}; judge0_output is legacy compatibility
 
 # ─── State ───────────────────────────────────────────────────────────────────
 var _access_token: String = ""
@@ -290,12 +290,12 @@ func _on_delete_save_response(result: int, response_code: int, _headers: PackedS
 		var detail = json.get("detail", "Delete failed.") if json else "Delete failed."
 		emit_signal("save_deleted", false, detail)
 
-# ─── Code Checking (Judge0 + Gemini) ────────────────────────────────────────
+# ─── Code Checking (Controlled Validation + Gemini/Groq) ────────────────────
 
 func check_code(code: Variant, language: String, challenge_id: String, 
 				expected_answers: Variant, expected_output: String = ""):
 	var http = HTTPRequest.new()
-	http.timeout = 60  # Gemini + Judge0 can take a few seconds
+	http.timeout = 60  # AI-assisted feedback can take a few seconds
 	add_child(http)
 	http.request_completed.connect(_on_check_code_response.bind(http))
 

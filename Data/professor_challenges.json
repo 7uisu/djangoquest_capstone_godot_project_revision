@@ -1,0 +1,1232 @@
+{
+	"markup": [
+		{
+			"id": "markup_web_basics",
+			"title": "Write an HTTP Request",
+			"topic": "http",
+			"type": "free_type",
+			"file_name": "request.txt",
+			"code_lines": [
+				"# Write the HTTP method to request a homepage",
+				"# Format: METHOD /path/ HTTP/1.1"
+			],
+			"mission_steps": [
+				"Write a GET request for the /home/ path",
+				"Why: HTTP GET is the fundamental method that all browsers use to retrieve web pages from servers."
+			],
+			"placeholder": "Type your request here...",
+			"expected_answers": [
+				"GET /home/ HTTP/1.1",
+				"GET /home/ HTTP/1.1 "
+			],
+			"correct_output": "200 OK — Page loaded successfully!",
+			"error_output": "400 Bad Request — Check your HTTP method and path format!",
+			"progressive_hints": [
+				"The format is 'METHOD PATH PROTOCOL'.",
+				"Use 'GET' for the METHOD, and '/home/' for the PATH.",
+				"Use 'HTTP/1.1' as the PROTOCOL."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Markup",
+			"deck_key": "markup"
+		},
+		{
+			"id": "markup_html",
+			"title": "Write HTML Tags",
+			"topic": "html",
+			"type": "free_type",
+			"file_name": "index.html",
+			"code_lines": [
+				"<!DOCTYPE html>",
+				"<html>",
+				"<head><title>My Page</title></head>",
+				"",
+				"<!-- Add the body, heading, and paragraph tags below -->",
+				"</html>"
+			],
+			"mission_steps": [
+				"Add <body>, <h1>Hello</h1>, and <p>World</p> tags",
+				"Why: HTML provides the core structure of the web. Headings and paragraphs define the semantic meaning of the text."
+			],
+			"placeholder": "Type your HTML here...",
+			"expected_answers": [
+				"<body><h1>Hello</h1><p>World</p></body>",
+				"<body>\n<h1>Hello</h1>\n<p>World</p>\n</body>",
+				"<body> <h1>Hello</h1> <p>World</p> </body>"
+			],
+			"correct_output": "✅ Page rendered: Hello (heading) + World (paragraph)",
+			"error_output": "SyntaxError: Missing or mismatched tags — check your angle brackets!",
+			"progressive_hints": [
+				"The format is '<body><tag>Text</tag></body>'.",
+				"Use '<h1>' for 'Hello' and '<p>' for 'World'.",
+				"Ensure the text is enclosed in the body tags."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Markup",
+			"deck_key": "markup"
+		},
+		{
+			"id": "markup_css",
+			"title": "Style a Box",
+			"topic": "css",
+			"type": "free_type",
+			"file_name": "style.css",
+			"code_lines": [
+				"/* Style the div to have proper spacing */",
+				".box {",
+				"",
+				"    /* Add margin and padding below */",
+				"",
+				"}"
+			],
+			"mission_steps": [
+				"Add margin: 20px; and padding: 10px; to the box",
+				"Why: CSS controls visual layout. The Box Model (margins and padding) determines how elements are spaced."
+			],
+			"placeholder": "Type your CSS here...",
+			"expected_answers": [
+				"margin: 20px;\n    padding: 10px;",
+				"margin: 20px; padding: 10px;",
+				"margin:20px;padding:10px;",
+				"margin: 20px;\npadding: 10px;"
+			],
+			"correct_output": "✅ Box styled — margin: 20px, padding: 10px applied!",
+			"error_output": "Error: Invalid CSS property — check your syntax (property: value;)",
+			"progressive_hints": [
+				"The format is 'property: value;'.",
+				"Set 'margin: 20px;' and 'padding: 10px;'.",
+				"Don't forget the semicolons at the end of each rule."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Markup",
+			"deck_key": "markup"
+		},
+		{
+			"id": "markup_flexbox",
+			"title": "Center with Flexbox",
+			"topic": "css",
+			"type": "free_type",
+			"file_name": "layout.css",
+			"code_lines": [
+				"/* Center the items in this container */",
+				".container {",
+				"",
+				"    /* Make this a flex container and center items */",
+				"",
+				"}"
+			],
+			"mission_steps": [
+				"Add display: flex; and justify-content: center;",
+				"Why: Flexbox is a modern CSS layout module that allows you to easily align and distribute elements dynamically."
+			],
+			"placeholder": "Type your CSS here...",
+			"expected_answers": [
+				"display: flex;\n    justify-content: center;",
+				"display: flex; justify-content: center;",
+				"display:flex;justify-content:center;",
+				"display: flex;\njustify-content: center;"
+			],
+			"correct_output": "✅ Items are now centered using Flexbox!",
+			"error_output": "Error: Invalid layout — make sure you use display: flex first!",
+			"progressive_hints": [
+				"The format is 'display: type;' and 'justify-content: alignment;'.",
+				"Set display to 'flex'.",
+				"Set justify-content to 'center'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Markup",
+			"deck_key": "markup"
+		},
+		{
+			"id": "markup_responsive",
+			"title": "Write a Media Query",
+			"topic": "css",
+			"type": "free_type",
+			"file_name": "responsive.css",
+			"code_lines": [
+				"/* Make the layout responsive for small screens */",
+				"",
+				"/* Write a media query for screens 600px or smaller */"
+			],
+			"mission_steps": [
+				"Write a media query for max-width: 600px",
+				"Why: Media queries allow your website to adapt its CSS responsively so it looks good on both phones and desktops."
+			],
+			"placeholder": "Type your CSS here...",
+			"expected_answers": [
+				"@media (max-width: 600px) { }",
+				"@media (max-width: 600px) {\n}",
+				"@media (max-width: 600px) {}",
+				"@media(max-width: 600px) { }",
+				"@media(max-width:600px){ }",
+				"@media (max-width: 600px) {\n\n}"
+			],
+			"correct_output": "✅ Media query active — layout adapts for small screens!",
+			"error_output": "Error: Invalid media query syntax — check your @media rule!",
+			"progressive_hints": [
+				"The format is '@media (condition) {}'.",
+				"Use 'max-width: 600px' as the condition inside the parentheses.",
+				"Ensure the curly braces are placed correctly."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Markup",
+			"deck_key": "markup"
+		}
+	],
+	"syntax": [
+		{
+			"id": "syntax_loops",
+			"title": "Write a For Loop",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "loops.py",
+			"code_lines": [
+				"# Write a for loop that prints 0 to 4",
+				"# Use range() to generate the numbers"
+			],
+			"mission_steps": [
+				"Write a for loop using range(5) that prints each number",
+				"Why: Loops automate repetitive tasks, allowing you to process lists or run code multiple times instantly."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"for i in range(5):\n    print(i)",
+				"for i in range(5):\n\tprint(i)",
+				"for i in range(5): print(i)"
+			],
+			"correct_output": "0\n1\n2\n3\n4",
+			"error_output": "SyntaxError: invalid syntax — check your for loop structure!",
+			"progressive_hints": [
+				"The format is 'for variable in range(n):'.",
+				"Use 'i' as your variable, and 'range(5)' for the numbers.",
+				"Indent the next line and use the print function."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Syntax",
+			"deck_key": "syntax"
+		},
+		{
+			"id": "syntax_oop",
+			"title": "Create a Class",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "student.py",
+			"code_lines": [
+				"# Create a Student class with a constructor",
+				"# The constructor should accept 'name' as a parameter"
+			],
+			"mission_steps": [
+				"Define class Student with __init__(self, name) that stores self.name",
+				"Why: Classes act as blueprints. They let you create objects that bundle data and behavior, which is how Django builds its structures."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"class Student:\n    def __init__(self, name):\n        self.name = name",
+				"class Student:\n\tdef __init__(self, name):\n\t\tself.name = name",
+				"class Student:\n    def __init__(self,name):\n        self.name = name",
+				"class Student:\n    def __init__(self, name):\n        self.name=name"
+			],
+			"correct_output": "✅ Class Student created with constructor!",
+			"error_output": "SyntaxError: invalid class definition — check your indentation and colons!",
+			"progressive_hints": [
+				"The format is 'class ClassName:'.",
+				"The constructor format is 'def __init__(self, param):'.",
+				"Inside the constructor, assign the parameter using 'self.param = param'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Syntax",
+			"deck_key": "syntax"
+		},
+		{
+			"id": "syntax_requests",
+			"title": "Make an HTTP Request",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "api_call.py",
+			"code_lines": [
+				"import requests",
+				"",
+				"# Make a GET request to the URL below",
+				"# URL: 'https://api.example.com/data'"
+			],
+			"mission_steps": [
+				"Write a GET request using requests.get() with the given URL",
+				"Why: Making HTTP requests allows your code to talk to APIs and other servers to retrieve live data over the web."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"response = requests.get('https://api.example.com/data')",
+				"response = requests.get(\"https://api.example.com/data\")",
+				"response=requests.get('https://api.example.com/data')",
+				"response=requests.get(\"https://api.example.com/data\")"
+			],
+			"correct_output": "200 OK — Data received successfully!",
+			"error_output": "ConnectionError: Could not reach the server — check your URL and method!",
+			"progressive_hints": [
+				"The format is 'response = requests.get(url)'.",
+				"Pass the URL string as the argument inside the parentheses.",
+				"Assign the result of the function call to a variable named 'response'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Syntax",
+			"deck_key": "syntax"
+		}
+	],
+	"view": [
+		{
+			"id": "view_venv",
+			"title": "Create a Virtual Environment",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Create a new virtual environment called 'venv'",
+				"# Use the built-in python module"
+			],
+			"mission_steps": [
+				"Type the command to create a venv named 'venv'",
+				"Why: Virtual environments isolate your project's packages so they don't conflict with other Python projects on your computer."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"python -m venv venv",
+				"python3 -m venv venv",
+				"py -m venv venv"
+			],
+			"correct_output": "✅ Virtual environment 'venv' created successfully!",
+			"error_output": "CommandError: invalid command — use python -m venv <name>",
+			"progressive_hints": [
+				"Run the python module associated with virtual environments.",
+				"Specify the standard library module with the '-m' flag: '-m venv'.",
+				"Provide the same name for the directory to hold the environment: 'venv'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_activate_venv",
+			"title": "Activate the Virtual Environment",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Your virtual environment 'venv' has been created",
+				"# Now activate it (Windows command)"
+			],
+			"mission_steps": [
+				"Type the command to activate the venv",
+				"Why: Activating the environment ensures that any packages you install or run are contained within this specific sandbox."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"venv\\Scripts\\activate",
+				".\\venv\\Scripts\\activate",
+				"venv/Scripts/activate"
+			],
+			"correct_output": "✅ Virtual environment activated!\n  (venv) C:\\Users\\hansu\\Documents\\Capstone\\DjangoQuest-Backend> _\n  All pip installs will now go into venv/",
+			"error_output": "CommandError: invalid activation command — use venv\\Scripts\\activate",
+			"progressive_hints": [
+				"Run the activate script located within the environment folder.",
+				"It sits inside 'venv', then inside the 'Scripts' directory.",
+				"Check your backslashes for the Windows path."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_pip_django",
+			"title": "Install Django",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Install the Django framework using pip",
+				"# Make sure your venv is activated first!"
+			],
+			"mission_steps": [
+				"Type the pip command to install Django",
+				"Why: pip is Python's package manager. Installing Django gives you the framework needed to build powerful web applications."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"pip install django",
+				"pip3 install django",
+				"pip install Django",
+				"pip3 install Django"
+			],
+			"correct_output": "✅ Collecting django\n  Downloading Django-5.0-py3-none-any.whl (8.1 MB)\nSuccessfully installed Django-5.0 asgiref-3.7.2 sqlparse-0.4.4",
+			"error_output": "ERROR: Could not find a version that satisfies the requirement. Check your command.",
+			"progressive_hints": [
+				"Your package manager is called 'pip'.",
+				"Combine the 'install' command with the name of the framework.",
+				"Ensure you spell 'django' correctly."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_startproject",
+			"title": "Create a Django Project",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Create a new Django project called 'mysite'"
+			],
+			"mission_steps": [
+				"Type the command to create a Django project named 'mysite'",
+				"Why: django-admin creates the foundational folder structure and settings files required for every Django app."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"django-admin startproject mysite",
+				"django-admin startproject mysite ."
+			],
+			"correct_output": "✅ Project 'mysite' created successfully!",
+			"error_output": "CommandError: invalid command — use django-admin startproject <name>",
+			"progressive_hints": [
+				"Use the django-admin tool.",
+				"Combine it with the startproject action.",
+				"Provide 'mysite' as the name parameter."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_cd_mysite",
+			"title": "Navigate to Project Folder",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Navigate into your newly created project directory!"
+			],
+			"mission_steps": [
+				"Type the command to change directories into 'mysite'",
+				"Why: manage.py exists only inside the 'mysite' folder. You can't use it if you are not inside the correct folder."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"cd mysite",
+				"cd ./mysite",
+				"cd mysite/"
+			],
+			"correct_output": "✅ Changed directory to mysite/",
+			"error_output": "CommandError: invalid command — use cd <name>",
+			"progressive_hints": [
+				"The command to change directory contains two letters.",
+				"Pass the name of the project folder to it."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_migrate",
+			"title": "Migrate Database",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Apply the initial database migrations"
+			],
+			"mission_steps": [
+				"Type the manage.py command to migrate the database",
+				"Why: 'migrate' prepares the default database tables needed by Django for things like users and sessions."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"python manage.py migrate",
+				"python3 manage.py migrate",
+				"py manage.py migrate"
+			],
+			"correct_output": "✅ Operations to perform:\n  Apply all migrations: admin, auth, contenttypes, sessions\nRunning migrations:\n  Applying contenttypes.0001_initial... OK\n  Applying auth.0001_initial... OK",
+			"error_output": "CommandError: invalid command — use python manage.py migrate",
+			"progressive_hints": [
+				"Your project's command center is manage.py.",
+				"Execute manage.py with python and append 'migrate'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_runserver",
+			"title": "Start the Server",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Start the Django development server"
+			],
+			"mission_steps": [
+				"Type the command to start the server",
+				"Why: The dev server runs your code locally on port 8000 so you can test your app in the browser."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"python manage.py runserver",
+				"python3 manage.py runserver",
+				"py manage.py runserver"
+			],
+			"correct_output": "✅ Django version 5.0, using settings 'mysite.settings'\nStarting development server at http://127.0.0.1:8000/\nQuit the server with CONTROL-C.",
+			"error_output": "CommandError: invalid command — use python manage.py runserver",
+			"progressive_hints": [
+				"Run the manage.py script using Python.",
+				"Pass 'runserver' as the argument."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_startapp",
+			"title": "Create a Django App",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "terminal.py",
+			"code_lines": [
+				"# Create a new app called 'blog' inside your project"
+			],
+			"mission_steps": [
+				"Type the command to create a Django app named 'blog'",
+				"Why: Projects are built out of smaller apps (like 'store' or 'blog') to keep code organized and modular."
+			],
+			"placeholder": "Type your command here...",
+			"expected_answers": [
+				"python manage.py startapp blog",
+				"python3 manage.py startapp blog",
+				"py manage.py startapp blog"
+			],
+			"correct_output": "✅ App 'blog' created successfully!",
+			"error_output": "CommandError: invalid command — use python manage.py startapp <name>",
+			"progressive_hints": [
+				"Run manage.py using Python.",
+				"Use the action 'startapp' with the argument 'blog'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_register_app",
+			"title": "Register Your App",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "settings.py",
+			"code_lines": [
+				"INSTALLED_APPS = [",
+				"    'django.contrib.admin',",
+				"    'django.contrib.auth',",
+				"    'django.contrib.contenttypes',",
+				"    # Add your app name below as a string:",
+				"    "
+			],
+			"mission_steps": [
+				"Add 'blog' to the INSTALLED_APPS list",
+				"Why: Django won't recognize your new app until it is explicitly registered in the project's central settings file."
+			],
+			"placeholder": "Type the app name as a string...",
+			"expected_answers": [
+				"'blog',",
+				"'blog'",
+				"\"blog\",",
+				"\"blog\""
+			],
+			"correct_output": "✅ App 'blog' registered!\n  Django now recognizes your app.\n  Models, views, and templates will be loaded.",
+			"error_output": "Error: App not found. Did you add it as a string?",
+			"progressive_hints": [
+				"Add the app name as a Python string",
+				"Type: 'blog'"
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_static",
+			"title": "Load Static Files",
+			"topic": "html",
+			"type": "free_type",
+			"file_name": "base.html",
+			"code_lines": [
+				"<!-- Load Django's static file system -->",
+				"",
+				"<html>",
+				"<head>",
+				"    <title>My Blog</title>",
+				"</head>"
+			],
+			"mission_steps": [
+				"Inspect `settings.py` for STATIC_URL",
+				"Open `templates/base.html`",
+				"Add `{% load static %}` at the very top",
+				"Why: Static files like CSS and images are never served automatically. They must be explicitly loaded in templates."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"{% load static %}",
+				"{%load static%}",
+				"{% load static  %}"
+			],
+			"correct_output": "✅ Static files loaded!\n  CSS and JS are now available in your template.",
+			"error_output": "TemplateSyntaxError: 'static' is not a registered tag — did you forget {% load static %}?",
+			"progressive_hints": [
+				"Django requires you to explicitly bring in the static file system.",
+				"Use the Django template tag syntax '{% %}' to load the 'static' library.",
+				"This tag must be placed at the very top of the HTML file."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_generic_list",
+			"title": "Generic ListView (Read All)",
+			"topic": "django",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [],
+			"mission_steps": [
+				"Use ListView to display all Books, route it with as_view(), and render object_list.",
+				"Why: Because Django's ORM and Views are heavily abstracted for speed of development."
+			],
+			"placeholder": "Type the class-based components...",
+			"expected_answers": [],
+			"correct_output": "✅ Success! ListView successfully routed and rendered.",
+			"error_output": "Error: Ensure you hit all 3 files. Use BookListView in urls, and object_list in the template.",
+			"progressive_hints": [
+				"In views.py, specify the 'model' attribute to link the view to the Book class.",
+				"In urls.py, call the as_view() method on your generic view class to use it as a route handler.",
+				"In book_list.html, iterate through 'object_list' using a Django template loop."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_generic_detail",
+			"title": "Generic DetailView (Read Single)",
+			"topic": "django",
+			"type": "free_type",
+			"file_name": "urls.py",
+			"code_lines": [],
+			"mission_steps": [
+				"Use an integer parameter in the URL route to pass the Primary Key to the DetailView.",
+				"Why: DetailView inherently relies on URL parameters to safely query the exact database record requested."
+			],
+			"placeholder": "Type the URL routing...",
+			"expected_answers": [],
+			"correct_output": "✅ Success! DetailView successfully routed via Primary Key.",
+			"error_output": "Error: Use <int:pk> in the URL path, and BookDetailView.as_view().",
+			"progressive_hints": [
+				"Construct a path starting with 'book/', followed by the primary key integer parameter '<int:pk>/'.",
+				"Route it to the BookDetailView using the as_view() method.",
+				"Optionally provide a name for the route, such as 'book-detail'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		},
+		{
+			"id": "view_generic_create",
+			"title": "Generic CreateView (Create Data)",
+			"topic": "django",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [],
+			"mission_steps": [
+				"Use CreateView to orchestrate form creation and redirection.",
+				"Why: Without specifying fields and success_url, CreateView does not know what data to permit or where to send the user after saving."
+			],
+			"placeholder": "Type the missing variables...",
+			"expected_answers": [],
+			"correct_output": "✅ Success! C.R.U.D is fully complete.",
+			"error_output": "Error: Specify 'fields' as a list containing 'name', and reverse_lazy for the success_url.",
+			"progressive_hints": [
+				"Initialize the 'fields' list containing just the 'name' string.",
+				"Set 'success_url' to the result of 'reverse_lazy' pointing to the 'books' route."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor View",
+			"deck_key": "view"
+		}
+	],
+	"query": [
+		{
+			"id": "query_model",
+			"title": "Define a Model Field",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "models.py",
+			"code_lines": [
+				"from django.db import models",
+				"",
+				"class Student(models.Model):",
+				"    # Define a name field using a CharField with max_length=100",
+				"    "
+			],
+			"mission_steps": [
+				"Define the 'name' field using models.CharField(max_length=100)",
+				"Why: Models define your database schema in Python code. Django automatically translates this class into full SQL database tables."
+			],
+			"placeholder": "Type the field definition here...",
+			"expected_answers": [
+				"name = models.CharField(max_length=100)",
+				"name=models.CharField(max_length=100)"
+			],
+			"correct_output": "✅ Success! Table column 'name' defined.\n  Column type: VARCHAR(100)\n  Nullable: False",
+			"error_output": "Error: Invalid Field Definition. Did you use models.CharField?",
+			"progressive_hints": [
+				"The format is 'field_name = models.FieldType(parameter=value)'.",
+				"Use 'name' as the field name, and 'models.CharField' as the type.",
+				"Set 'max_length=100' inside the CharField parentheses."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Query",
+			"deck_key": "query"
+		},
+		{
+			"id": "query_guess_fields",
+			"title": "Guess The Field Mapping",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "models.py",
+			"code_lines": [
+				"from django.db import models",
+				"",
+				"class Book(models.Model):",
+				"    # 1. Stores a short Title string (max length 200)",
+				"    title = ",
+				"",
+				"    # 2. Stores a gigantic text block (unlimited length)",
+				"    synopsis = ",
+				"",
+				"    # 3. Stores True or False",
+				"    is_published = ",
+				""
+			],
+			"mission_steps": [
+				"Fill in the missing field types (models.CharField, models.TextField, models.BooleanField)",
+				"Why: Matching the right type to the data requirement ensures efficient, uncorrupted SQL mapping."
+			],
+			"placeholder": "Type the field declarations here...",
+			"expected_answers": [],
+			"correct_output": "✅ Success! Fields mapped properly to VARCHAR, TEXT, and BOOLEAN.",
+			"error_output": "Error: Invalid Field Definition. Check spelling and capitalization.",
+			"progressive_hints": [
+				"The format for fields is 'models.FieldType(options)'.",
+				"Title is 'models.CharField(max_length=200)', Synopsis is 'models.TextField()'.",
+				"is_published should be 'models.BooleanField()'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Query",
+			"deck_key": "query"
+		},
+		{
+			"id": "query_orm",
+			"title": "Extract Specific Data",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [
+				"from .models import Student",
+				"",
+				"def get_excellent_students():",
+				"    # Use ORM to get all students whose grade is 'A'",
+				"    return "
+			],
+			"mission_steps": [
+				"Write: Student.objects.filter(grade='A')",
+				"Why: Filtering allows you to efficiently retrieve only the specific records you need, rather than loading the entire database into memory."
+			],
+			"placeholder": "Type the ORM query here...",
+			"expected_answers": [
+				"Student.objects.filter(grade='A')",
+				"Student.objects.filter(grade=\"A\")"
+			],
+			"correct_output": "✅ QuerySet generated successfully!\n  <QuerySet [<Student: Alice>, <Student: Bob>]>\n  2 records matched.",
+			"error_output": "Error: QuerySet invalid. Use the model's objects manager.",
+			"progressive_hints": [
+				"The format is 'Model.objects.filter(field=value)'.",
+				"Use 'Student' as the model and 'grade' as the field.",
+				"Set the grade equal to the string 'A'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Query",
+			"deck_key": "query"
+		},
+		{
+			"id": "query_admin",
+			"title": "Register to Admin",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "admin.py",
+			"code_lines": [
+				"from django.contrib import admin",
+				"from .models import Student",
+				"",
+				"# Register the Student model below:",
+				""
+			],
+			"mission_steps": [
+				"Type admin.site.register(Student)",
+				"Why: Registering your model tells Django to automatically generate a graphical CRUD interface for it in the /admin/ panel."
+			],
+			"placeholder": "Type the admin register command...",
+			"expected_answers": [
+				"admin.site.register(Student)"
+			],
+			"correct_output": "✅ Success! Student Model registered.\n  Admin panel: /admin/blog/student/\n  Actions: Add, Change, Delete, View",
+			"error_output": "Error: Not registered correctly. Did you use admin.site.register?",
+			"progressive_hints": [
+				"The format is 'admin.site.register(ModelClass)'.",
+				"Pass 'Student' into the parentheses to register it."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Query",
+			"deck_key": "query"
+		},
+		{
+			"id": "query_mvt",
+			"title": "Complete the View",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [
+				"from django.shortcuts import render",
+				"from .models import Student",
+				"",
+				"def list_students(request):",
+				"    # Retrieve ALL student records to pass to the template",
+				"    students = ",
+				"",
+				"    return render(request, 'list.html', {'students': students})"
+			],
+			"mission_steps": [
+				"Use ORM to extract all records using objects.all()",
+				"Why: The ORM lets you retrieve data from the database using Python objects instead of writing raw SQL queries."
+			],
+			"placeholder": "Type the extraction query here...",
+			"expected_answers": [
+				"Student.objects.all()"
+			],
+			"correct_output": "✅ Correct! The View successfully bridges the Database and the Template.\n  Context: {'students': <QuerySet [...]>}\n  Template: list.html",
+			"error_output": "Error: Could not retrieve records. Use objects.all()",
+			"progressive_hints": [
+				"The format is 'Model.objects.all()'.",
+				"Use the 'Student' model to retrieve all records."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Query",
+			"deck_key": "query"
+		}
+	],
+	"token": [
+		{
+			"id": "token_modelform",
+			"title": "Define a ModelForm",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "forms.py",
+			"code_lines": [
+				"from django import forms",
+				"from .models import Student",
+				"",
+				"class StudentForm(forms.ModelForm):",
+				"    # Define the Meta class linking to the Student model",
+				"    "
+			],
+			"mission_steps": [
+				"Define class Meta with model = Student and fields = ['name', 'grade']",
+				"Why: ModelForms automatically generate HTML forms based on your database models, saving you from writing repetitive validation logic."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"class Meta:\n        model = Student\n        fields = ['name', 'grade']",
+				"class Meta:\n        model = Student\n        fields = [\"name\", \"grade\"]"
+			],
+			"correct_output": "✅ ModelForm created successfully!\n  Linked to: Student\n  Fields: name, grade\n  Validation: Active",
+			"error_output": "Error: Invalid ModelForm — check your Meta class definition!",
+			"progressive_hints": [
+				"Start with: class Meta:",
+				"Inside Meta, set: model = Student",
+				"Then set: fields = ['name', 'grade']"
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Token",
+			"deck_key": "token"
+		},
+		{
+			"id": "token_csrf",
+			"title": "Add CSRF Protection",
+			"topic": "html",
+			"type": "free_type",
+			"file_name": "form.html",
+			"code_lines": [
+				"<form method=\"POST\">",
+				"    <!-- Add the CSRF token below -->",
+				"    ",
+				"    {{ form.as_p }}",
+				"    <button type=\"submit\">Save</button>",
+				"</form>"
+			],
+			"mission_steps": [
+				"Add the {% csrf_token %} template tag",
+				"Why: The CSRF token protects your forms from Cross-Site Request Forgery attacks, ensuring submissions actually come from your own site."
+			],
+			"placeholder": "Type the template tag here...",
+			"expected_answers": [
+				"{% csrf_token %}",
+				"{%csrf_token%}",
+				"{% csrf_token%}",
+				"{%csrf_token %}"
+			],
+			"correct_output": "✅ CSRF token added!\n  Form is now protected against Cross-Site Request Forgery.\n  Token: Unique per session, verified on submit.",
+			"error_output": "SecurityError: CSRF token missing — your form is vulnerable!",
+			"progressive_hints": [
+				"Use a Django template tag: {% ... %}",
+				"The tag name is: csrf_token",
+				"Type: {% csrf_token %}"
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Token",
+			"deck_key": "token"
+		},
+		{
+			"id": "token_messages",
+			"title": "Send a Success Message",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [
+				"from django.contrib import messages",
+				"",
+				"def save_student(request):",
+				"    # Student saved successfully!",
+				"    # Send a success message to the user",
+				"    "
+			],
+			"mission_steps": [
+				"Write: messages.success(request, 'Saved!')",
+				"Why: The messages framework lets you queue one-time notifications that automatically display to users on the next page load."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"messages.success(request, 'Saved!')",
+				"messages.success(request, \"Saved!\")",
+				"messages.success(request,'Saved!')",
+				"messages.success(request,\"Saved!\")"
+			],
+			"correct_output": "✅ Message queued!\n  Type: SUCCESS\n  Text: \"Saved!\"\n  Will display on next page render.",
+			"error_output": "Error: Invalid message call — use messages.success(request, 'text')",
+			"progressive_hints": [
+				"Import is already done. Use: messages.success()",
+				"Pass two arguments: request and the message string",
+				"Type: messages.success(request, 'Saved!')"
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Token",
+			"deck_key": "token"
+		}
+	],
+	"auth": [
+		{
+			"id": "auth_authenticate",
+			"title": "Authenticate a User",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [
+				"from django.contrib.auth import authenticate, login",
+				"",
+				"def login_view(request):",
+				"    username = request.POST['username']",
+				"    password = request.POST['password']",
+				"    # Authenticate the user with the provided credentials",
+				"    user = "
+			],
+			"mission_steps": [
+				"Write: authenticate(request, username=username, password=password)",
+				"Why: The authenticate function is Django's secure way to verify that a username and password match a valid user in the database."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"authenticate(request, username=username, password=password)",
+				"authenticate(request,username=username,password=password)",
+				"authenticate(request, username=username, password=password)"
+			],
+			"correct_output": "✅ Authentication successful!\n  User: alice\n  Session: Started\n  Status: Logged in",
+			"error_output": "AuthenticationError: Invalid credentials — check your authenticate() call!",
+			"progressive_hints": [
+				"The format is 'user = authenticate(request, username=variable, password=variable)'.",
+				"Fill in the two variable arguments with the data from the request."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Auth",
+			"deck_key": "auth"
+		},
+		{
+			"id": "auth_permissions",
+			"title": "Check Ownership",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [
+				"def edit_post(request, post_id):",
+				"    post = Post.objects.get(id=post_id)",
+				"    # Check if the current user owns this post",
+				"    "
+			],
+			"mission_steps": [
+				"Write: if request.user == post.owner:",
+				"Why: Checking ownership ensures that logged-in users can only modify their own data, preventing unauthorized edits."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"if request.user == post.owner:",
+				"if request.user==post.owner:",
+				"if request.user == post.owner :"
+			],
+			"correct_output": "✅ Permission check passed!\n  User: alice\n  Post Owner: alice\n  Action: Allowed",
+			"error_output": "PermissionError: Ownership check failed — use request.user == object.owner",
+			"progressive_hints": [
+				"The format is 'if condition:'.",
+				"The condition should be 'request.user == object.owner'.",
+				"Substitute 'post.owner' for the object's owner."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Auth",
+			"deck_key": "auth"
+		},
+		{
+			"id": "auth_abstract_user",
+			"title": "Create a Custom User Model",
+			"topic": "django",
+			"type": "free_type",
+			"file_name": "models.py",
+			"code_lines": [],
+			"mission_steps": [
+				"Extend AbstractUser and add a 'phone' field, then register it in settings.py.",
+				"Why: The default User model cannot be modified after the first migration. AbstractUser lets you define custom fields from the start."
+			],
+			"placeholder": "Type the model and settings...",
+			"expected_answers": [],
+			"correct_output": "✅ CustomUser model created with phone field!\n  AUTH_USER_MODEL set correctly.",
+			"error_output": "Error: Ensure you inherit from AbstractUser and set AUTH_USER_MODEL.",
+			"progressive_hints": [
+				"In models.py format: 'class CustomUser(AbstractUser): phone = models.CharField(...)'.",
+				"In settings.py format: 'AUTH_USER_MODEL = \"app.Model\"'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Auth",
+			"deck_key": "auth"
+		},
+		{
+			"id": "auth_set_password",
+			"title": "Hash a Password",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [
+				"from django.contrib.auth import get_user_model",
+				"",
+				"User = get_user_model()",
+				"user = User.objects.get(username='alice')",
+				"",
+				"# TODO: Change alice's password to 'new_secure_pass'",
+				"# Use the method that automatically hashes it",
+				""
+			],
+			"mission_steps": [
+				"Use set_password() to securely change a user's password.",
+				"Why: set_password() runs the raw string through Django's hashing algorithm (PBKDF2 + SHA256) before storing it, ensuring no plaintext password ever touches the database."
+			],
+			"placeholder": "Type the method call...",
+			"expected_answers": [
+				"user.set_password('new_secure_pass')",
+				"user.set_password(\"new_secure_pass\")"
+			],
+			"correct_output": "✅ Password updated!\n  Hash: pbkdf2_sha256$260000$...\n  Raw password is NEVER stored.",
+			"error_output": "Error: Don't assign password directly. Use set_password().",
+			"progressive_hints": [
+				"The format is 'user.set_password(\"password\")'.",
+				"Pass the new password 'new_secure_pass' as the string argument."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor Auth",
+			"deck_key": "auth"
+		}
+	],
+	"rest": [
+		{
+			"id": "rest_serializer",
+			"title": "Create a ModelSerializer",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "serializers.py",
+			"code_lines": [
+				"from rest_framework import serializers",
+				"from .models import Post",
+				"",
+				"class PostSerializer(serializers.ModelSerializer):",
+				"    class Meta:",
+				"        model = Post",
+				"        "
+			],
+			"mission_steps": [
+				"Write: fields = ['id', 'title', 'content']",
+				"Why: Serializers translate complex database models into simple formats like JSON, making the data ready to be transmitted over an API."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"fields = ['id', 'title', 'content']",
+				"fields=['id', 'title', 'content']",
+				"fields = ['id','title','content']",
+				"fields = [\"id\", \"title\", \"content\"]"
+			],
+			"correct_output": "✅ Serializer created successfully!\n  PostSerializer → Post model\n  Fields: id, title, content\n  Output: {\"id\": 1, \"title\": \"Hello\", \"content\": \"World\"}",
+			"error_output": "SerializerError: Invalid field definition — check your fields list!",
+			"progressive_hints": [
+				"The format is 'fields = [\"field1\", \"field2\", \"field3\"]'.",
+				"Define the fields variable as a list of strings.",
+				"The list should contain 'id', 'title', and 'content'."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor REST",
+			"deck_key": "rest"
+		},
+		{
+			"id": "rest_token_auth",
+			"title": "Configure Token Authentication",
+			"topic": "python",
+			"type": "free_type",
+			"file_name": "settings.py",
+			"code_lines": [
+				"REST_FRAMEWORK = {",
+				"    'DEFAULT_AUTHENTICATION_CLASSES': [",
+				"        "
+			],
+			"mission_steps": [
+				"Write: 'rest_framework.authentication.TokenAuthentication',",
+				"Why: Adding this to DRF settings tells the API to expect and validate token-based authentication headers from clients."
+			],
+			"placeholder": "Type your code here...",
+			"expected_answers": [
+				"'rest_framework.authentication.TokenAuthentication',",
+				"\"rest_framework.authentication.TokenAuthentication\",",
+				"'rest_framework.authentication.TokenAuthentication'"
+			],
+			"correct_output": "✅ Token Authentication configured!\n  DRF Settings Updated\n  Auth Class: TokenAuthentication\n  All API endpoints now require a valid token.",
+			"error_output": "ConfigurationError: Invalid auth class — check the path to TokenAuthentication!",
+			"progressive_hints": [
+				"The format is '\"module.path.ClassName\",'.",
+				"Add the string 'rest_framework.authentication.TokenAuthentication' to the list.",
+				"Don't forget the quotes and comma."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor REST",
+			"deck_key": "rest"
+		},
+		{
+			"id": "rest_viewset",
+			"title": "Build a ViewSet & Router",
+			"topic": "django",
+			"type": "free_type",
+			"file_name": "views.py",
+			"code_lines": [],
+			"mission_steps": [
+				"Create a ModelViewSet with queryset and serializer_class, then register it with a Router.",
+				"Why: ViewSets eliminate the need to write individual API views for each CRUD operation. One class handles list, create, retrieve, update, and delete."
+			],
+			"placeholder": "Type the ViewSet and Router...",
+			"expected_answers": [],
+			"correct_output": "✅ Full REST API generated!\n  GET    /api/posts/      → List\n  POST   /api/posts/      → Create\n  GET    /api/posts/{id}/  → Retrieve\n  PUT    /api/posts/{id}/  → Update\n  DELETE /api/posts/{id}/  → Delete",
+			"error_output": "Error: Ensure queryset and serializer_class are set, and the router registers the viewset.",
+			"progressive_hints": [
+				"In views.py format: 'queryset = Model.objects.all()' and 'serializer_class = ModelSerializer'.",
+				"In urls.py format: 'router.register(\"prefix\", ViewSet)'.",
+				"Register 'posts' to PostViewSet."
+			],
+			"show_output": true,
+			"hint": "",
+			"timed": false,
+			"professor": "Professor REST",
+			"deck_key": "rest"
+		}
+	]
+}

@@ -2,6 +2,12 @@
 # Attach to a CanvasLayer. Toggle with "toggle_laptop" input (X key).
 extends CanvasLayer
 
+const CODING_UI_SCENE = preload("res://Scenes/Games/coding_challenge_ui.tscn")
+const GLOSSARY_POPUP_SCENE = preload("res://Scripts/UI/glossary_popup.gd")
+const PROFESSOR_NOTES_PATH = "res://Data/professor_notes_slides.json"
+const PROFESSOR_CHALLENGES_PATH = "res://Data/professor_challenges.json"
+const THESIS_CHALLENGE_DATA = preload("res://Scripts/Ch2/thesis_challenge_data.gd")
+
 var is_open: bool = false
 var is_saving: bool = false
 var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "quest_log", "settings", "certificates"
@@ -29,6 +35,10 @@ var _cred_label: Label
 
 # Quest log card references (for updating the tracked indicator)
 var _quest_cards: Dictionary = {}  # quest_id -> { card, indicator }
+var _retro_challenges_list: VBoxContainer
+var _notes_list: VBoxContainer
+var _professor_notes_data: Dictionary = {}
+var _professor_challenges_data: Dictionary = {}
 
 func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -412,16 +422,185 @@ func _build_retro_browser() -> ScrollContainer:
 	var sep = HSeparator.new()
 	vbox.add_child(sep)
 
-	# Empty state
-	var empty = Label.new()
-	empty.text = "📭 No challenges unlocked yet.\nTalk to NPCs around the world to unlock challenges!"
-	empty.add_theme_font_size_override("font_size", 12)
-	empty.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
-	empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(empty)
+	_retro_challenges_list = VBoxContainer.new()
+	_retro_challenges_list.name = "RetroChallengesList"
+	_retro_challenges_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_retro_challenges_list.add_theme_constant_override("separation", 10)
+	vbox.add_child(_retro_challenges_list)
+
+	_refresh_retro_browser()
 
 	return scroll
+
+func _refresh_retro_browser() -> void:
+	if not _retro_challenges_list:
+		return
+
+	for child in _retro_challenges_list.get_children():
+		child.queue_free()
+
+	var cd = get_node_or_null("/root/CharacterData")
+	var unlocked_groups = _get_unlocked_retro_groups(cd)
+	if unlocked_groups.is_empty():
+		var empty = Label.new()
+		empty.text = "No coding challenges unlocked yet. Finish a professor lesson to install their challenge set here."
+		empty.add_theme_font_size_override("font_size", 12)
+		empty.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
+		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_retro_challenges_list.add_child(empty)
+		return
+
+	for group in unlocked_groups:
+		_retro_challenges_list.add_child(_create_retro_group(group))
+
+func _get_unlocked_retro_groups(cd) -> Array:
+	var groups = []
+	var professor_sets = [
+		{"key": "markup", "flag": "ch2_y1s1_teaching_done", "title": "Professor Markup", "topic": "HTML, CSS, and Layout"},
+		{"key": "syntax", "flag": "ch2_y1s2_teaching_done", "title": "Professor Syntax", "topic": "Python Core and OOP"},
+		{"key": "view", "flag": "ch2_y2s1_teaching_done", "title": "Professor View", "topic": "Django Setup, URLs, Views, Templates"},
+		{"key": "query", "flag": "ch2_y2s2_teaching_done", "title": "Professor Query", "topic": "Models, ORM, and Relationships"},
+		{"key": "token", "flag": "ch2_y3s1_teaching_done", "title": "Professor Token", "topic": "Forms, Validation, CSRF"},
+		{"key": "auth", "flag": "ch2_y3s2_teaching_done", "title": "Professor Auth", "topic": "Authentication and Authorization"},
+		{"key": "rest", "flag": "ch2_y3mid_teaching_done", "title": "Professor REST", "topic": "APIs, Serializers, Routers"},
+	]
+
+	var challenge_data = _load_professor_challenges_data()
+	for info in professor_sets:
+		if cd and bool(cd.get(info["flag"])):
+			var challenges = challenge_data.get(info["key"], [])
+			challenges = _get_replayable_challenges(challenges)
+			if challenges is Array and not challenges.is_empty():
+				groups.append({
+					"title": info["title"],
+					"topic": info["topic"],
+					"challenges": challenges,
+				})
+
+	if cd:
+		var panelist_progress = int(cd.get("thesis_panelist_progress"))
+		var panelists = [
+			{"index": 1, "title": "Panelist Cruz", "topic": "Django project setup defense"},
+			{"index": 2, "title": "Panelist Santos", "topic": "Models, ORM, Forms rapid review"},
+			{"index": 3, "title": "Panelist Reyes", "topic": "Final debugging defense"},
+		]
+		for panelist in panelists:
+			if panelist_progress >= int(panelist["index"]):
+				var panelist_challenges = THESIS_CHALLENGE_DATA.get_challenges(int(panelist["index"]))
+				panelist_challenges = _get_replayable_challenges(panelist_challenges)
+				if not panelist_challenges.is_empty():
+					groups.append({
+						"title": panelist["title"],
+						"topic": panelist["topic"],
+						"challenges": panelist_challenges,
+					})
+
+	return groups
+
+func _get_replayable_challenges(challenges: Array) -> Array:
+	var replayable = []
+	for challenge in challenges:
+		if not (challenge is Dictionary):
+			continue
+		var expected = challenge.get("expected_answers", [])
+		var options = challenge.get("options", [])
+		if (expected is Array and not expected.is_empty()) or expected is Dictionary or (options is Array and not options.is_empty()):
+			replayable.append(challenge)
+	return replayable
+
+func _create_retro_group(group: Dictionary) -> PanelContainer:
+	var card = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.1, 0.16)
+	style.border_color = Color(0.2, 0.5, 0.9, 0.45)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	style.set_content_margin_all(10)
+	card.add_theme_stylebox_override("panel", style)
+
+	var vbox = VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	card.add_child(vbox)
+
+	var title = Label.new()
+	title.text = "%s — %s" % [str(group.get("title", "Challenge Set")), str(group.get("topic", "Practice"))]
+	title.add_theme_font_size_override("font_size", 13)
+	title.add_theme_color_override("font_color", Color(0.55, 0.75, 1.0))
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(title)
+
+	var challenges: Array = group.get("challenges", [])
+	for challenge in challenges:
+		vbox.add_child(_create_retro_challenge_row(challenge))
+
+	return card
+
+func _create_retro_challenge_row(challenge: Dictionary) -> HBoxContainer:
+	var row = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+
+	var label = Label.new()
+	label.text = "%s  [%s]" % [str(challenge.get("title", "Practice Challenge")), str(challenge.get("file_name", "code"))]
+	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_color_override("font_color", Color(0.72, 0.78, 0.9))
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(label)
+
+	var button = Button.new()
+	button.text = "Replay"
+	button.custom_minimum_size = Vector2(82, 30)
+	button.add_theme_font_size_override("font_size", 10)
+	button.pressed.connect(_launch_retro_challenge.bind(challenge))
+	row.add_child(button)
+
+	return row
+
+func _launch_retro_challenge(challenge: Dictionary) -> void:
+	var replay_data = challenge.duplicate(true)
+	replay_data["timed"] = false
+
+	visible = false
+	is_open = false
+	get_tree().paused = false
+
+	var canvas = CanvasLayer.new()
+	canvas.layer = 150
+	canvas.name = "RetroBrowserChallengeLayer"
+	get_tree().root.add_child(canvas)
+
+	var ui = CODING_UI_SCENE.instantiate()
+	ui.hide_close_button = false
+	canvas.add_child(ui)
+	ui.tree_exited.connect(func():
+		if is_instance_valid(canvas):
+			canvas.queue_free()
+		open()
+		_open_app("retro_browser")
+	)
+	ui.load_challenge(replay_data)
+
+func _load_professor_challenges_data() -> Dictionary:
+	if not _professor_challenges_data.is_empty():
+		return _professor_challenges_data
+
+	if not FileAccess.file_exists(PROFESSOR_CHALLENGES_PATH):
+		push_warning("Professor challenge data file is missing: " + PROFESSOR_CHALLENGES_PATH)
+		return {}
+
+	var file = FileAccess.open(PROFESSOR_CHALLENGES_PATH, FileAccess.READ)
+	if not file:
+		push_warning("Unable to open professor challenge data file: " + PROFESSOR_CHALLENGES_PATH)
+		return {}
+
+	var parsed = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		_professor_challenges_data = parsed
+	else:
+		push_warning("Professor challenge data file could not be parsed.")
+
+	return _professor_challenges_data
 
 # ─── Notes App ───────────────────────────────────────────────────────────────
 
@@ -443,7 +622,7 @@ func _build_notes() -> ScrollContainer:
 	vbox.add_child(header)
 
 	var desc = Label.new()
-	desc.text = "Concepts and lessons you've learned from NPCs will be saved here.\nUse these notes when you get stuck on a challenge!"
+	desc.text = "Professor slide decks unlock here after you finish each teaching session.\nUse them to review the lesson before helping students or replaying challenges."
 	desc.add_theme_font_size_override("font_size", 11)
 	desc.add_theme_color_override("font_color", Color(0.5, 0.55, 0.65))
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -452,48 +631,344 @@ func _build_notes() -> ScrollContainer:
 	var sep = HSeparator.new()
 	vbox.add_child(sep)
 
-	# Placeholder notes
-	var topics = [
-		{"title": "📗 What is Python?", "preview": "A beginner-friendly programming language..."},
-		{"title": "📘 HTML Basics", "preview": "The skeleton of every webpage..."},
-		{"title": "📙 CSS Styling", "preview": "Making things look pretty..."},
-		{"title": "📕 Django Framework", "preview": "The web framework for perfectionists..."},
-	]
+	_notes_list = VBoxContainer.new()
+	_notes_list.name = "NotesList"
+	_notes_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_notes_list.add_theme_constant_override("separation", 10)
+	vbox.add_child(_notes_list)
 
-	for topic in topics:
-		var note_card = _create_note_card(topic["title"], topic["preview"])
-		vbox.add_child(note_card)
+	_refresh_notes()
 
 	return scroll
 
-func _create_note_card(title_text: String, preview: String) -> PanelContainer:
+func _refresh_notes() -> void:
+	if not _notes_list:
+		return
+
+	for child in _notes_list.get_children():
+		child.queue_free()
+
+	var unlocked_count = 0
+	for deck in _get_note_decks():
+		var unlocked = _is_note_deck_unlocked(deck)
+		if unlocked:
+			unlocked_count += 1
+		_notes_list.add_child(_create_note_deck_card(deck, unlocked))
+
+	if unlocked_count == 0:
+		var hint = Label.new()
+		hint.text = "No professor slide decks unlocked yet. Finish a professor's teaching session to save their slides here."
+		hint.add_theme_font_size_override("font_size", 11)
+		hint.add_theme_color_override("font_color", Color(0.45, 0.5, 0.6))
+		hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_notes_list.add_child(hint)
+
+func _is_note_deck_unlocked(deck: Dictionary) -> bool:
+	var cd = get_node_or_null("/root/CharacterData")
+	if not cd:
+		return false
+	return bool(cd.get(deck.get("flag", "")))
+
+func _create_note_deck_card(deck: Dictionary, unlocked: bool) -> PanelContainer:
 	var card = PanelContainer.new()
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.12, 0.18)
-	style.border_color = Color(0.2, 0.25, 0.35)
+	style.bg_color = Color(0.1, 0.12, 0.18) if unlocked else Color(0.07, 0.08, 0.12)
+	style.border_color = Color(0.85, 0.75, 0.2, 0.45) if unlocked else Color(0.2, 0.22, 0.28)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(10)
 	card.add_theme_stylebox_override("panel", style)
 
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 12)
+	card.add_child(hbox)
+
 	var vbox = VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 4)
-	card.add_child(vbox)
+	hbox.add_child(vbox)
 
 	var title = Label.new()
-	title.text = title_text
+	title.text = ("✅ " if unlocked else "🔒 ") + str(deck.get("title", "Untitled Notes"))
 	title.add_theme_font_size_override("font_size", 13)
-	title.add_theme_color_override("font_color", Color(0.8, 0.83, 0.92))
+	title.add_theme_color_override("font_color", Color(0.9, 0.86, 0.45) if unlocked else Color(0.45, 0.47, 0.55))
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(title)
 
 	var prev = Label.new()
-	prev.text = preview
+	prev.text = str(deck.get("preview", "Review deck"))
 	prev.add_theme_font_size_override("font_size", 10)
-	prev.add_theme_color_override("font_color", Color(0.45, 0.5, 0.6))
+	prev.add_theme_color_override("font_color", Color(0.55, 0.6, 0.7) if unlocked else Color(0.35, 0.37, 0.45))
 	prev.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(prev)
 
+	var status = Label.new()
+	if unlocked:
+		status.text = "%d lesson slides available" % _get_note_slides(deck).size()
+		status.add_theme_color_override("font_color", Color(0.45, 0.75, 0.45))
+	else:
+		status.text = "Finish this professor's teaching to unlock"
+		status.add_theme_color_override("font_color", Color(0.42, 0.42, 0.48))
+	status.add_theme_font_size_override("font_size", 9)
+	vbox.add_child(status)
+
+	var view_btn = Button.new()
+	view_btn.text = "View Slides" if unlocked else "Locked"
+	view_btn.disabled = not unlocked
+	view_btn.custom_minimum_size = Vector2(110, 36)
+	view_btn.add_theme_font_size_override("font_size", 10)
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = Color(0.2, 0.18, 0.08)
+	btn_style.border_color = Color(0.85, 0.75, 0.2, 0.55)
+	btn_style.set_border_width_all(1)
+	btn_style.set_corner_radius_all(4)
+	btn_style.set_content_margin_all(5)
+	view_btn.add_theme_stylebox_override("normal", btn_style)
+	var hover = btn_style.duplicate()
+	hover.bg_color = Color(0.3, 0.26, 0.1)
+	view_btn.add_theme_stylebox_override("hover", hover)
+	var disabled_style = btn_style.duplicate()
+	disabled_style.bg_color = Color(0.12, 0.12, 0.15)
+	disabled_style.border_color = Color(0.24, 0.24, 0.3)
+	view_btn.add_theme_stylebox_override("disabled", disabled_style)
+	view_btn.add_theme_color_override("font_color", Color(1.0, 0.92, 0.45))
+	view_btn.add_theme_color_override("font_disabled_color", Color(0.42, 0.42, 0.48))
+	view_btn.pressed.connect(_show_note_deck.bind(deck))
+	hbox.add_child(view_btn)
+
 	return card
+
+func _show_note_deck(deck: Dictionary) -> void:
+	var slides: Array = _get_note_slides(deck)
+	if slides.is_empty():
+		return
+
+	var overlay = Panel.new()
+	overlay.name = "NotesSlideViewer"
+	var overlay_style = StyleBoxFlat.new()
+	overlay_style.bg_color = Color(0, 0, 0, 0.9)
+	overlay.add_theme_stylebox_override("panel", overlay_style)
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	screen_panel.add_child(overlay)
+
+	var frame = PanelContainer.new()
+	var frame_style = StyleBoxFlat.new()
+	frame_style.bg_color = Color(0.08, 0.09, 0.14)
+	frame_style.border_color = Color(0.85, 0.75, 0.2, 0.55)
+	frame_style.set_border_width_all(2)
+	frame_style.set_corner_radius_all(8)
+	frame_style.set_content_margin_all(16)
+	frame.add_theme_stylebox_override("panel", frame_style)
+	frame.set_anchors_preset(Control.PRESET_CENTER)
+	frame.custom_minimum_size = Vector2(620, 420)
+	frame.size = Vector2(620, 420)
+	frame.position = Vector2(-310, -210)
+	overlay.add_child(frame)
+
+	var layout = VBoxContainer.new()
+	layout.add_theme_constant_override("separation", 10)
+	layout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	frame.add_child(layout)
+
+	var title = Label.new()
+	title.text = str(deck.get("title", "Notes"))
+	title.add_theme_font_size_override("font_size", 18)
+	title.add_theme_color_override("font_color", Color(0.95, 0.85, 0.35))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	layout.add_child(title)
+
+	var slide_title = Label.new()
+	slide_title.add_theme_font_size_override("font_size", 15)
+	slide_title.add_theme_color_override("font_color", Color(0.85, 0.88, 0.95))
+	slide_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	layout.add_child(slide_title)
+
+	var body = RichTextLabel.new()
+	body.bbcode_enabled = true
+	body.fit_content = false
+	body.scroll_active = true
+	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_theme_font_size_override("normal_font_size", 12)
+	body.add_theme_color_override("default_color", Color(0.72, 0.76, 0.86))
+	body.meta_underlined = true
+	body.meta_clicked.connect(_on_notes_glossary_clicked)
+	layout.add_child(body)
+
+	var nav = HBoxContainer.new()
+	nav.add_theme_constant_override("separation", 8)
+	layout.add_child(nav)
+
+	var prev_btn = Button.new()
+	prev_btn.text = "← Previous"
+	prev_btn.add_theme_font_size_override("font_size", 11)
+	nav.add_child(prev_btn)
+
+	var slide_count = Label.new()
+	slide_count.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	slide_count.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slide_count.add_theme_font_size_override("font_size", 11)
+	slide_count.add_theme_color_override("font_color", Color(0.55, 0.6, 0.7))
+	nav.add_child(slide_count)
+
+	var next_btn = Button.new()
+	next_btn.text = "Next →"
+	next_btn.add_theme_font_size_override("font_size", 11)
+	nav.add_child(next_btn)
+
+	var close_btn = Button.new()
+	close_btn.text = "Close"
+	close_btn.add_theme_font_size_override("font_size", 11)
+	nav.add_child(close_btn)
+
+	var state = {"index": 0}
+	var render_slide = func():
+		var i = int(state["index"])
+		var slide: Dictionary = slides[i]
+		slide_title.text = str(slide.get("title", "Review Slide"))
+		body.text = _format_note_slide_body(slide)
+		slide_count.text = "Slide %d of %d" % [i + 1, slides.size()]
+		prev_btn.disabled = i <= 0
+		next_btn.disabled = i >= slides.size() - 1
+
+	prev_btn.pressed.connect(func():
+		state["index"] = max(0, int(state["index"]) - 1)
+		render_slide.call()
+	)
+	next_btn.pressed.connect(func():
+		state["index"] = min(slides.size() - 1, int(state["index"]) + 1)
+		render_slide.call()
+	)
+	close_btn.pressed.connect(func(): overlay.queue_free())
+	render_slide.call()
+
+func _on_notes_glossary_clicked(meta) -> void:
+	var term = str(meta).strip_edges().to_lower()
+	if term.is_empty():
+		return
+	var popup = GLOSSARY_POPUP_SCENE.new()
+	get_tree().root.add_child(popup)
+	popup.show_definition(term)
+
+func _get_note_slides(deck: Dictionary) -> Array:
+	if deck.has("slides"):
+		return deck.get("slides", [])
+
+	var deck_key = str(deck.get("deck_key", ""))
+	if deck_key.is_empty():
+		return []
+
+	var notes_data = _load_professor_notes_data()
+	var slides = notes_data.get(deck_key, [])
+	return slides if slides is Array else []
+
+func _load_professor_notes_data() -> Dictionary:
+	if not _professor_notes_data.is_empty():
+		return _professor_notes_data
+
+	if not FileAccess.file_exists(PROFESSOR_NOTES_PATH):
+		push_warning("Professor notes data file is missing: " + PROFESSOR_NOTES_PATH)
+		return {}
+
+	var file = FileAccess.open(PROFESSOR_NOTES_PATH, FileAccess.READ)
+	if not file:
+		push_warning("Unable to open professor notes data file: " + PROFESSOR_NOTES_PATH)
+		return {}
+
+	var parsed = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		_professor_notes_data = parsed
+	else:
+		push_warning("Professor notes data file could not be parsed.")
+
+	return _professor_notes_data
+
+func _format_note_slide_body(slide: Dictionary) -> String:
+	if slide.has("body"):
+		return GlossaryData.auto_link(str(slide.get("body", "")))
+
+	var lines: Array[String] = []
+	var subtitle = str(slide.get("subtitle", "")).strip_edges()
+	if not subtitle.is_empty():
+		lines.append("[color=#9fb3d9]" + subtitle + "[/color]")
+		lines.append("")
+
+	var bullets: Array = slide.get("bullets", [])
+	for bullet in bullets:
+		lines.append("[color=#7dacf0]  *[/color]  " + GlossaryData.auto_link(str(bullet)))
+
+	var code = str(slide.get("code", "")).strip_edges()
+	if not code.is_empty():
+		if not lines.is_empty():
+			lines.append("")
+		lines.append("[color=#9fd18b]Code:[/color]")
+		lines.append("[code]" + code + "[/code]")
+
+	var reference = str(slide.get("reference", "")).strip_edges()
+	if not reference.is_empty():
+		if not lines.is_empty():
+			lines.append("")
+		lines.append("[color=#6f778a]" + reference + "[/color]")
+
+	return "\n".join(PackedStringArray(lines))
+
+func _get_note_decks() -> Array:
+	return [
+		{
+			"flag": "ch1_teaching_done",
+			"title": "SHS Professor — Python History",
+			"preview": "Guido van Rossum, Python's origin, the name, readability, Python 3, and modern uses.",
+			"slides": [
+				{"title": "Python's Creator", "body": "Python was created by Guido van Rossum.\n\n• He began working on Python in 1989.\n• His earlier work on ABC influenced Python's clean structure.\n• The language became known for readability and simplicity."},
+				{"title": "Why the Name Python?", "body": "Python was not named after the snake.\n\n• The name came from Monty Python's Flying Circus.\n• Guido wanted the language to feel fun and approachable.\n• This is why Python's culture often values clarity and friendliness."},
+				{"title": "Python Today", "body": "Python is now used in many fields.\n\n• Python 3.0 was released in 2008 to fix older language flaws.\n• The Python Software Foundation supports and promotes the language.\n• Python is used by organizations like NASA, Google, and Netflix.\n• Django is one of Python's major web development frameworks."},
+			],
+		},
+		{
+			"flag": "ch2_y1s1_teaching_done",
+			"title": "Professor Markup — HTML, CSS, and Layout",
+			"preview": "HTML structure, CSS styling, DOM thinking, and Flexbox layout.",
+			"deck_key": "markup",
+		},
+		{
+			"flag": "ch2_y1s2_teaching_done",
+			"title": "Professor Syntax — Python Core and OOP",
+			"preview": "Python data types, loops, classes, constructors, and HTTP requests.",
+			"deck_key": "syntax",
+		},
+		{
+			"flag": "ch2_y2s1_teaching_done",
+			"title": "Professor View — Django Setup, URLs, Views, Templates",
+			"preview": "Virtual environments, manage.py, URL routing, view functions, templates, and static files.",
+			"deck_key": "view",
+		},
+		{
+			"flag": "ch2_y2s2_teaching_done",
+			"title": "Professor Query — Models, ORM, and Relationships",
+			"preview": "Django models, database relationships, migrations, and ORM queries.",
+			"deck_key": "query",
+		},
+		{
+			"flag": "ch2_y3s1_teaching_done",
+			"title": "Professor Token — Forms, Validation, CSRF",
+			"preview": "HTML forms, Django forms, validation, CSRF protection, and messages.",
+			"deck_key": "token",
+		},
+		{
+			"flag": "ch2_y3s2_teaching_done",
+			"title": "Professor Auth — Authentication and Authorization",
+			"preview": "Login, identity checks, permissions, and ownership rules.",
+			"deck_key": "auth",
+		},
+		{
+			"flag": "ch2_y3mid_teaching_done",
+			"title": "Professor REST — APIs, Serializers, Routers",
+			"preview": "Django REST Framework, JSON responses, serializers, viewsets, and API routing.",
+			"deck_key": "rest",
+		},
+	]
 
 # ─── Quest Log App ───────────────────────────────────────────────────────────
 
@@ -1740,21 +2215,21 @@ func _show_desktop():
 
 # Master list of all achievements (same order as server)
 const ALL_ACHIEVEMENTS = [
-	{"key": "ch1_complete", "name": "📜 Origin Story", "desc": "Completed Chapter 1"},
-	{"key": "ch1_perfect", "name": "🧠 History Buff", "desc": "Perfect Ch1 quiz score"},
-	{"key": "first_professor", "name": "🎓 Freshman Year", "desc": "Beat your first professor"},
-	{"key": "all_professors", "name": "👨‍🎓 Dean's Lister", "desc": "Conquered all 7 professors"},
-	{"key": "honor_roll", "name": "🏅 Honor Roll", "desc": "Story GWA ≤ 1.75"},
-	{"key": "no_retakes", "name": "⚡ First Try", "desc": "Beat a professor with 0 retakes"},
-	{"key": "comeback_kid", "name": "💪 Comeback Kid", "desc": "Passed a removal exam"},
-	{"key": "thesis_started", "name": "📋 Panel Ready", "desc": "Beat your first panelist"},
-	{"key": "thesis_defended", "name": "🎓 Thesis Defended", "desc": "Defended your thesis"},
-	{"key": "thesis_magna", "name": "🌟 Magna Cum Laude", "desc": "Thesis GWA ≤ 1.5"},
-	{"key": "item_shopper", "name": "🛒 Shopaholic", "desc": "Used a shop item"},
-	{"key": "challenge_10", "name": "🔥 Code Warrior", "desc": "10+ challenges completed"},
-	{"key": "challenge_25", "name": "💎 Code Legend", "desc": "25+ challenges completed"},
-	{"key": "community_helper", "name": "🤝 Community Helper", "desc": "Helped 15+ students"},
-	{"key": "full_clear", "name": "🏆 100% Complete", "desc": "100% story progress"},
+	{"key": "ch1_complete", "name": "📜 Origin Story", "desc": "Completed Chapter 1", "unlock": "Complete the SHS Python history lesson and Chapter 1 story."},
+	{"key": "ch1_perfect", "name": "🧠 History Buff", "desc": "Perfect Ch1 quiz score", "unlock": "Get a perfect score on the Chapter 1 Python history quiz."},
+	{"key": "first_professor", "name": "🎓 Freshman Year", "desc": "Beat your first professor", "unlock": "Complete any one college professor course."},
+	{"key": "all_professors", "name": "👨‍🎓 Dean's Lister", "desc": "Conquered all 7 professors", "unlock": "Complete all seven professor courses."},
+	{"key": "honor_roll", "name": "🏅 Honor Roll", "desc": "Story GWA ≤ 1.75", "unlock": "Finish the professor storyline with a GWA of 1.75 or better."},
+	{"key": "no_retakes", "name": "⚡ First Try", "desc": "Beat a professor with 0 retakes", "unlock": "Pass a professor course without needing a retake."},
+	{"key": "comeback_kid", "name": "💪 Comeback Kid", "desc": "Passed a removal exam", "unlock": "Trigger an INC and pass the removal exam."},
+	{"key": "thesis_started", "name": "📋 Panel Ready", "desc": "Beat your first panelist", "unlock": "Pass the first thesis panelist evaluation."},
+	{"key": "thesis_defended", "name": "🎓 Thesis Defended", "desc": "Defended your thesis", "unlock": "Pass all thesis panelist evaluations."},
+	{"key": "thesis_magna", "name": "🌟 Magna Cum Laude", "desc": "Thesis GWA ≤ 1.5", "unlock": "Defend the thesis with a thesis GWA of 1.5 or better."},
+	{"key": "item_shopper", "name": "🛒 Shopaholic", "desc": "Used a shop item", "unlock": "Buy or use a shop item during eligible gameplay."},
+	{"key": "challenge_10", "name": "🔥 Code Warrior", "desc": "10+ challenges completed", "unlock": "Complete at least 10 coding challenges."},
+	{"key": "challenge_25", "name": "💎 Code Legend", "desc": "25+ challenges completed", "unlock": "Complete at least 25 coding challenges."},
+	{"key": "community_helper", "name": "🤝 Community Helper", "desc": "Helped 15+ students", "unlock": "Help at least 15 student NPCs."},
+	{"key": "full_clear", "name": "🏆 100% Complete", "desc": "100% story progress", "unlock": "Complete the main story, professor courses, students, thesis, and major progress goals."},
 ]
 
 var _achievements_grid: GridContainer
@@ -1842,8 +2317,8 @@ func _refresh_achievements():
 			name_label.text = ach["name"]
 			name_label.add_theme_color_override("font_color", Color(0.95, 0.85, 0.3))
 		else:
-			name_label.text = "🔒 ???"
-			name_label.add_theme_color_override("font_color", Color(0.35, 0.35, 0.4))
+			name_label.text = "🔒 " + str(ach["name"])
+			name_label.add_theme_color_override("font_color", Color(0.48, 0.48, 0.56))
 		name_label.add_theme_font_size_override("font_size", 12)
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1855,8 +2330,8 @@ func _refresh_achievements():
 			desc_label.text = ach["desc"]
 			desc_label.add_theme_color_override("font_color", Color(0.7, 0.72, 0.8))
 		else:
-			desc_label.text = "Keep playing to unlock!"
-			desc_label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.35))
+			desc_label.text = str(ach.get("unlock", ach["desc"]))
+			desc_label.add_theme_color_override("font_color", Color(0.42, 0.43, 0.5))
 		desc_label.add_theme_font_size_override("font_size", 9)
 		desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -1892,9 +2367,11 @@ func _open_app(app_id: String):
 			sis_content.visible = true
 		"retro_browser":
 			app_title_label.text = "🌐 RetroBrowser"
+			_refresh_retro_browser()
 			retro_browser_content.visible = true
 		"notes":
 			app_title_label.text = "📝 Notes"
+			_refresh_notes()
 			notes_content.visible = true
 		"quest_log":
 			app_title_label.text = "📋 Quest Log"

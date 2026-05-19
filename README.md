@@ -1,11 +1,13 @@
 # DjangoQuest Game Client
 
-This is the 3D educational game client for DjangoQuest, built in the Godot Engine. It connects to the DjangoQuest backend for real-time cloud saves, authentication, and platform announcements.
+This is the 2D top-down educational RPG game client for DjangoQuest, built in the Godot Engine. It connects to the DjangoQuest backend for real-time cloud saves, authentication, platform announcements, controlled coding challenge validation, and AI-assisted feedback.
+
+Judge0 is no longer part of the active game workflow. Coding challenges use local Godot checks plus the Django backend's controlled validation and AI support.
 
 ## How the Projects Connect
 This platform has three main parts that work together:
-1. **Godot Game Client (This Repository)**: The actual 3D game.
-2. **[Backend Server](https://github.com/7uisu/DjangoQuest-Backend.git)**: The core database. The game talks to this to log you in and save your progress.
+1. **Godot Game Client (This Repository)**: The actual 2D top-down RPG game.
+2. **[Backend Server](https://github.com/7uisu/DjangoQuest-Backend.git)**: The core API and database bridge. The game talks to this to log you in, save progress, check code, and fetch platform records.
 3. **[Frontend Website](https://github.com/7uisu/DjangoQuest-Frontend.git)**: The website where teachers can see their students' game progress.
 
 ## Prerequisites

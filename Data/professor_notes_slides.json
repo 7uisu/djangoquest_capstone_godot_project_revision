@@ -1,0 +1,986 @@
+{
+	"markup": [
+		{
+			"icon": "🌐",
+			"title": "How the Web Works",
+			"subtitle": "Understanding the request-response cycle",
+			"bullets": [
+				"You type a URL → Your [b]browser[/b] sends a request",
+				"A [b]server[/b] receives the request and processes it",
+				"The server sends back a [b]response[/b] (the webpage)",
+				"This all happens in [b]milliseconds[/b]"
+			],
+			"header": "MODULE 1 — WEB BASICS",
+			"slide_num": "1 / 10",
+			"reference": "Source: Mozilla Developer Network - Web Docs"
+		},
+		{
+			"icon": "📨",
+			"title": "HTTP Methods",
+			"subtitle": "How browsers talk to servers",
+			"bullets": [
+				"[b]GET[/b]  →  'Give me this page'  (viewing)",
+				"[b]POST[/b] →  'Here is some data'  (submitting)",
+				"Every URL visit = a GET request",
+				"Every form submission = a POST request"
+			],
+			"code": "GET /home/ HTTP/1.1\nHost: www.example.com",
+			"header": "MODULE 1 — WEB BASICS",
+			"slide_num": "2 / 10",
+			"reference": "Source: Web Development with HTML/CSS/JS (Lemay et al., 2021)"
+		},
+		{
+			"icon": "📄",
+			"title": "HTML — The Skeleton",
+			"subtitle": "Every website starts with structure",
+			"bullets": [
+				"HTML = [b]HyperText Markup Language[/b]",
+				"It defines [b]what[/b] content is, not how it looks",
+				"Think of it as the [b]skeleton[/b] of a webpage",
+				"Without HTML, there is no website"
+			],
+			"header": "MODULE 2 — HTML DOCUMENTS",
+			"slide_num": "3 / 10",
+			"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
+		},
+		{
+			"icon": "🏷️",
+			"title": "Semantic Tags",
+			"subtitle": "Tags carry meaning — not just appearance",
+			"bullets": [
+				"<h1>  =  a [b]heading[/b], not just 'big text'",
+				"<p>   =  a [b]paragraph[/b], not just 'text'",
+				"<a>   =  a [b]link[/b] to another page",
+				"Good HTML → accessible, searchable, meaningful"
+			],
+			"code": "<body>\n  <h1>Hello</h1>\n  <p>World</p>\n</body>",
+			"header": "MODULE 2 — HTML DOCUMENTS",
+			"slide_num": "4 / 10",
+			"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
+		},
+		{
+			"icon": "🎨",
+			"title": "CSS & The Box Model",
+			"subtitle": "Everything on the web is a box",
+			"bullets": [
+				"CSS = [b]Cascading Style Sheets[/b]",
+				"Controls [b]layout[/b], [b]colors[/b], [b]spacing[/b], [b]fonts[/b]",
+				"Every element is a [b]box[/b] with 4 layers",
+				"Content → Padding → Border → Margin"
+			],
+			"header": "MODULE 3 — CSS BASICS",
+			"slide_num": "5 / 10",
+			"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
+		},
+		{
+			"icon": "📦",
+			"title": "Inside vs Outside",
+			"subtitle": "Padding lives inside — Margin lives outside",
+			"bullets": [
+				"[b]padding[/b]: space between content and border",
+				"[b]margin[/b]: space between the box and neighbors",
+				"[b]border[/b]: the visible edge of the box"
+			],
+			"code": ".box {\n  margin: 20px;   /* outside */\n  padding: 10px;  /* inside */\n}",
+			"header": "MODULE 3 — CSS BASICS",
+			"slide_num": "6 / 10",
+			"reference": "Source: Responsive Web Design with HTML5 & CSS (Frain, 2022)"
+		},
+		{
+			"icon": "↔️",
+			"title": "Flexbox Layouts",
+			"subtitle": "Modern CSS layout made simple",
+			"bullets": [
+				"Before Flexbox: floats, hacks, pain",
+				"[b]display: flex[/b] → turns a container into a flex container",
+				"Items flow in one direction: [b]row[/b] or [b]column[/b]",
+				"Easy alignment and spacing"
+			],
+			"header": "MODULE 4 — FLEXBOX",
+			"slide_num": "7 / 10",
+			"reference": "Source: MDN Web Docs - HTML & CSS"
+		},
+		{
+			"icon": "◎",
+			"title": "Centering & Alignment",
+			"subtitle": "Finally — centering things that just works",
+			"bullets": [
+				"[b]justify-content[/b]: aligns items along the main axis",
+				"[b]align-items[/b]: aligns items along the cross axis",
+				"center, space-between, space-around, flex-start, flex-end"
+			],
+			"code": ".container {\n  display: flex;\n  justify-content: center;\n}",
+			"header": "MODULE 4 — FLEXBOX",
+			"slide_num": "8 / 10",
+			"reference": "Source: MDN Web Docs - HTML & CSS"
+		},
+		{
+			"icon": "📱",
+			"title": "Responsive Design",
+			"subtitle": "One website — every screen size",
+			"bullets": [
+				"Websites must work on [b]desktop[/b], [b]tablet[/b], and [b]phone[/b]",
+				"A fixed layout will [b]break[/b] on small screens",
+				"Responsive design [b]adapts[/b] the layout automatically",
+				"The tool for this: [b]media queries[/b]"
+			],
+			"header": "MODULE 5 — RESPONSIVENESS",
+			"slide_num": "9 / 10",
+			"reference": "Source: MDN Web Docs - HTML & CSS"
+		},
+		{
+			"icon": "📐",
+			"title": "Media Queries",
+			"subtitle": "Tell the browser: 'If the screen is small… change the layout'",
+			"bullets": [
+				"[b]@media[/b] lets you write conditional CSS",
+				"Target specific screen widths (breakpoints)",
+				"Good websites [b]adapt[/b] — bad websites [b]break[/b]"
+			],
+			"code": "@media (max-width: 600px) {\n  .container {\n    flex-direction: column;\n  }\n}",
+			"header": "MODULE 5 — RESPONSIVENESS",
+			"slide_num": "10 / 10",
+			"reference": "Source: MDN Web Docs - HTML & CSS"
+		}
+	],
+	"syntax": [
+		{
+			"icon": "🔁",
+			"title": "For Loops",
+			"subtitle": "Repeat actions over collections",
+			"bullets": [
+				"A [b]for loop[/b] iterates over a collection",
+				"[b]range(n)[/b] generates numbers from 0 to n-1",
+				"Each pass through the loop is called an [b]iteration[/b]",
+				"Loops eliminate repetitive code"
+			],
+			"code": "for i in range(5):\n    print(i)\n# Output: 0, 1, 2, 3, 4",
+			"header": "MODULE 1 — PYTHON BASICS",
+			"slide_num": "1 / 6",
+			"reference": "Source: Python Crash Course (Matthes, 2023)"
+		},
+		{
+			"icon": "🔀",
+			"title": "Conditionals",
+			"subtitle": "Making decisions in code",
+			"bullets": [
+				"[b]if[/b] checks a condition — runs code if True",
+				"[b]elif[/b] checks another condition if the first was False",
+				"[b]else[/b] runs when nothing matched",
+				"Conditions use [b]comparison operators[/b]: ==, !=, <, >"
+			],
+			"code": "if score >= 90:\n    print('A')\nelif score >= 80:\n    print('B')\nelse:\n    print('C')",
+			"header": "MODULE 1 — PYTHON BASICS",
+			"slide_num": "2 / 6",
+			"reference": "Source: Python Crash Course (Matthes, 2023)"
+		},
+		{
+			"icon": "📦",
+			"title": "Data Types",
+			"subtitle": "The building blocks of every variable",
+			"bullets": [
+				"[b]String[/b] — stores text (names, messages, addresses)",
+				"[b]Integer[/b] — stores whole numbers (age, score, quantity)",
+				"[b]Boolean[/b] — stores True/False (yes/no questions)",
+				"[b]List[/b] — stores multiple items together (shopping list, student names)"
+			],
+			"code": "name = 'Alice'       # String\nage = 20             # Integer\nis_enrolled = True   # Boolean\ngrades = [90, 85]    # List",
+			"header": "MODULE 1 — PYTHON BASICS",
+			"slide_num": "★ AI GAME",
+			"reference": "Source: Python Crash Course (Matthes, 2023)"
+		},
+		{
+			"icon": "🏗️",
+			"title": "Classes & Objects",
+			"subtitle": "Blueprints for building systems",
+			"bullets": [
+				"A [b]class[/b] is a blueprint — a template for creating things",
+				"An [b]object[/b] is an instance built from that blueprint",
+				"Class = plan, Object = result",
+				"[b]Django is built entirely on classes[/b]"
+			],
+			"code": "class Student:\n    def __init__(self, name):\n        self.name = name\n\nstudent1 = Student('Alice')",
+			"header": "MODULE 2 — OOP",
+			"slide_num": "3 / 6",
+			"reference": "Source: Python Crash Course (Matthes, 2023)"
+		},
+		{
+			"icon": "⚙️",
+			"title": "Methods & __init__",
+			"subtitle": "Giving objects behavior and identity",
+			"bullets": [
+				"[b]__init__[/b] is the constructor — runs when an object is created",
+				"[b]self[/b] refers to the current object instance",
+				"[b]Methods[/b] are functions that belong to a class",
+				"Every method's first parameter must be [b]self[/b]"
+			],
+			"code": "class Student:\n    def __init__(self, name, grade):\n        self.name = name\n        self.grade = grade\n    \n    def introduce(self):\n        print(f'I am {self.name}')",
+			"header": "MODULE 2 — OOP",
+			"slide_num": "4 / 6",
+			"reference": "Source: Python Crash Course (Matthes, 2023)"
+		},
+		{
+			"icon": "🌐",
+			"title": "HTTP & the Web (Revisited)",
+			"subtitle": "Now we talk to servers using Python",
+			"bullets": [
+				"You learned [b]HTTP[/b] in Semester 1 — now we use it",
+				"[b]GET[/b] = request data from a server",
+				"[b]POST[/b] = send data to a server",
+				"Every [b]web app[/b] is just requests and responses"
+			],
+			"header": "MODULE 3 — HTTP & REQUESTS",
+			"slide_num": "5 / 6",
+			"reference": "Source: Official Python Documentation"
+		},
+		{
+			"icon": "📡",
+			"title": "The requests Library",
+			"subtitle": "Python's way of talking to the web",
+			"bullets": [
+				"[b]requests[/b] is a Python library for making HTTP calls",
+				"[b]requests.get(url)[/b] sends a GET request",
+				"The response has a [b]status_code[/b] (200 = success)",
+				"And [b].text[/b] or [b].json()[/b] for the response body"
+			],
+			"code": "import requests\n\nresponse = requests.get('https://api.example.com/data')\nprint(response.status_code)  # 200\nprint(response.json())",
+			"header": "MODULE 3 — HTTP & REQUESTS",
+			"slide_num": "6 / 6",
+			"reference": "Source: requests.readthedocs.io"
+		}
+	],
+	"view": [
+		{
+			"icon": "🛡️",
+			"title": "Virtual Environments",
+			"subtitle": "Isolating your project",
+			"bullets": [
+				"Never install Django globally on your computer.",
+				"A [b]Virtual Environment (venv)[/b] creates an isolated space.",
+				"It keeps project dependencies from conflicting with each other.",
+				"[b]python -m venv venv[/b] creates it."
+			],
+			"code": "python -m venv venv\nsource venv/bin/activate  # macOS/Linux\nvenv\\Scripts\\activate  # Windows",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "1 / 17"
+		},
+		{
+			"icon": "⚡",
+			"title": "Activating the venv",
+			"subtitle": "Entering the isolated space",
+			"bullets": [
+				"Creating a venv is not enough — you must [b]activate[/b] it.",
+				"On macOS/Linux: [b]source venv/bin/activate[/b]",
+				"On Windows: [b]venv\\Scripts\\activate[/b]",
+				"Your terminal prompt will change to show [b](venv)[/b] when active."
+			],
+			"code": "venv\\Scripts\\activate       # Windows\nsource venv/bin/activate    # macOS/Linux\n\n(venv) C:\\Users\\hansu\\...\\DjangoQuest-Backend>   ← You'll see this prefix",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "2 / 17"
+		},
+		{
+			"icon": "📦",
+			"title": "Installing Django",
+			"subtitle": "pip install django",
+			"bullets": [
+				"[b]pip[/b] is Python's package manager.",
+				"Django is installed from PyPI using [b]pip install django[/b].",
+				"Always install inside your [b]activated venv[/b], never globally.",
+				"You can verify with: [b]python -m django --version[/b]"
+			],
+			"code": "pip install django\n# Successfully installed Django-5.0",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "3 / 17"
+		},
+		{
+			"icon": "🏗️",
+			"title": "Project vs App",
+			"subtitle": "Understanding Django's architecture",
+			"bullets": [
+				"A [b]Project[/b] is the entire web application system",
+				"An [b]App[/b] is a feature module inside your project",
+				"One project can have [b]many apps[/b] (blog, users, api…)",
+				"[b]django-admin startproject[/b] creates the project skeleton"
+			],
+			"code": "django-admin startproject mysite",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "4 / 17"
+		},
+		{
+			"icon": "⚙️",
+			"title": "manage.py",
+			"subtitle": "Your project's command center",
+			"bullets": [
+				"[b]manage.py[/b] is the tool you use to control your project",
+				"[b]migrate[/b] — prepares the database infrastructure",
+				"[b]runserver[/b] — starts the development server",
+				"[b]startapp[/b] — creates a new app inside the project"
+			],
+			"code": "python manage.py migrate\npython manage.py runserver",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "5 / 17"
+		},
+		{
+			"icon": "🧩",
+			"title": "Creating an App",
+			"subtitle": "Building a feature module",
+			"bullets": [
+				"[b]python manage.py startapp appname[/b]",
+				"Generates a folder for your specific feature.",
+				"Contains views.py, models.py, admin.py.",
+				"Next step: register it."
+			],
+			"code": "python manage.py startapp blog",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "6 / 17"
+		},
+		{
+			"icon": "📋",
+			"title": "INSTALLED_APPS",
+			"subtitle": "Registering your apps",
+			"bullets": [
+				"Creating an app isn't enough — you must [b]register[/b] it",
+				"[b]settings.py[/b] contains your project's configuration",
+				"[b]INSTALLED_APPS[/b] is the list of active apps",
+				"If your app isn't here, [b]Django ignores it[/b]"
+			],
+			"code": "# settings.py\nINSTALLED_APPS = [\n    'django.contrib.admin',\n    'django.contrib.auth',\n    'blog',  # <-- Your new app!\n]",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "7 / 17"
+		},
+		{
+			"icon": "📁",
+			"title": "Django File Structure",
+			"subtitle": "Know what each file does",
+			"bullets": [
+				"[b]settings.py[/b] — project configuration",
+				"[b]urls.py[/b] — URL routing, directs traffic",
+				"[b]views.py[/b] — logic that handles requests",
+				"[b]models.py[/b] — database definitions, next semester"
+			],
+			"code": "mysite/\n├── manage.py\n├── mysite/\n│   ├── settings.py\n│   ├── urls.py\n│   └── wsgi.py\n└── blog/\n    ├── views.py\n    ├── models.py\n    └── urls.py",
+			"header": "MODULE 1 — PROJECT SETUP",
+			"header_icon": "🐍",
+			"slide_num": "8 / 17"
+		},
+		{
+			"icon": "🔗",
+			"title": "URL Patterns",
+			"subtitle": "Directing traffic in Django",
+			"bullets": [
+				"[b]urls.py[/b] maps URLs to view functions",
+				"[b]path()[/b] defines a single URL route",
+				"The first argument is the [b]URL pattern[/b]",
+				"The second argument is the [b]view function[/b] to call"
+			],
+			"code": "# urls.py\nfrom django.urls import path\nfrom . import views\n\nurlpatterns = [\n    path('home/', views.home),\n]",
+			"header": "MODULE 2 — VIEWS & ROUTING",
+			"header_icon": "🌐",
+			"slide_num": "9 / 17"
+		},
+		{
+			"icon": "👁️",
+			"title": "View Functions",
+			"subtitle": "Where the logic lives",
+			"bullets": [
+				"A [b]view[/b] is a Python function that takes a [b]request[/b]",
+				"It processes data and returns a [b]response[/b]",
+				"[b]HttpResponse[/b] sends raw text/HTML back",
+				"Views connect [b]URLs[/b] to what the user sees"
+			],
+			"code": "# views.py\nfrom django.http import HttpResponse\n\ndef home(request):\n    return HttpResponse('Welcome!')",
+			"header": "MODULE 2 — VIEWS & ROUTING",
+			"header_icon": "🌐",
+			"slide_num": "10 / 17",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "📬",
+			"title": "URLs Are Like City Addresses",
+			"subtitle": "Every page has a specific route",
+			"bullets": [
+				"Django's [b]urls.py[/b] is like a city map.",
+				"Each URL path is an [b]address[/b] that leads to a specific [b]building[/b] (view).",
+				"You can't get to the bakery by going to the police station address.",
+				"The same logic applies to web apps — wrong URL = wrong page."
+			],
+			"code": "# Real life → Django URL:\n# 'Report a crime'    →  /police-station/\n# 'Buy some bread'    →  /bakery/\n# 'See a doctor'      →  /hospital/",
+			"header": "MODULE 2 — VIEWS & ROUTING",
+			"header_icon": "🌐",
+			"slide_num": "★ AI GAME",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "📄",
+			"title": "Django Templates",
+			"subtitle": "Dynamic HTML with Python data",
+			"bullets": [
+				"Templates are [b]HTML files[/b] with special Django tags",
+				"[b]{{ variable }}[/b] inserts Python data into HTML",
+				"[b]{% tag %}[/b] adds logic like loops and conditions",
+				"Views pass data to templates via [b]context[/b] dictionaries"
+			],
+			"code": "<!-- template.html -->\n<h1>Hello, {{ user.name }}!</h1>\n<p>You have {{ message_count }} messages.</p>",
+			"header": "MODULE 3 — TEMPLATES",
+			"header_icon": "📄",
+			"slide_num": "11 / 17",
+			"reference": "Source: MDN Web Docs - Django Templates"
+		},
+		{
+			"icon": "🔄",
+			"title": "render() & Context",
+			"subtitle": "Connecting views to templates",
+			"bullets": [
+				"[b]render()[/b] combines a template with data and returns HTML",
+				"The [b]context[/b] is a dictionary of variables for the template",
+				"Template files go in a [b]templates/[/b] folder inside your app",
+				"This replaces [b]HttpResponse[/b] for real pages"
+			],
+			"code": "# views.py\nfrom django.shortcuts import render\n\ndef home(request):\n    context = {'name': 'Alice'}\n    return render(request, 'home.html', context)",
+			"header": "MODULE 3 — TEMPLATES",
+			"header_icon": "📄",
+			"slide_num": "12 / 17",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "🎨",
+			"title": "Static Files",
+			"subtitle": "CSS, JavaScript, and images in Django",
+			"bullets": [
+				"[b]Static files[/b] = CSS, JS, images — files that don't change",
+				"Django does [b]NOT[/b] serve them automatically",
+				"You must use [b]{% load static %}[/b] at the top of your template",
+				"Then reference files with [b]{% static 'path' %}[/b]"
+			],
+			"code": "{% load static %}\n<html>\n<head>\n    <link rel=\"stylesheet\"\n          href=\"{% static 'css/style.css' %}\">\n</head>",
+			"header": "MODULE 4 — STATIC FILES",
+			"header_icon": "🎨",
+			"slide_num": "13 / 17",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "📂",
+			"title": "Static File Structure",
+			"subtitle": "Where to put your CSS and JS",
+			"bullets": [
+				"Create a [b]static/[/b] folder inside your app",
+				"Organize into subfolders: [b]css/[/b], [b]js/[/b], [b]images/[/b]",
+				"Always run [b]collectstatic[/b] before deployment",
+				"[b]STATIC_URL[/b] in settings.py controls the URL prefix"
+			],
+			"code": "blog/\n├── static/\n│   └── css/\n│       └── style.css\n├── templates/\n│   └── home.html\n└── views.py",
+			"header": "MODULE 4 — STATIC FILES",
+			"header_icon": "🎨",
+			"slide_num": "14 / 17",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "🏭",
+			"title": "Class-Based Generic Views",
+			"subtitle": "The CRUD Factories",
+			"bullets": [
+				"[b]C.R.U.D.[/b] stands for Create, Read, Update, Delete. It is the blood of the web.",
+				"Function-Based Views require you to write repetitive CRUD SQL logic manually.",
+				"Django provides [b]Class-Based Generic Views[/b] to automate this.",
+				"A [b]ListView[/b] automatically queries all objects and passes them to a template."
+			],
+			"code": "from django.views.generic import ListView\n\nclass BookListView(ListView):\n    model = Book\n    template_name = 'book_list.html'",
+			"header": "MODULE 5 — CRUD & GENERIC VIEWS",
+			"header_icon": "🗃️",
+			"slide_num": "15 / 17"
+		},
+		{
+			"icon": "🔍",
+			"title": "DetailView",
+			"subtitle": "Read a single object",
+			"bullets": [
+				"[b]DetailView[/b] is used to view a specific item (like a single user profile or specific book).",
+				"To do this, the URL must pass a Primary Key ([b]pk[/b]) or Slug to the view.",
+				"The view intercepts the [b]<int:pk>[/b] from the URL, automatically fetches the database item, and injects it into the template as [color=#f0c674]object[/color]."
+			],
+			"code": "from django.views.generic import DetailView\n\nclass BookDetailView(DetailView):\n    model = Book\n    # Automatically looks for book_detail.html and passes 'object'",
+			"header": "MODULE 5 — CRUD & GENERIC VIEWS",
+			"header_icon": "🗃️",
+			"slide_num": "16 / 17"
+		},
+		{
+			"icon": "🏗️",
+			"title": "Create, Update, Delete",
+			"subtitle": "Writing data directly to the Database.",
+			"bullets": [
+				"[b]CreateView / UpdateView[/b]: These automatically generate an HTML Form based on the model's fields, save data on POST, and redirect.",
+				"You must specify [color=#f0c674]fields = ['title', 'author'][/color] and a [color=#f0c674]success_url[/color].",
+				"[b]DeleteView[/b]: Automatically asks for confirmation and deletes the database record."
+			],
+			"code": "from django.views.generic import CreateView\n\nclass BookCreateView(CreateView):\n    model = Book\n    fields = ['title', 'author']\n    success_url = '/books/'",
+			"header": "MODULE 5 — CRUD & GENERIC VIEWS",
+			"header_icon": "🗃️",
+			"slide_num": "17 / 17"
+		}
+	],
+	"query": [
+		{
+			"icon": "🗄️",
+			"title": "Django Models",
+			"subtitle": "Your database, defined in Python",
+			"bullets": [
+				"[b]Models[/b] define your database structure using Python classes.",
+				"Each model class = One database table.",
+				"Each class attribute = One database column.",
+				"Django auto-generates SQL from your Models."
+			],
+			"code": "class Student(models.Model):\n    name = models.CharField(max_length=100)\n    grade = models.CharField(max_length=2)",
+			"header": "MODULE 1 — MODELS & MIGRATIONS",
+			"header_icon": "🗃️",
+			"slide_num": "1 / 10"
+		},
+		{
+			"icon": "🔄",
+			"title": "Migrations",
+			"subtitle": "Version control for your database",
+			"bullets": [
+				"[b]python manage.py makemigrations[/b]",
+				"→ Creates instructions for database changes.",
+				"[b]python manage.py migrate[/b]",
+				"→ Applies those instructions to the actual database."
+			],
+			"code": "python manage.py makemigrations\npython manage.py migrate",
+			"header": "MODULE 1 — MODELS & MIGRATIONS",
+			"header_icon": "🗃️",
+			"slide_num": "2 / 10"
+		},
+		{
+			"icon": "🗄️",
+			"title": "Database Backends",
+			"subtitle": "SQLite vs PostgreSQL",
+			"bullets": [
+				"[b]SQLite[/b] comes built into Django by default. It's stored as a simple file (db.sqlite3).",
+				"Perfect for local development.",
+				"[b]PostgreSQL[/b] or [b]MySQL[/b] is what you use in production.",
+				"You configure this inside [b]settings.py[/b]!"
+			],
+			"code": "DATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.sqlite3',\n        'NAME': BASE_DIR / 'db.sqlite3',\n    }\n}",
+			"header": "MODULE 1 — MODELS & MIGRATIONS",
+			"header_icon": "🗃️",
+			"slide_num": "3 / 10"
+		},
+		{
+			"icon": "🔗",
+			"title": "Database Relationships",
+			"subtitle": "Connecting your tables",
+			"bullets": [
+				"[b]One-to-Many (ForeignKey)[/b]: One Author has Many Books.",
+				"[b]One-to-One (OneToOneField)[/b]: One User has One Profile.",
+				"[b]Many-to-Many (ManyToManyField)[/b]: Many Students take Many Courses."
+			],
+			"code": "author = models.ForeignKey(Author, on_delete=models.CASCADE)",
+			"header": "MODULE 1 — MODELS & MIGRATIONS",
+			"header_icon": "🗃️",
+			"slide_num": "4 / 10"
+		},
+		{
+			"icon": "🤖",
+			"title": "Django ORM",
+			"subtitle": "Object Relational Mapper",
+			"bullets": [
+				"You don't write SQL. Django writes it for you.",
+				"Django translates Python into optimized SQL queries.",
+				"[b]Model.objects.all()[/b] → Retrieves every row.",
+				"[b]Model.objects.get(id=1)[/b] → Retrieves one specific row."
+			],
+			"code": "# Get ALL students\nstudents = Student.objects.all()\n\n# Get ONE student by ID\nstudent = Student.objects.get(id=1)",
+			"header": "MODULE 2 — THE ORM",
+			"header_icon": "🔎",
+			"slide_num": "5 / 10",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "🔎",
+			"title": "QuerySets & Filtering",
+			"subtitle": "Precision data extraction",
+			"bullets": [
+				"[b]Model.objects.filter()[/b] returns a QuerySet.",
+				"A QuerySet is a list of results matching a condition.",
+				"You can chain filters for complex lookups.",
+				"The database does the heavy lifting, not Python."
+			],
+			"code": "# Get students with grade 'A'\nhonor_roll = Student.objects.filter(grade='A')\n\n# Chain filters\nseniors = Student.objects.filter(grade='A', year=4)",
+			"header": "MODULE 2 — THE ORM",
+			"header_icon": "🔎",
+			"slide_num": "6 / 10",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "🔑",
+			"title": "Django Admin",
+			"subtitle": "A free, built-in CMS",
+			"bullets": [
+				"Django comes with a fully-featured admin GUI out of the box.",
+				"You do NOT have to build CRUD interfaces for your staff.",
+				"Access it at [b]/admin/[/b] after creating a superuser.",
+				"Models are hidden by default — you must [b]register[/b] them."
+			],
+			"header": "MODULE 3 — ADMIN PANEL",
+			"header_icon": "🛠️",
+			"slide_num": "7 / 10",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "📝",
+			"title": "Registering Models",
+			"subtitle": "Connecting to the Admin Site",
+			"bullets": [
+				"Edit [b]admin.py[/b] inside your app folder.",
+				"Import your model from [b]models.py[/b].",
+				"Use [b]admin.site.register(ModelName)[/b].",
+				"The model will now appear in your Admin dashboard."
+			],
+			"code": "# admin.py\nfrom django.contrib import admin\nfrom .models import Student\n\nadmin.site.register(Student)",
+			"header": "MODULE 3 — ADMIN PANEL",
+			"header_icon": "🛠️",
+			"slide_num": "8 / 10",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "🔄",
+			"title": "MVT Convergence",
+			"subtitle": "Model → View → Template",
+			"bullets": [
+				"[b]Model[/b]: Defines and queries the database.",
+				"[b]View[/b]: Fetches data from Models, processes logic.",
+				"[b]Template[/b]: Receives context from View, renders HTML.",
+				"They form the structural triangle of every Django app."
+			],
+			"header": "MODULE 4 — MVT FLOW",
+			"header_icon": "🔁",
+			"slide_num": "9 / 10",
+			"reference": "Source: Master Django MVT Architecture"
+		},
+		{
+			"icon": "🌉",
+			"title": "The View Bridge",
+			"subtitle": "Extracting and packing context",
+			"bullets": [
+				"1. Retrieve data: [b]data = Model.objects.all()[/b]",
+				"2. Pack context: [b]context = {'items': data}[/b]",
+				"3. Pass to render: [b]return render(request, 'page.html', context)[/b]"
+			],
+			"code": "def student_list(request):\n    students = Student.objects.all()\n    return render(request, 'list.html', {'students': students})",
+			"header": "MODULE 4 — MVT FLOW",
+			"header_icon": "🔁",
+			"slide_num": "10 / 10",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		}
+	],
+	"token": [
+		{
+			"icon": "📋",
+			"title": "Django Forms",
+			"subtitle": "Handling user input safely",
+			"bullets": [
+				"Users will submit data through your app — [b]Forms[/b] handle that.",
+				"Django's [b]Form[/b] class validates and cleans input automatically.",
+				"[b]ModelForm[/b] links a form directly to a database Model.",
+				"Never trust raw user input. [b]Always validate.[/b]"
+			],
+			"code": "from django import forms\nfrom .models import Student\n\nclass StudentForm(forms.ModelForm):\n    class Meta:\n        model = Student\n        fields = ['name', 'grade']",
+			"header": "MODULE 1 — FORMS & VALIDATION",
+			"header_icon": "🛡️",
+			"slide_num": "1 / 6",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "⚙️",
+			"title": "ModelForm Meta Class",
+			"subtitle": "Linking Form to Model",
+			"bullets": [
+				"Every [b]ModelForm[/b] needs an inner [b]class Meta[/b].",
+				"[b]model[/b] = which database table this form maps to.",
+				"[b]fields[/b] = which columns the form exposes.",
+				"Django auto-generates form fields from your Model definition."
+			],
+			"code": "class StudentForm(forms.ModelForm):\n    class Meta:\n        model = Student\n        fields = ['name', 'grade']",
+			"header": "MODULE 1 — FORMS & VALIDATION",
+			"header_icon": "🛡️",
+			"slide_num": "2 / 6",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "🔒",
+			"title": "CSRF Attacks",
+			"subtitle": "Cross-Site Request Forgery",
+			"bullets": [
+				"[b]CSRF[/b] = a malicious site tricks your browser into submitting a form.",
+				"The attacker exploits your [b]logged-in session[/b].",
+				"Without protection, your app can't tell real submissions from fake ones.",
+				"Django blocks this with a [b]CSRF token[/b] — a unique, secret key per form."
+			],
+			"header": "MODULE 2 — CSRF PROTECTION",
+			"header_icon": "🔐",
+			"slide_num": "3 / 6",
+			"reference": "Source: Django Security Documentation"
+		},
+		{
+			"icon": "🎫",
+			"title": "The CSRF Token",
+			"subtitle": "No token, no trust",
+			"bullets": [
+				"Add [b]{% csrf_token %}[/b] inside every POST form.",
+				"Django generates a [b]unique token[/b] for each user session.",
+				"The server verifies the token on submission.",
+				"If the token is [b]missing or wrong[/b], the request is rejected."
+			],
+			"code": "<form method=\"POST\">\n    {% csrf_token %}\n    {{ form.as_p }}\n    <button type=\"submit\">Save</button>\n</form>",
+			"header": "MODULE 2 — CSRF PROTECTION",
+			"header_icon": "🔐",
+			"slide_num": "4 / 6",
+			"reference": "Source: Django Security Documentation"
+		},
+		{
+			"icon": "💬",
+			"title": "Messages Framework",
+			"subtitle": "Talking back to the user",
+			"bullets": [
+				"After a user action, they need [b]feedback[/b] — success, error, warning.",
+				"Django's [b]messages[/b] framework handles this cleanly.",
+				"[b]messages.success(request, 'Saved!')[/b] queues a success message.",
+				"Messages are displayed once, then automatically cleared."
+			],
+			"code": "from django.contrib import messages\n\ndef save_student(request):\n    # After saving...\n    messages.success(request, 'Student saved!')",
+			"header": "MODULE 3 — MESSAGES FRAMEWORK",
+			"header_icon": "📢",
+			"slide_num": "5 / 6",
+			"reference": "Source: Official Django Documentation"
+		},
+		{
+			"icon": "📊",
+			"title": "Message Types",
+			"subtitle": "Contextual user feedback",
+			"bullets": [
+				"[b]messages.success(request, '...')[/b] — green, positive feedback.",
+				"[b]messages.error(request, '...')[/b] — red, something went wrong.",
+				"[b]messages.warning(request, '...')[/b] — yellow, caution.",
+				"[b]messages.info(request, '...')[/b] — blue, neutral information."
+			],
+			"code": "messages.success(request, 'Saved!')\nmessages.error(request, 'Invalid data.')\nmessages.warning(request, 'Check inputs.')\nmessages.info(request, 'Welcome back.')",
+			"header": "MODULE 3 — MESSAGES FRAMEWORK",
+			"header_icon": "📢",
+			"slide_num": "6 / 6",
+			"reference": "Source: Official Django Documentation"
+		}
+	],
+	"auth": [
+		{
+			"icon": "🔐",
+			"title": "Authentication",
+			"subtitle": "Who are you?",
+			"bullets": [
+				"[b]Authentication[/b] = verifying a user's identity.",
+				"Without it, anyone can access anything in your app.",
+				"Django provides a built-in [b]auth system[/b] out of the box.",
+				"Login, logout, password hashing — all handled for you."
+			],
+			"header": "MODULE 1 — AUTHENTICATION",
+			"header_icon": "🔑",
+			"slide_num": "1 / 8",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "🔑",
+			"title": "The authenticate() Function",
+			"subtitle": "Verifying credentials",
+			"bullets": [
+				"[b]authenticate(request, username, password)[/b] checks credentials.",
+				"Returns [b]User object[/b] if valid, [b]None[/b] if not.",
+				"After authentication, call [b]login(request, user)[/b] to start a session.",
+				"Never store raw passwords — Django hashes them automatically."
+			],
+			"code": "from django.contrib.auth import authenticate, login\n\ndef login_view(request):\n    user = authenticate(\n        request,\n        username='alice',\n        password='secret123'\n    )\n    if user is not None:\n        login(request, user)",
+			"header": "MODULE 1 — AUTHENTICATION",
+			"header_icon": "🔑",
+			"slide_num": "2 / 8",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "🪪",
+			"title": "Authentication in Real Life",
+			"subtitle": "How do you prove who you are?",
+			"bullets": [
+				"[b]Valid auth[/b] = something verifiable (ID card, fingerprint, password)",
+				"[b]Invalid auth[/b] = unverifiable claims ('trust me', 'I look like them')",
+				"Authentication isn't about trust — it's about [b]proof[/b].",
+				"The same logic applies to Django's authenticate() function."
+			],
+			"code": "# Real life → Code concept:\n# Passport ✅  →  authenticate(username, password)\n# 'Trust me' ❌ →  No credentials provided",
+			"header": "MODULE 1 — AUTHENTICATION",
+			"header_icon": "🔑",
+			"slide_num": "★ AI GAME",
+			"reference": "Source: Django for Beginners (Vincent, 2023)"
+		},
+		{
+			"icon": "🛡️",
+			"title": "Permissions & Ownership",
+			"subtitle": "Who can do what?",
+			"bullets": [
+				"[b]Permissions[/b] control what actions a user can perform.",
+				"A user should only [b]modify their own data[/b].",
+				"Check [b]request.user == object.owner[/b] before allowing edits.",
+				"Without this, any logged-in user can modify anyone's records."
+			],
+			"code": "def edit_post(request, post_id):\n    post = Post.objects.get(id=post_id)\n    if request.user == post.owner:\n        # Allow editing\n    else:\n        # Deny access",
+			"header": "MODULE 2 — CRUD & PERMISSIONS",
+			"header_icon": "🔒",
+			"slide_num": "3 / 8",
+			"reference": "Source: Django for Professionals (Vincent, 2022)"
+		},
+		{
+			"icon": "✅",
+			"title": "The Ownership Check",
+			"subtitle": "One line that prevents chaos",
+			"bullets": [
+				"[b]request.user[/b] = the currently logged-in user.",
+				"[b]object.owner[/b] = the user who created the record.",
+				"Compare them before any destructive action.",
+				"If they don't match — [b]reject the request[/b]."
+			],
+			"code": "if request.user == post.owner:\n    post.delete()\n    messages.success(request, 'Deleted!')\nelse:\n    messages.error(request, 'Permission denied.')",
+			"header": "MODULE 2 — CRUD & PERMISSIONS",
+			"header_icon": "🔒",
+			"slide_num": "4 / 8",
+			"reference": "Source: Django for Professionals (Vincent, 2022)"
+		},
+		{
+			"icon": "👤",
+			"title": "AbstractUser",
+			"subtitle": "Extending Django's built-in User model",
+			"bullets": [
+				"Django's default User has: [b]username, email, password[/b] — and nothing else.",
+				"Real apps need extra fields: [b]phone, bio, avatar, role[/b].",
+				"[b]AbstractUser[/b] lets you inherit ALL default fields and add your own.",
+				"You MUST set [b]AUTH_USER_MODEL[/b] in settings.py BEFORE your first migrate."
+			],
+			"code": "from django.contrib.auth.models import AbstractUser\n\nclass CustomUser(AbstractUser):\n    phone = models.CharField(max_length=15, blank=True)\n    bio = models.TextField(blank=True)\n\n# settings.py\nAUTH_USER_MODEL = 'accounts.CustomUser'",
+			"header": "MODULE 3 — ABSTRACTUSER",
+			"header_icon": "👤",
+			"slide_num": "5 / 8"
+		},
+		{
+			"icon": "🔒",
+			"title": "Password Hashing",
+			"subtitle": "Why you NEVER store raw passwords",
+			"bullets": [
+				"Storing passwords in plain text is a [b]security catastrophe[/b].",
+				"Django automatically [b]hashes[/b] passwords using PBKDF2 + SHA256.",
+				"[b]set_password()[/b] hashes the password before saving.",
+				"[b]check_password()[/b] compares a raw input against the stored hash."
+			],
+			"code": "user = User.objects.create_user(\n    username='alice',\n    password='secret123'  # Hashed automatically!\n)\n\n# Manual hashing:\nuser.set_password('new_password')\nuser.save()\n\n# Checking:\nuser.check_password('secret123')  # True",
+			"header": "MODULE 4 — PASSWORD SECURITY",
+			"header_icon": "🔒",
+			"slide_num": "7 / 8"
+		}
+	],
+	"rest": [
+		{
+			"icon": "🌐",
+			"title": "APIs & JSON",
+			"subtitle": "Data, not pages",
+			"bullets": [
+				"An [b]API[/b] (Application Programming Interface) lets apps talk to each other.",
+				"Instead of returning HTML, an API returns [b]JSON[/b] data.",
+				"[b]Django REST Framework (DRF)[/b] adds API support to Django.",
+				"Mobile apps, frontends, and other services consume your API."
+			],
+			"header": "MODULE 1 — APIs & JSON",
+			"header_icon": "📡",
+			"slide_num": "1 / 4",
+			"reference": "Source: Django REST Framework Documentation"
+		},
+		{
+			"icon": "📦",
+			"title": "The ModelSerializer",
+			"subtitle": "Converting models to JSON",
+			"bullets": [
+				"A [b]Serializer[/b] converts Django models into JSON (and back).",
+				"[b]ModelSerializer[/b] auto-generates fields from your model.",
+				"Define which [b]fields[/b] to expose in the [b]Meta[/b] class.",
+				"Think of it as a translator between Python and JSON."
+			],
+			"code": "from rest_framework import serializers\nfrom .models import Post\n\nclass PostSerializer(serializers.ModelSerializer):\n    class Meta:\n        model = Post\n        fields = ['id', 'title', 'content']",
+			"header": "MODULE 1 — APIs & JSON",
+			"header_icon": "📡",
+			"slide_num": "2 / 4",
+			"reference": "Source: Django REST Framework Documentation"
+		},
+		{
+			"icon": "📮",
+			"title": "The 4 HTTP Verbs",
+			"subtitle": "Every API action is one of four verbs",
+			"bullets": [
+				"[b]GET[/b] = Read/retrieve (looking up info — no changes)",
+				"[b]POST[/b] = Create something new (making a new record)",
+				"[b]PUT[/b] = Update something that exists (editing a record)",
+				"[b]DELETE[/b] = Remove something permanently (destroying a record)"
+			],
+			"code": "# Real life → HTTP verb:\n# Reading the newspaper  →  GET\n# Painting a new picture →  POST\n# Editing your resume    →  PUT\n# Throwing away trash    →  DELETE",
+			"header": "MODULE 1 — APIs & JSON",
+			"header_icon": "📡",
+			"slide_num": "★ AI GAME",
+			"reference": "Source: Django REST Framework Documentation"
+		},
+		{
+			"icon": "🔑",
+			"title": "Token Authentication",
+			"subtitle": "Securing your API",
+			"bullets": [
+				"Browser sessions don't work for APIs — there's no browser.",
+				"[b]Tokens[/b] replace sessions for API authentication.",
+				"The client sends a [b]token[/b] in the request header.",
+				"If the token is valid — access granted. If not — denied."
+			],
+			"code": "Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b",
+			"header": "MODULE 2 — TOKEN AUTHENTICATION",
+			"header_icon": "🔐",
+			"slide_num": "3 / 4",
+			"reference": "Source: Django REST Framework Documentation"
+		},
+		{
+			"icon": "⚙️",
+			"title": "Configuring DRF Auth",
+			"subtitle": "settings.py setup",
+			"bullets": [
+				"Add [b]TokenAuthentication[/b] to DRF's settings.",
+				"Set it in [b]DEFAULT_AUTHENTICATION_CLASSES[/b].",
+				"This tells DRF: 'check for tokens on every request'.",
+				"Clients must include the token in their [b]Authorization[/b] header."
+			],
+			"code": "REST_FRAMEWORK = {\n    'DEFAULT_AUTHENTICATION_CLASSES': [\n        'rest_framework.authentication.TokenAuthentication',\n    ]\n}",
+			"header": "MODULE 2 — TOKEN AUTHENTICATION",
+			"header_icon": "🔐",
+			"slide_num": "4 / 4",
+			"reference": "Source: Django REST Framework Documentation"
+		},
+		{
+			"icon": "🏗️",
+			"title": "ViewSets & Routers",
+			"subtitle": "Full CRUD API in minimal code",
+			"bullets": [
+				"Writing separate views for list, create, retrieve, update, delete is repetitive.",
+				"A [b]ModelViewSet[/b] combines ALL of those into a single class.",
+				"A [b]Router[/b] automatically generates all the URL patterns.",
+				"Together: [b]one class + one router = full REST API[/b]."
+			],
+			"code": "from rest_framework.viewsets import ModelViewSet\nfrom rest_framework.routers import DefaultRouter\n\nclass PostViewSet(ModelViewSet):\n    queryset = Post.objects.all()\n    serializer_class = PostSerializer\n\nrouter = DefaultRouter()\nrouter.register('posts', PostViewSet)",
+			"header": "MODULE 3 — VIEWSETS & ROUTERS",
+			"header_icon": "🔧",
+			"slide_num": "5 / 6"
+		}
+	]
+}
