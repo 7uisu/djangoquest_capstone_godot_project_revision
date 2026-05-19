@@ -11,6 +11,8 @@ extends Control
 @onready var quit_button: Button = $CenterContainer/VBoxContainer/QuitButton
 @onready var status_label: Label = $CenterContainer/VBoxContainer/StatusLabel
 
+var _loading_overlay = null
+
 func _ready():
 	login_button.pressed.connect(_on_login_pressed)
 	guest_button.pressed.connect(_on_guest_pressed)
@@ -40,10 +42,9 @@ func _ready():
 		status_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
 		# Set the username in CharacterData
 		CharacterData.api_username = ApiManager.get_username()
+		_show_loading("Opening main menu...")
 		await get_tree().create_timer(0.8).timeout
 		get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
-
-var _loading_overlay = null
 
 func _on_login_pressed():
 	var email = email_input.text.strip_edges()
@@ -58,16 +59,10 @@ func _on_login_pressed():
 	guest_button.disabled = true
 	status_label.text = "Logging in..."
 	status_label.add_theme_color_override("font_color", Color(0.65, 0.82, 1.0))
-	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
-	if LoadingOverlay:
-		_loading_overlay = LoadingOverlay.create(get_tree(), "Loading...")
+	_show_loading("Logging in...")
 	ApiManager.login(email, password)
 
 func _on_login_completed(success: bool, message: String):
-	if _loading_overlay and is_instance_valid(_loading_overlay):
-		_loading_overlay.queue_free()
-		_loading_overlay = null
-
 	_update_login_button_state()
 	guest_button.disabled = false
 	status_label.text = message
@@ -80,44 +75,77 @@ func _on_login_completed(success: bool, message: String):
 		var sm = get_node_or_null("/root/SaveManager")
 		if sm:
 			status_label.text = "Checking cloud saves..."
+			_show_loading("Checking cloud saves...")
 			sm.cloud_save_checked.connect(_on_cloud_save_checked_for_login, CONNECT_ONE_SHOT)
 			sm.check_cloud_save()
 		else:
 			_proceed_to_main_menu()
 	else:
+		_hide_loading()
 		status_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 
 func _on_cloud_save_checked_for_login(has_cloud: bool):
 	var sm = get_node_or_null("/root/SaveManager")
-	var has_guest = FileAccess.file_exists(sm.GUEST_SAVE_FILE) if sm else false
+	var has_guest = sm.has_guest_save() if sm and sm.has_method("has_guest_save") else false
+	var has_local_account = sm.has_local_account_save() if sm and sm.has_method("has_local_account_save") else false
 	
 	if has_guest and has_cloud:
-		# CONFLICT: Cloud exists + local guest exists
+		_hide_loading()
 		CustomConfirm.prompt(
-			"Overwrite Guest Save?",
-			"You have a local guest save, but this account already has a cloud save. Logging in will overwrite your guest save. Are you sure?",
-			func():
-			_proceed_to_main_menu()
-			,
-			func():
-				ApiManager.logout()
-				CharacterData.api_username = ""
-				status_label.text = "Login cancelled."
-				status_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))
+			"Use Account Save?",
+			"This account already has an online save. Use the account save now? Your guest save will stay on this laptop.",
+			_confirm_use_account_save,
+			_keep_playing_as_guest
 		)
-	elif has_guest and not has_cloud:
-		# PROMOTION: No cloud game, but guest exists
-		status_label.text = "Promoting guest save to your account..."
-		if sm:
-			sm.promote_guest_to_account()
-		await get_tree().create_timer(1.2).timeout
-		_proceed_to_main_menu()
+	elif has_guest and not has_cloud and not has_local_account:
+		_hide_loading()
+		CustomConfirm.prompt(
+			"Move Guest Save?",
+			"This account has no save yet. Move your guest save to this account?",
+			_move_guest_save_to_account,
+			_confirm_use_account_save
+		)
 	else:
 		# Normal login
 		_proceed_to_main_menu()
 
 func _proceed_to_main_menu():
 	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+
+func _confirm_use_account_save() -> void:
+	_show_loading("Opening account save...")
+	_proceed_to_main_menu()
+
+func _keep_playing_as_guest() -> void:
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.clear_account_save()
+	ApiManager.logout()
+	CharacterData.api_username = ""
+	_show_loading("Opening guest save...")
+	_proceed_to_main_menu()
+
+func _move_guest_save_to_account() -> void:
+	status_label.text = "Promoting guest save to your account..."
+	_show_loading("Promoting guest save to your account...")
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.promote_guest_to_account()
+	_proceed_to_main_menu()
+
+func _show_loading(message: String) -> void:
+	if _loading_overlay and is_instance_valid(_loading_overlay):
+		if _loading_overlay.has_method("set_subtitle"):
+			_loading_overlay.set_subtitle(message)
+		return
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	if LoadingOverlay:
+		_loading_overlay = LoadingOverlay.create(get_tree(), message)
+
+func _hide_loading() -> void:
+	if _loading_overlay and is_instance_valid(_loading_overlay):
+		_loading_overlay.dismiss()
+	_loading_overlay = null
 
 func _on_guest_pressed():
 	CharacterData.api_username = ""

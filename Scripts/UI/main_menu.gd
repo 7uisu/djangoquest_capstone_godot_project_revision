@@ -3,6 +3,7 @@ extends Control
 
 var ChallengePickerUI = preload("res://Scenes/Games/challenge_picker_ui.tscn")
 var EnrollPopupScene = preload("res://Scenes/UI/enroll_popup.tscn")
+var _loading_overlay = null
 
 @onready var continue_button: Button = $MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons/ContinueButton
 @onready var account_status_label: Label = $MenuScroll/MenuCenter/VBoxContainer/AccountStatusLabel
@@ -54,6 +55,7 @@ func _ready():
 		if is_logged_in:
 			continue_button.text = "Checking Account Save..."
 			continue_button.disabled = true
+			_show_loading("Checking account save...")
 			sm.cloud_save_checked.connect(_on_cloud_save_checked, CONNECT_ONE_SHOT)
 			sm.check_cloud_save()
 		else:
@@ -73,6 +75,7 @@ func _ready():
 		continue_button.text = "Save System Unavailable"
 
 func _on_cloud_save_checked(_has_cloud: bool):
+	_hide_loading()
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm and sm.has_save():
 		continue_button.disabled = false
@@ -95,6 +98,20 @@ func _update_account_status_label(is_logged_in: bool) -> void:
 	else:
 		account_status_label.text = "Guest mode | saves stay on this laptop"
 		account_status_label.add_theme_color_override("font_color", Color(0.72, 0.76, 0.88))
+
+func _show_loading(message: String) -> void:
+	if _loading_overlay and is_instance_valid(_loading_overlay):
+		if _loading_overlay.has_method("set_subtitle"):
+			_loading_overlay.set_subtitle(message)
+		return
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	if LoadingOverlay:
+		_loading_overlay = LoadingOverlay.create(get_tree(), message)
+
+func _hide_loading() -> void:
+	if _loading_overlay and is_instance_valid(_loading_overlay):
+		_loading_overlay.dismiss()
+	_loading_overlay = null
 
 func _on_continue_pressed():
 	var sm = get_node_or_null("/root/SaveManager")

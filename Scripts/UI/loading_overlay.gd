@@ -100,6 +100,11 @@ func _process(delta):
 		_spin_angle += delta * 3.0
 		_spinner.queue_redraw()
 
+func set_subtitle(text: String) -> void:
+	_subtitle_text = text
+	if _subtitle_label:
+		_subtitle_label.text = text
+
 ## Fade out and free
 func dismiss():
 	var tween = create_tween()

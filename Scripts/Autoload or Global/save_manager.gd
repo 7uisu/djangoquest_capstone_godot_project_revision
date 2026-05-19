@@ -1,9 +1,9 @@
 # scripts/Autoload or Global/save_manager.gd
-# Single-slot save system: one guest save (local only) + one account save (local + cloud).
+# Save system: one guest save plus one local cache per logged-in account.
 extends Node
 
 const GUEST_SAVE_FILE: String = "user://guest_save.json"
-const ACCOUNT_SAVE_FILE: String = "user://account_save.json"
+const LEGACY_ACCOUNT_SAVE_FILE: String = "user://account_save.json"
 
 signal save_completed(success: bool, message: String)
 signal load_completed(success: bool)
@@ -22,6 +22,10 @@ func save_game() -> void:
 		return
 
 	var save_data: Dictionary = cd.to_save_dict()
+	if ApiManager.is_logged_in():
+		save_data["api_username"] = ApiManager.get_username()
+	else:
+		save_data["api_username"] = ""
 	# Add scene path so we can restore position
 	var current = get_tree().current_scene
 	if current:
@@ -153,12 +157,9 @@ func delete_save() -> void:
 
 
 func clear_account_save() -> void:
-	"""Called on logout — clears the account save file (not the guest save)."""
-	if FileAccess.file_exists(ACCOUNT_SAVE_FILE):
-		var dir = DirAccess.open("user://")
-		dir.remove(ACCOUNT_SAVE_FILE.replace("user://", ""))
-		print("SaveManager: Cleared account save on logout.")
+	"""Called on logout — clears only in-memory account/cloud state, not local account files."""
 	_cloud_save_data = {}
+	print("SaveManager: Cleared active account state on logout.")
 
 
 func promote_guest_to_account() -> void:
@@ -168,7 +169,7 @@ func promote_guest_to_account() -> void:
 	var guest_data = _read_json(GUEST_SAVE_FILE)
 	if not guest_data.is_empty():
 		guest_data["api_username"] = ApiManager.get_username()
-		_write_json(ACCOUNT_SAVE_FILE, guest_data)
+		_write_json(_get_account_save_path(), guest_data)
 
 		# Restore CharacterData from the guest save WITHOUT changing scenes.
 		# The login screen will navigate to main_menu on its own.
@@ -181,6 +182,16 @@ func promote_guest_to_account() -> void:
 			ApiManager.upload_save(guest_data)
 
 		print("SaveManager: Promoted guest save to account '%s'." % ApiManager.get_username())
+
+
+func has_guest_save() -> bool:
+	return FileAccess.file_exists(GUEST_SAVE_FILE)
+
+
+func has_local_account_save() -> bool:
+	if not ApiManager.is_logged_in():
+		return false
+	return FileAccess.file_exists(_get_account_save_path())
 
 
 func check_cloud_save() -> void:
@@ -219,8 +230,22 @@ func _on_save_downloaded(success: bool, data: Dictionary):
 
 func _get_save_path() -> String:
 	if ApiManager.is_logged_in():
-		return ACCOUNT_SAVE_FILE
+		return _get_account_save_path()
 	return GUEST_SAVE_FILE
+
+
+func _get_account_save_path() -> String:
+	var username = ApiManager.get_username().strip_edges().to_lower()
+	if username == "":
+		return LEGACY_ACCOUNT_SAVE_FILE
+	var safe_name = ""
+	for i in range(username.length()):
+		var character = username.substr(i, 1)
+		if character.is_valid_identifier() or character.is_valid_int() or character in ["-", "_"]:
+			safe_name += character
+		else:
+			safe_name += "_"
+	return "user://account_save_%s.json" % safe_name
 
 
 func _apply_save(save_data: Dictionary) -> void:
