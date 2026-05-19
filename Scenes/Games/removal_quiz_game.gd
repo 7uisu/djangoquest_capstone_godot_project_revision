@@ -166,7 +166,7 @@ func check_circle_selection():
 	var center = get_drawing_center()
 	var radius = get_average_radius(center)
 
-	if is_roughly_circular(center, radius):
+	if is_closed_stroke(radius) and is_roughly_circular(center, radius):
 		var encircled_options = []
 		for i in range(4):
 			if is_letter_encircled(i, center, radius):
@@ -189,7 +189,7 @@ func is_letter_encircled(option_index: int, circle_center: Vector2, circle_radiu
 	letter_pos.y += option_label.size.y / 2
 
 	var distance_to_letter = circle_center.distance_to(letter_pos)
-	var max_distance = 60
+	var max_distance = min(35.0, max(22.0, circle_radius * 0.5))
 	return distance_to_letter < max_distance and circle_radius > 15 and circle_radius < 80
 
 
@@ -208,6 +208,20 @@ func get_average_radius(center: Vector2) -> float:
 
 
 func is_roughly_circular(center: Vector2, expected_radius: float) -> bool:
+	if expected_radius < 15 or expected_radius > 80:
+		return false
+
+	var bounds = Rect2(drawing_points[0], Vector2.ZERO)
+	for point in drawing_points:
+		bounds = bounds.expand(point)
+
+	if bounds.size.x < 25 or bounds.size.y < 25:
+		return false
+
+	var aspect_ratio = bounds.size.x / max(bounds.size.y, 0.001)
+	if aspect_ratio < 0.55 or aspect_ratio > 1.8:
+		return false
+
 	var variance_threshold = expected_radius * 0.4
 	var good_points = 0
 	for point in drawing_points:
@@ -215,6 +229,13 @@ func is_roughly_circular(center: Vector2, expected_radius: float) -> bool:
 		if abs(distance - expected_radius) < variance_threshold:
 			good_points += 1
 	return good_points > drawing_points.size() * 0.6
+
+
+func is_closed_stroke(expected_radius: float) -> bool:
+	var start_point = drawing_points[0]
+	var end_point = drawing_points[drawing_points.size() - 1]
+	var closure_distance = start_point.distance_to(end_point)
+	return closure_distance <= min(45.0, expected_radius * 0.75)
 
 
 func highlight_selection(option_index: int):

@@ -24,6 +24,7 @@ var _max_hearts: int = 3
 var _student_names: Array = []  # Random names assigned to the 5 NPCs
 var _active_npc_nodes: Array = []  # References to the 5 dialogue_interactable nodes
 var _completed_students: Array = []  # Indices of students already beaten
+var _active_questions: Array = []
 
 var _ide_canvas: CanvasLayer = null
 var _ide_instance: Control = null
@@ -119,6 +120,7 @@ func on_student_interacted(student_index: int) -> void:
 	_current_student_idx = student_index
 	_current_question_idx = 0
 	_hearts = _max_hearts
+	_active_questions = []
 	health_changed.emit(_hearts)
 	
 	var student_data = _student_challenges[student_index]
@@ -210,6 +212,7 @@ func _open_ide_for_student(student_index: int) -> void:
 		return
 
 	_current_question_idx = 0
+	_active_questions = _build_attempt_questions(student_data)
 
 	# Instantiate IDE if needed
 	if _ide_instance == null or not is_instance_valid(_ide_instance) or _ide_canvas == null or not is_instance_valid(_ide_canvas):
@@ -325,7 +328,10 @@ func _load_current_question() -> void:
 		return
 
 	var student_data = _student_challenges[_current_student_idx]
-	var questions = student_data.get("questions", [])
+	var questions = _active_questions
+	if questions.is_empty():
+		_active_questions = _build_attempt_questions(student_data)
+		questions = _active_questions
 
 	if _current_question_idx >= questions.size():
 		# All questions for this student answered correctly
@@ -360,7 +366,10 @@ func _on_challenge_completed(success: bool, _challenge_id: String) -> void:
 	if success:
 		_current_question_idx += 1
 		var student_data = _student_challenges[_current_student_idx]
-		var questions = student_data.get("questions", [])
+		var questions = _active_questions
+		if questions.is_empty():
+			_active_questions = _build_attempt_questions(student_data)
+			questions = _active_questions
 
 		if _current_question_idx >= questions.size():
 			# Student fully defeated!
@@ -388,6 +397,7 @@ func _on_wrong_answer() -> void:
 
 	if _hearts <= 0:
 		# Failed — must restart this student
+		_active_questions = []
 		student_failed.emit(_current_student_idx, _prof_key)
 		
 		# Show customized defeat IDE overlay
@@ -425,6 +435,7 @@ func _on_student_completed() -> void:
 			await _ide_instance.challenge_completed
 
 	_completed_students.append(_current_student_idx)
+	_active_questions = []
 	if _character_data:
 		_character_data.student_seq_completed_indices = _completed_students.duplicate()
 
@@ -539,6 +550,12 @@ func _close_ide() -> void:
 		if _ide_instance.challenge_failed.is_connected(_on_challenge_failed):
 			_ide_instance.challenge_failed.disconnect(_on_challenge_failed)
 	get_tree().paused = false
+
+func _build_attempt_questions(student_data: Dictionary) -> Array:
+	var questions = student_data.get("questions", []).duplicate(true)
+	if not student_data.get("is_miniboss", false) and questions.size() > 1:
+		questions.shuffle()
+	return questions
 
 # ─── NPC Wiring ─────────────────────────────────────────────────────────────
 

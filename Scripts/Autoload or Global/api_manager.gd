@@ -3,7 +3,7 @@
 extends Node
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-const BASE_URL: String = "http://127.0.0.1:8000"
+const BASE_URL: String = "https://djangoquest-backend.onrender.com"
 const AUTH_FILE: String = "user://auth.cfg"
 
 # ─── Signals ─────────────────────────────────────────────────────────────────

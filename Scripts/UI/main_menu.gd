@@ -4,16 +4,17 @@ extends Control
 var ChallengePickerUI = preload("res://Scenes/Games/challenge_picker_ui.tscn")
 var EnrollPopupScene = preload("res://Scenes/UI/enroll_popup.tscn")
 
-@onready var continue_button: Button = $VBoxContainer/ContinueButton
-@onready var story_button: Button = $VBoxContainer/StoryButton
-@onready var learning_button: Button = $VBoxContainer/LearningButton
-@onready var challenge_button: Button = $VBoxContainer/ChallengeButton
-@onready var quit_button: Button = $VBoxContainer/QuitButton
+@onready var continue_button: Button = $MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons/ContinueButton
+@onready var account_status_label: Label = $MenuScroll/MenuCenter/VBoxContainer/AccountStatusLabel
+@onready var story_button: Button = $MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons/StoryButton
+@onready var learning_button: Button = $MenuScroll/MenuCenter/VBoxContainer/ModeButtons/LearningButton
+@onready var challenge_button: Button = $MenuScroll/MenuCenter/VBoxContainer/ModeButtons/ChallengeButton
+@onready var quit_button: Button = $MenuScroll/MenuCenter/VBoxContainer/SessionButtons/QuitButton
 @onready var testing_button: Button = $TestingButton
-@onready var enroll_button: Button = $VBoxContainer/EnrollButton
-@onready var unenroll_button: Button = $VBoxContainer/UnenrollButton
-@onready var logout_button: Button = $VBoxContainer/LogoutButton
-@onready var login_button: Button = $VBoxContainer/LoginButton
+@onready var enroll_button: Button = $MenuScroll/MenuCenter/VBoxContainer/AccountButtons/EnrollButton
+@onready var unenroll_button: Button = $MenuScroll/MenuCenter/VBoxContainer/AccountButtons/UnenrollButton
+@onready var logout_button: Button = $MenuScroll/MenuCenter/VBoxContainer/SessionButtons/LogoutButton
+@onready var login_button: Button = $MenuScroll/MenuCenter/VBoxContainer/SessionButtons/LoginButton
 
 func _ready():
 	continue_button.pressed.connect(_on_continue_pressed)
@@ -37,6 +38,9 @@ func _ready():
 	
 	# Show login button only if NOT logged in
 	login_button.visible = not is_logged_in
+	login_button.text = "Login to Account"
+	logout_button.text = "Logout / Switch Account"
+	_update_account_status_label(is_logged_in)
 
 	# Enable learning mode now that it's implemented
 	learning_button.disabled = false
@@ -48,7 +52,7 @@ func _ready():
 	if sm:
 		# Check for cloud save (async) if logged in
 		if is_logged_in:
-			continue_button.text = "Continue (checking...)"
+			continue_button.text = "Checking Account Save..."
 			continue_button.disabled = true
 			sm.cloud_save_checked.connect(_on_cloud_save_checked, CONNECT_ONE_SHOT)
 			sm.check_cloud_save()
@@ -58,12 +62,15 @@ func _ready():
 				continue_button.disabled = false
 				var summary = sm.get_save_summary()
 				if summary.has("player_name"):
-					continue_button.text = "Continue (%s)" % summary["player_name"]
+					continue_button.text = "Continue Guest: %s" % summary["player_name"]
+				else:
+					continue_button.text = "Continue Guest Save"
 			else:
 				continue_button.disabled = true
-				continue_button.text = "Continue"
+				continue_button.text = "No Guest Save Found"
 	else:
 		continue_button.disabled = true
+		continue_button.text = "Save System Unavailable"
 
 func _on_cloud_save_checked(_has_cloud: bool):
 	var sm = get_node_or_null("/root/SaveManager")
@@ -71,12 +78,23 @@ func _on_cloud_save_checked(_has_cloud: bool):
 		continue_button.disabled = false
 		var summary = sm.get_save_summary()
 		if summary.has("player_name"):
-			continue_button.text = "Continue (%s)" % summary["player_name"]
+			continue_button.text = "Continue Account: %s" % summary["player_name"]
 		else:
-			continue_button.text = "Continue"
+			continue_button.text = "Continue Account Save"
 	else:
 		continue_button.disabled = true
-		continue_button.text = "Continue"
+		continue_button.text = "No Account Save Found"
+
+func _update_account_status_label(is_logged_in: bool) -> void:
+	if is_logged_in:
+		var username = ApiManager.get_username()
+		if username == "":
+			username = "account"
+		account_status_label.text = "Signed in as %s | saves sync online" % username
+		account_status_label.add_theme_color_override("font_color", Color(0.62, 0.92, 0.72))
+	else:
+		account_status_label.text = "Guest mode | saves stay on this laptop"
+		account_status_label.add_theme_color_override("font_color", Color(0.72, 0.76, 0.88))
 
 func _on_continue_pressed():
 	var sm = get_node_or_null("/root/SaveManager")

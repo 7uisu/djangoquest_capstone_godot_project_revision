@@ -70,22 +70,35 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.04, 0.04, 0.1, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2021450488]
+[node name="MenuScroll" type="ScrollContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -160.0
-offset_top = -120.0
-offset_right = 160.0
-offset_bottom = 120.0
+offset_left = -180.0
+offset_top = -235.0
+offset_right = 180.0
+offset_bottom = 235.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
+horizontal_scroll_mode = 0
 
-[node name="TitleLabel" type="Label" parent="VBoxContainer" unique_id=1638191437]
+[node name="MenuCenter" type="CenterContainer" parent="MenuScroll"]
+custom_minimum_size = Vector2(360, 470)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MenuScroll/MenuCenter" unique_id=2021450488]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="MenuScroll/MenuCenter/VBoxContainer" unique_id=1638191437]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.82, 1, 1)
 theme_override_colors/font_shadow_color = Color(0.15, 0.2, 0.5, 0.8)
@@ -94,12 +107,26 @@ theme_override_font_sizes/font_size = 32
 text = "DjangoQuest"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="VBoxContainer" unique_id=347256663]
-custom_minimum_size = Vector2(0, 16)
+[node name="AccountStatusLabel" type="Label" parent="MenuScroll/MenuCenter/VBoxContainer"]
+custom_minimum_size = Vector2(320, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.88, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 12
+text = "Guest mode | saves stay on this laptop"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Spacer" type="Control" parent="MenuScroll/MenuCenter/VBoxContainer" unique_id=347256663]
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
-[node name="ContinueButton" type="Button" parent="VBoxContainer" unique_id=2058921989]
-custom_minimum_size = Vector2(280, 40)
+[node name="PrimaryButtons" type="VBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ContinueButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons" unique_id=2058921989]
+custom_minimum_size = Vector2(320, 38)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
@@ -114,8 +141,8 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 disabled = true
 text = "Continue"
 
-[node name="StoryButton" type="Button" parent="VBoxContainer" unique_id=1571854622]
-custom_minimum_size = Vector2(280, 40)
+[node name="StoryButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons" unique_id=1571854622]
+custom_minimum_size = Vector2(320, 38)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
@@ -129,114 +156,126 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Story Mode"
 
-[node name="LearningButton" type="Button" parent="VBoxContainer" unique_id=1357752970]
-custom_minimum_size = Vector2(280, 40)
+[node name="ModeButtons" type="HBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
+theme_override_constants/separation = 8
+
+[node name="LearningButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/ModeButtons" unique_id=1357752970]
+custom_minimum_size = Vector2(156, 38)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Learning Mode"
+text = "Learning"
 
-[node name="ChallengeButton" type="Button" parent="VBoxContainer" unique_id=570618632]
-custom_minimum_size = Vector2(280, 40)
+[node name="ChallengeButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/ModeButtons" unique_id=570618632]
+custom_minimum_size = Vector2(156, 38)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Challenge Mode"
+text = "Challenges"
 
-[node name="EnrollButton" type="Button" parent="VBoxContainer" unique_id=777888999]
-custom_minimum_size = Vector2(280, 40)
+[node name="AccountButtons" type="VBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnrollButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/AccountButtons" unique_id=777888999]
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
 theme_override_colors/font_hover_color = Color(0.5, 1, 0.5, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Enroll in Class"
 
-[node name="UnenrollButton" type="Button" parent="VBoxContainer" unique_id=777888123]
-custom_minimum_size = Vector2(280, 40)
+[node name="UnenrollButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/AccountButtons" unique_id=777888123]
+custom_minimum_size = Vector2(320, 36)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
 theme_override_colors/font_hover_color = Color(1, 0.8, 0.4, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Unenroll from Class"
 
-[node name="Spacer2" type="Control" parent="VBoxContainer" unique_id=1014813799]
+[node name="Spacer2" type="Control" parent="MenuScroll/MenuCenter/VBoxContainer" unique_id=1014813799]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 
-[node name="LogoutButton" type="Button" parent="VBoxContainer" unique_id=888999000]
-custom_minimum_size = Vector2(280, 40)
+[node name="SessionButtons" type="HBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
+theme_override_constants/separation = 8
+
+[node name="LogoutButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/SessionButtons" unique_id=888999000]
+custom_minimum_size = Vector2(156, 36)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 theme_override_colors/font_hover_color = Color(1, 0.5, 0.5, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Logout"
 
-[node name="LoginButton" type="Button" parent="VBoxContainer" unique_id=987654321]
-custom_minimum_size = Vector2(280, 40)
+[node name="LoginButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/SessionButtons" unique_id=987654321]
+custom_minimum_size = Vector2(156, 36)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
 theme_override_colors/font_hover_color = Color(0.6, 0.9, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Login to existing account"
+text = "Login"
 
-[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=1120704315]
-custom_minimum_size = Vector2(280, 40)
+[node name="QuitButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/SessionButtons" unique_id=1120704315]
+custom_minimum_size = Vector2(156, 36)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.9, 0.92, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
 theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Close / Exit Game"
+text = "Exit"
 
 [node name="TestingButton" type="Button" parent="." unique_id=604401785]
 modulate = Color(1, 1, 1, 0.1)

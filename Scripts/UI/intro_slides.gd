@@ -20,26 +20,26 @@ var male_slides: Array = [
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO1.png", "text": "In the bustling city, a young student named Mateo prepares for a new school year..." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO2BOY.png", "text": "He's heard rumors about a special class that teaches web development with Django." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO3BOY.png", "text": "Excited and curious, Mateo packs his bag and gets ready for the journey." },
-	{ "image": "res://Textures/Introduction Cutscenes/INTRO4.png", "text": "The school is on the other side of town — a long bus ride away." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO4.png", "text": "The school is on the other side of town - a long bus ride away." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO5BOY.png", "text": "As the cityscape passes by, Mateo imagines the projects he'll build." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO6.png", "text": "The bus slows down... his new school comes into view." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO7.png", "text": "Taking a deep breath, Mateo prepares to step into a new chapter of his life." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO8BOY.png", "text": "The hallway seems larger, buzzing with students eager to learn." },
-	{ "image": "res://Textures/Introduction Cutscenes/INTRO9BOY.png", "text": "She finds her classroom, spotting a familiar face among the crowd." },
-	{ "image": "res://Textures/Introduction Cutscenes/INTRO10BOY.png", "text": "This is it – the beginning of her Django Quest!" },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO9BOY.png", "text": "He finds his classroom, spotting a familiar face among the crowd." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO10BOY.png", "text": "This is it - the beginning of his Django Quest!" },
 ]
 
 var female_slides: Array = [
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO1.png", "text": "In the bustling city, a young student named Solmi prepares for a new school year..." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO2GIRL.png", "text": "She's heard rumors about a special class that teaches web development with Django." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO3GIRL.png", "text": "Excited and curious, Solmi packs her bag and gets ready for the journey." },
-	{ "image": "res://Textures/Introduction Cutscenes/INTRO4.png", "text": "The school is on the other side of town — a long bus ride away." },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO4.png", "text": "The school is on the other side of town - a long bus ride away." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO5GIRL.png", "text": "As the cityscape passes by, Solmi imagines the projects she'll build." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO6.png", "text": "The bus slows down... her new school comes into view." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO7.png", "text": "Taking a deep breath, Solmi prepares to step into a new chapter of her life." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO8GIRL.png", "text": "The hallway seems larger, buzzing with students eager to learn." },
 	{ "image": "res://Textures/Introduction Cutscenes/INTRO9GIRL.png", "text": "She finds her classroom, spotting a familiar face among the crowd." },
-	{ "image": "res://Textures/Introduction Cutscenes/INTRO10GIRL.png", "text": "This is it – the beginning of her Django Quest!" },
+	{ "image": "res://Textures/Introduction Cutscenes/INTRO10GIRL.png", "text": "This is it - the beginning of her Django Quest!" },
 ]
 
 var current_slides: Array = []
@@ -57,7 +57,7 @@ func _ready():
 	# Preload textures to prevent loading lag during gameplay
 	for slide in current_slides:
 		if slide.has("image"):
-			slide["loaded_texture"] = load(slide["image"])
+			slide["loaded_texture"] = _load_slide_texture(slide["image"])
 
 	# Create a fader node for smooth crossfades
 	if background_image:
@@ -100,7 +100,7 @@ func _advance():
 	if background_image and slide.has("image"):
 		var tex = slide.get("loaded_texture", null)
 		if not tex: # Fallback just in case
-			tex = load(slide["image"])
+			tex = _load_slide_texture(slide["image"])
 			slide["loaded_texture"] = tex
 			
 		if tex and background_image.texture != tex:
@@ -118,7 +118,7 @@ func _advance():
 			
 	var color_rect = $BackgroundColor
 	if color_rect:
-		color_rect.visible = false # Hide placeholder color if we have real images
+		color_rect.visible = background_image.texture == null
 
 	# Typewriter narration
 	continue_indicator.visible = false
@@ -164,3 +164,17 @@ func _start_indicator_blink():
 	_indicator_tween = create_tween().set_loops()
 	_indicator_tween.tween_property(continue_indicator, "modulate:a", 0.3, 0.5)
 	_indicator_tween.tween_property(continue_indicator, "modulate:a", 1.0, 0.5)
+
+func _load_slide_texture(path: String) -> Texture2D:
+	if not ResourceLoader.exists(path):
+		push_warning("Intro slide image is missing or has a case-sensitive path mismatch: " + path)
+		return null
+
+	var tex = load(path)
+	if tex is Texture2D:
+		return tex
+	if tex == null:
+		push_warning("Intro slide image failed to load: " + path)
+	else:
+		push_warning("Intro slide path did not load a texture: " + path)
+	return null

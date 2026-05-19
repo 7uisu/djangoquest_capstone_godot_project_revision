@@ -212,6 +212,7 @@ func _start_panelist(panelist_index: int) -> void:
 		push_error("ThesisPanelController: No challenges for panelist %d" % panelist_index)
 		_active = false
 		return
+	_randomize_panelist_challenges()
 
 	_open_ide()
 
@@ -480,6 +481,12 @@ func _increment_retakes() -> void:
 		var current = _character_data.get(key)
 		if current != null:
 			_character_data.set(key, current + 1)
+
+func _randomize_panelist_challenges() -> void:
+	# Cruz is a setup workflow, so keep that sequence stable. Santos and Reyes
+	# are evaluation banks and can vary per defense attempt.
+	if _current_panelist in [2, 3] and _challenges.size() > 1:
+		_challenges.shuffle()
 
 func _calculate_grade(hearts_remaining: int, max_hearts: int) -> float:
 	# Grade scale: all hearts = 1.0, 0 hearts = 5.0

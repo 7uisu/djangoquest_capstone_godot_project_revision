@@ -63,7 +63,7 @@ var selected_answer = -1
 var is_drawing = false
 var drawing_points = []
 var is_quiz_completed = false
-var answer_locked = false  # NEW: prevent re-drawing after selection
+var answer_locked = false
 var is_in_tutorial = true  # NEW: show tutorial first
 
 # UI nodes
@@ -174,7 +174,7 @@ func load_question():
 	tween.tween_property(question_label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 func _on_drawing_area_gui_input(event):
-	if is_quiz_completed or is_in_tutorial:
+	if is_quiz_completed or is_in_tutorial or answer_locked:
 		return
 		
 	if event is InputEventMouseButton:
@@ -183,6 +183,11 @@ func _on_drawing_area_gui_input(event):
 				is_drawing = true
 				drawing_points.clear()
 				drawing_points.append(event.position)
+				selected_answer = -1
+				for i in range(4):
+					option_labels[i].modulate = Color.WHITE
+				next_button.disabled = true
+				drawing_area.queue_redraw()
 			else:
 				is_drawing = false
 				check_circle_selection()
@@ -205,16 +210,18 @@ func check_circle_selection():
 	var radius = get_average_radius(center)
 	
 	# Check if the circle is reasonably circular
-	if is_roughly_circular(center, radius):
+	if is_closed_stroke(radius) and is_roughly_circular(center, radius):
 		# Check which option letter the circle encircles
+		var encircled_options = []
 		for i in range(4):
 			if is_letter_encircled(i, center, radius):
-				selected_answer = i
-				answer_locked = true  # NEW: lock drawing after selection
-				print("Detected circle around option ", i, ": ", questions[current_question].options[i])
-				highlight_selection(i)
-				next_button.disabled = false
-				break
+				encircled_options.append(i)
+
+		if encircled_options.size() == 1:
+			selected_answer = encircled_options[0]
+			print("Detected circle around option ", selected_answer, ": ", questions[current_question].options[selected_answer])
+			highlight_selection(selected_answer)
+			next_button.disabled = false
 
 # Check if the circle specifically encircles the letter portion
 func is_letter_encircled(option_index, circle_center, circle_radius):
@@ -231,10 +238,9 @@ func is_letter_encircled(option_index, circle_center, circle_radius):
 	# Check if circle center is close to letter position
 	var distance_to_letter = circle_center.distance_to(letter_pos)
 	
-	# UPGRADED: more forgiving detection zone
-	var max_distance = 60  # Was 25 — wider tolerance
+	var max_distance = min(35.0, max(22.0, circle_radius * 0.5))
 	
-	return distance_to_letter < max_distance and circle_radius > 15 and circle_radius < 80  # Was < 50
+	return distance_to_letter < max_distance and circle_radius > 15 and circle_radius < 80
 
 func get_drawing_center():
 	var sum = Vector2.ZERO
@@ -249,6 +255,20 @@ func get_average_radius(center):
 	return total_distance / drawing_points.size()
 
 func is_roughly_circular(center, expected_radius):
+	if expected_radius < 15 or expected_radius > 80:
+		return false
+
+	var bounds = Rect2(drawing_points[0], Vector2.ZERO)
+	for point in drawing_points:
+		bounds = bounds.expand(point)
+
+	if bounds.size.x < 25 or bounds.size.y < 25:
+		return false
+
+	var aspect_ratio = bounds.size.x / max(bounds.size.y, 0.001)
+	if aspect_ratio < 0.55 or aspect_ratio > 1.8:
+		return false
+
 	var variance_threshold = expected_radius * 0.4  # Allow 40% variance
 	var good_points = 0
 	
@@ -258,6 +278,12 @@ func is_roughly_circular(center, expected_radius):
 			good_points += 1
 	
 	return good_points > drawing_points.size() * 0.6  # 60% of points should be roughly circular
+
+func is_closed_stroke(expected_radius):
+	var start_point = drawing_points[0]
+	var end_point = drawing_points[drawing_points.size() - 1]
+	var closure_distance = start_point.distance_to(end_point)
+	return closure_distance <= min(45.0, expected_radius * 0.75)
 
 func highlight_selection(option_index):
 	# Reset all option colors
@@ -286,6 +312,7 @@ func _on_next_button_pressed():
 		return
 	
 	# Prevent spam-clicking by disabling the button immediately while the question is being processed
+	answer_locked = true
 	next_button.disabled = true
 	
 	var correct_answer = questions[current_question].correct

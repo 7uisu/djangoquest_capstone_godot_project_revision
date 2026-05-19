@@ -205,12 +205,16 @@ func _create_top_bar() -> PanelContainer:
 # ─── Desktop (App Icons) ─────────────────────────────────────────────────────
 
 func _create_desktop() -> Control:
-	var container = Control.new()
+	var container = ScrollContainer.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 
 	# Center the grid
 	var center = CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.custom_minimum_size = Vector2(0, 520)
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	container.add_child(center)
 
 	var grid = GridContainer.new()
