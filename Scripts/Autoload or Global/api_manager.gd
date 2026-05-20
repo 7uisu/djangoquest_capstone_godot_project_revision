@@ -37,12 +37,14 @@ func logout():
 # ─── Lifecycle ───────────────────────────────────────────────────────────────
 
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load_saved_token()
 
 # ─── Login ───────────────────────────────────────────────────────────────────
 
 func login(email: String, password: String):
 	var http = HTTPRequest.new()
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(http)
 	http.request_completed.connect(_on_login_response.bind(http))
 
@@ -84,6 +86,7 @@ func enroll(enrollment_code: String):
 		return
 
 	var http = HTTPRequest.new()
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(http)
 	http.request_completed.connect(_on_enroll_response.bind(http))
 
@@ -126,6 +129,7 @@ func unenroll_from_class():
 		return
 
 	var http = HTTPRequest.new()
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(http)
 	http.request_completed.connect(_on_unenroll_response.bind(http))
 
@@ -203,7 +207,8 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 	var upload_data = save_data.duplicate(true)
 
 	var http = HTTPRequest.new()
-	http.timeout = 60.0
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
+	http.timeout = 30.0
 	add_child(http)
 
 	var body = JSON.stringify({"save_data": upload_data})
@@ -229,14 +234,15 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 		emit_signal("save_uploaded", false, "Network error.")
 		return
 
-	# Wait for the response using await (blocks this coroutine, not the game)
-	var response = await http.request_completed
-	http.queue_free()
+	var watchdog = get_tree().create_timer(35.0, true, false, true)
+	var response = await _wait_for_http_response_or_timeout(http, watchdog)
+	if is_instance_valid(http):
+		http.queue_free()
 	_upload_in_progress = false
 
-	var result: int = response[0]
-	var response_code: int = response[1]
-	var response_body: PackedByteArray = response[3]
+	var result: int = int(response.get("result", HTTPRequest.RESULT_TIMEOUT))
+	var response_code: int = int(response.get("response_code", 0))
+	var response_body: PackedByteArray = response.get("body", PackedByteArray())
 	var response_text = response_body.get_string_from_utf8()
 
 	print("ApiManager: Save upload response. result=%s response=%s body=%s" % [
@@ -276,6 +282,39 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 		if _start_queued_save_upload():
 			return
 		emit_signal("save_uploaded", false, detail)
+
+func _wait_for_http_response_or_timeout(http: HTTPRequest, watchdog: SceneTreeTimer) -> Dictionary:
+	var completed := false
+	var payload := {
+		"result": HTTPRequest.RESULT_TIMEOUT,
+		"response_code": 0,
+		"body": PackedByteArray(),
+	}
+
+	http.request_completed.connect(func(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
+		if completed:
+			return
+		completed = true
+		payload = {
+			"result": result,
+			"response_code": response_code,
+			"body": body,
+		}
+	)
+
+	watchdog.timeout.connect(func():
+		if completed:
+			return
+		completed = true
+		print("ApiManager: Save upload watchdog timed out.")
+		if is_instance_valid(http):
+			http.cancel_request()
+	)
+
+	while not completed:
+		await get_tree().process_frame
+
+	return payload
 
 func _start_queued_save_upload() -> bool:
 	if not _has_queued_save_upload:
@@ -339,6 +378,7 @@ func download_save(allow_refresh: bool = true):
 		return
 
 	var http = HTTPRequest.new()
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(http)
 	http.request_completed.connect(_on_download_save_response.bind(http, allow_refresh))
 
@@ -387,6 +427,7 @@ func _refresh_access_token(done: Callable) -> void:
 		return
 
 	var http = HTTPRequest.new()
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(http)
 	http.request_completed.connect(_on_refresh_access_token_response.bind(http, done))
 
