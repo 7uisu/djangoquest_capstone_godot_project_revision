@@ -182,17 +182,31 @@ func _delete_auth_file():
 
 # ─── Cloud Save ──────────────────────────────────────────────────────────────
 
+var _upload_in_progress: bool = false
+var _has_queued_save_upload: bool = false
+var _queued_save_data: Dictionary = {}
+var _queued_save_allow_refresh: bool = true
+
 func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 	if not is_logged_in():
 		emit_signal("save_uploaded", false, "Not logged in.")
 		return
 
-	var http = HTTPRequest.new()
-	http.timeout = 30.0
-	add_child(http)
-	http.request_completed.connect(_on_upload_save_response.bind(http, save_data, allow_refresh))
+	if _upload_in_progress:
+		_has_queued_save_upload = true
+		_queued_save_data = save_data.duplicate(true)
+		_queued_save_allow_refresh = allow_refresh
+		print("ApiManager: Upload already in progress. Queued latest save.")
+		return
 
-	var body = JSON.stringify({"save_data": save_data})
+	_upload_in_progress = true
+	var upload_data = save_data.duplicate(true)
+
+	var http = HTTPRequest.new()
+	http.timeout = 60.0
+	add_child(http)
+
+	var body = JSON.stringify({"save_data": upload_data})
 	var headers = [
 		"Content-Type: application/json",
 		"Authorization: Bearer %s" % _access_token,
@@ -200,19 +214,31 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 	print("ApiManager: Uploading save. allow_refresh=%s bytes=%s progress=%s modules=%s credits=%s" % [
 		str(allow_refresh),
 		str(body.length()),
-		_get_story_progress_debug(save_data),
-		_get_modules_debug(save_data),
-		str(save_data.get("credits", 0)),
+		_get_story_progress_debug(upload_data),
+		_get_modules_debug(upload_data),
+		str(upload_data.get("credits", 0)),
 	])
 	var error = http.request(BASE_URL + "/api/game/save/", headers, HTTPClient.METHOD_PUT, body)
 
 	if error != OK:
-		emit_signal("save_uploaded", false, "Network error.")
+		print("ApiManager: Upload request failed to start. error=%s" % str(error))
+		_upload_in_progress = false
 		http.queue_free()
+		if _start_queued_save_upload():
+			return
+		emit_signal("save_uploaded", false, "Network error.")
+		return
 
-func _on_upload_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest, save_data: Dictionary, allow_refresh: bool):
+	# Wait for the response using await (blocks this coroutine, not the game)
+	var response = await http.request_completed
 	http.queue_free()
-	var response_text = body.get_string_from_utf8()
+	_upload_in_progress = false
+
+	var result: int = response[0]
+	var response_code: int = response[1]
+	var response_body: PackedByteArray = response[3]
+	var response_text = response_body.get_string_from_utf8()
+
 	print("ApiManager: Save upload response. result=%s response=%s body=%s" % [
 		str(result),
 		str(response_code),
@@ -220,6 +246,8 @@ func _on_upload_save_response(result: int, response_code: int, _headers: PackedS
 	])
 
 	if result != HTTPRequest.RESULT_SUCCESS:
+		if _start_queued_save_upload():
+			return
 		emit_signal("save_uploaded", false, "Could not reach server. Upload result: %s" % str(result))
 		return
 
@@ -227,21 +255,50 @@ func _on_upload_save_response(result: int, response_code: int, _headers: PackedS
 		print("ApiManager: Access token expired during save upload. Refreshing token...")
 		_refresh_access_token(func(success: bool):
 			if success:
-				upload_save(save_data, false)
+				var retry_data = _take_queued_save_data(upload_data)
+				upload_save(retry_data, false)
 			else:
+				_clear_queued_save_upload()
 				emit_signal("save_uploaded", false, "Session expired. Please log in again.")
 		)
 		return
 
 	if response_code == 200:
 		print("ApiManager: Save uploaded successfully.")
+		if _start_queued_save_upload():
+			return
 		emit_signal("save_uploaded", true, "Save synced to cloud.")
 	else:
 		var json = JSON.parse_string(response_text)
 		var detail = json.get("detail", "Upload failed.") if json else "Upload failed."
 		if json and json.has("errors") and json["errors"] is Array:
 			detail += " " + "; ".join(PackedStringArray(json["errors"]))
+		if _start_queued_save_upload():
+			return
 		emit_signal("save_uploaded", false, detail)
+
+func _start_queued_save_upload() -> bool:
+	if not _has_queued_save_upload:
+		return false
+	var queued_data = _queued_save_data.duplicate(true)
+	var queued_allow_refresh = _queued_save_allow_refresh
+	_clear_queued_save_upload()
+	print("ApiManager: Uploading queued latest save.")
+	upload_save(queued_data, queued_allow_refresh)
+	return true
+
+func _take_queued_save_data(fallback_data: Dictionary) -> Dictionary:
+	if not _has_queued_save_upload:
+		return fallback_data.duplicate(true)
+	var queued_data = _queued_save_data.duplicate(true)
+	_clear_queued_save_upload()
+	return queued_data
+
+func _clear_queued_save_upload() -> void:
+	_has_queued_save_upload = false
+	_queued_save_data = {}
+	_queued_save_allow_refresh = true
+
 
 func _get_story_progress_debug(save_data: Dictionary) -> String:
 	var flags = [
