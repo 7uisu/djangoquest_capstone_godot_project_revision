@@ -188,6 +188,7 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 		return
 
 	var http = HTTPRequest.new()
+	http.timeout = 30.0
 	add_child(http)
 	http.request_completed.connect(_on_upload_save_response.bind(http, save_data, allow_refresh))
 
@@ -196,6 +197,13 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 		"Content-Type: application/json",
 		"Authorization: Bearer %s" % _access_token,
 	]
+	print("ApiManager: Uploading save. allow_refresh=%s bytes=%s progress=%s modules=%s credits=%s" % [
+		str(allow_refresh),
+		str(body.length()),
+		_get_story_progress_debug(save_data),
+		_get_modules_debug(save_data),
+		str(save_data.get("credits", 0)),
+	])
 	var error = http.request(BASE_URL + "/api/game/save/", headers, HTTPClient.METHOD_PUT, body)
 
 	if error != OK:
@@ -204,9 +212,15 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 
 func _on_upload_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest, save_data: Dictionary, allow_refresh: bool):
 	http.queue_free()
+	var response_text = body.get_string_from_utf8()
+	print("ApiManager: Save upload response. result=%s response=%s body=%s" % [
+		str(result),
+		str(response_code),
+		response_text.substr(0, 500),
+	])
 
 	if result != HTTPRequest.RESULT_SUCCESS:
-		emit_signal("save_uploaded", false, "Could not reach server.")
+		emit_signal("save_uploaded", false, "Could not reach server. Upload result: %s" % str(result))
 		return
 
 	if response_code == 401 and allow_refresh:
@@ -223,11 +237,43 @@ func _on_upload_save_response(result: int, response_code: int, _headers: PackedS
 		print("ApiManager: Save uploaded successfully.")
 		emit_signal("save_uploaded", true, "Save synced to cloud.")
 	else:
-		var json = JSON.parse_string(body.get_string_from_utf8())
+		var json = JSON.parse_string(response_text)
 		var detail = json.get("detail", "Upload failed.") if json else "Upload failed."
 		if json and json.has("errors") and json["errors"] is Array:
 			detail += " " + "; ".join(PackedStringArray(json["errors"]))
 		emit_signal("save_uploaded", false, detail)
+
+func _get_story_progress_debug(save_data: Dictionary) -> String:
+	var flags = [
+		"ch1_teaching_done",
+		"ch1_quiz_done",
+		"ch1_post_quiz_dialogue_done",
+		"ch1_convenience_store_cutscene_done",
+		"ch1_spaghetti_guy_cutscene_done",
+		"ch2_y1s1_teaching_done",
+		"ch2_y1s2_teaching_done",
+		"ch2_y2s1_teaching_done",
+		"ch2_y2s2_teaching_done",
+		"ch2_y3s1_teaching_done",
+		"ch2_y3s2_teaching_done",
+		"ch2_y3mid_teaching_done",
+		"thesis_completed",
+	]
+	var done = 0
+	for flag in flags:
+		if save_data.get(flag, false):
+			done += 1
+	return "%s/%s" % [str(done), str(flags.size())]
+
+func _get_modules_debug(save_data: Dictionary) -> String:
+	var prefixes = ["ch2_y1s1", "ch2_y1s2", "ch2_y2s1", "ch2_y2s2", "ch2_y3s1", "ch2_y3s2", "ch2_y3mid"]
+	var done_labels := PackedStringArray()
+	for prefix in prefixes:
+		if save_data.get("%s_teaching_done" % prefix, false):
+			done_labels.append("%s grade=%s" % [prefix, str(save_data.get("%s_final_grade" % prefix, 0.0))])
+	if done_labels.is_empty():
+		return "none"
+	return ", ".join(done_labels)
 
 
 func download_save(allow_refresh: bool = true):
