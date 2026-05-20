@@ -190,6 +190,8 @@ var _upload_in_progress: bool = false
 var _has_queued_save_upload: bool = false
 var _queued_save_data: Dictionary = {}
 var _queued_save_allow_refresh: bool = true
+var _active_upload_http: HTTPRequest = null
+var _active_upload_timer: Timer = null
 
 func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 	if not is_logged_in():
@@ -210,6 +212,14 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	http.timeout = 30.0
 	add_child(http)
+	_active_upload_http = http
+
+	var timeout_timer = Timer.new()
+	timeout_timer.process_mode = Node.PROCESS_MODE_ALWAYS
+	timeout_timer.one_shot = true
+	timeout_timer.wait_time = 35.0
+	add_child(timeout_timer)
+	_active_upload_timer = timeout_timer
 
 	var body = JSON.stringify({"save_data": upload_data})
 	var headers = [
@@ -223,27 +233,36 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 		_get_modules_debug(upload_data),
 		str(upload_data.get("credits", 0)),
 	])
+	http.request_completed.connect(_on_upload_save_response.bind(http, timeout_timer, upload_data, allow_refresh))
+	timeout_timer.timeout.connect(_on_upload_save_timeout.bind(http, timeout_timer, upload_data, allow_refresh))
 	var error = http.request(BASE_URL + "/api/game/save/", headers, HTTPClient.METHOD_PUT, body)
 
 	if error != OK:
 		print("ApiManager: Upload request failed to start. error=%s" % str(error))
-		_upload_in_progress = false
-		http.queue_free()
+		_cleanup_active_upload(http, timeout_timer)
 		if _start_queued_save_upload():
 			return
 		emit_signal("save_uploaded", false, "Network error.")
 		return
 
-	var watchdog = get_tree().create_timer(35.0, true, false, true)
-	var response = await _wait_for_http_response_or_timeout(http, watchdog)
-	if is_instance_valid(http):
-		http.queue_free()
-	_upload_in_progress = false
+	timeout_timer.start()
 
-	var result: int = int(response.get("result", HTTPRequest.RESULT_TIMEOUT))
-	var response_code: int = int(response.get("response_code", 0))
-	var response_body: PackedByteArray = response.get("body", PackedByteArray())
-	var response_text = response_body.get_string_from_utf8()
+func _on_upload_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest, timeout_timer: Timer, upload_data: Dictionary, allow_refresh: bool) -> void:
+	if http != _active_upload_http:
+		return
+	_finish_upload_save(result, response_code, body, http, timeout_timer, upload_data, allow_refresh)
+
+func _on_upload_save_timeout(http: HTTPRequest, timeout_timer: Timer, upload_data: Dictionary, allow_refresh: bool) -> void:
+	if http != _active_upload_http:
+		return
+	print("ApiManager: Save upload timed out.")
+	if is_instance_valid(http):
+		http.cancel_request()
+	_finish_upload_save(HTTPRequest.RESULT_TIMEOUT, 0, PackedByteArray(), http, timeout_timer, upload_data, allow_refresh)
+
+func _finish_upload_save(result: int, response_code: int, body: PackedByteArray, http: HTTPRequest, timeout_timer: Timer, upload_data: Dictionary, allow_refresh: bool) -> void:
+	_cleanup_active_upload(http, timeout_timer)
+	var response_text = body.get_string_from_utf8()
 
 	print("ApiManager: Save upload response. result=%s response=%s body=%s" % [
 		str(result),
@@ -283,38 +302,17 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 			return
 		emit_signal("save_uploaded", false, detail)
 
-func _wait_for_http_response_or_timeout(http: HTTPRequest, watchdog: SceneTreeTimer) -> Dictionary:
-	var completed := false
-	var payload := {
-		"result": HTTPRequest.RESULT_TIMEOUT,
-		"response_code": 0,
-		"body": PackedByteArray(),
-	}
-
-	http.request_completed.connect(func(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
-		if completed:
-			return
-		completed = true
-		payload = {
-			"result": result,
-			"response_code": response_code,
-			"body": body,
-		}
-	)
-
-	watchdog.timeout.connect(func():
-		if completed:
-			return
-		completed = true
-		print("ApiManager: Save upload watchdog timed out.")
-		if is_instance_valid(http):
-			http.cancel_request()
-	)
-
-	while not completed:
-		await get_tree().process_frame
-
-	return payload
+func _cleanup_active_upload(http: HTTPRequest, timeout_timer: Timer) -> void:
+	if _active_upload_http == http:
+		_active_upload_http = null
+	if _active_upload_timer == timeout_timer:
+		_active_upload_timer = null
+	_upload_in_progress = false
+	if is_instance_valid(timeout_timer):
+		timeout_timer.stop()
+		timeout_timer.queue_free()
+	if is_instance_valid(http):
+		http.queue_free()
 
 func _start_queued_save_upload() -> bool:
 	if not _has_queued_save_upload:
@@ -498,7 +496,8 @@ func _on_delete_save_response(result: int, response_code: int, _headers: PackedS
 func check_code(code: Variant, language: String, challenge_id: String, 
 				expected_answers: Variant, expected_output: String = ""):
 	var http = HTTPRequest.new()
-	http.timeout = 60  # AI-assisted feedback can take a few seconds
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
+	http.timeout = 90  # AI-assisted feedback can take a while on a cold backend.
 	add_child(http)
 	http.request_completed.connect(_on_check_code_response.bind(http))
 
@@ -534,10 +533,19 @@ func _on_check_code_response(result: int, response_code: int, _headers: PackedSt
 		emit_signal("code_checked", {"offline": true})
 		return
 
-	var json = JSON.parse_string(body.get_string_from_utf8())
+	var response_text = body.get_string_from_utf8()
+	var json = JSON.parse_string(response_text)
 	if json == null:
 		print("[ApiManager] ❌ Failed to parse JSON response")
 		emit_signal("code_checked", {"offline": true})
+		return
+
+	if response_code < 200 or response_code >= 300:
+		print("[ApiManager] ❌ check_code backend returned HTTP %s: %s" % [str(response_code), response_text.substr(0, 300)])
+		emit_signal("code_checked", {
+			"offline": true,
+			"detail": json.get("detail", json.get("error", "Backend returned HTTP " + str(response_code))),
+		})
 		return
 
 	print("[ApiManager] ✅ Server response: success=%s" % str(json.get("success", false)))
@@ -557,7 +565,8 @@ signal ai_evaluated(result_dict)
 
 func check_ai_evaluator(challenge_type: String, student_answer: String, context: String):
 	var http = HTTPRequest.new()
-	http.timeout = 60
+	http.process_mode = Node.PROCESS_MODE_ALWAYS
+	http.timeout = 90
 	add_child(http)
 	http.request_completed.connect(_on_ai_evaluator_response.bind(http))
 
@@ -585,12 +594,43 @@ func _on_ai_evaluator_response(result: int, response_code: int, _headers: Packed
 		emit_signal("ai_evaluated", {"offline": true, "success": false, "feedback": "Failed to reach evaluator endpoint."})
 		return
 
-	var json = JSON.parse_string(body.get_string_from_utf8())
+	var response_text = body.get_string_from_utf8()
+	var json = JSON.parse_string(response_text)
 	if json == null:
 		emit_signal("ai_evaluated", {"offline": true, "success": false, "feedback": "Corrupted response geometry from endpoint."})
 		return
 
+	if response_code < 200 or response_code >= 300:
+		print("[ApiManager] ❌ ai-evaluator backend returned HTTP %s: %s" % [str(response_code), response_text.substr(0, 300)])
+		emit_signal("ai_evaluated", {
+			"offline": true,
+			"success": false,
+			"feedback": json.get("feedback", json.get("detail", "AI evaluator returned HTTP " + str(response_code))),
+		})
+		return
+
+	var feedback = json.get("feedback", "No feedback provided by AI.")
+	var success = json.get("success", false)
+	if not success and _is_ai_provider_failure(feedback):
+		emit_signal("ai_evaluated", {
+			"offline": true,
+			"success": false,
+			"feedback": feedback,
+		})
+		return
+
 	emit_signal("ai_evaluated", {
-		"success": json.get("success", false),
-		"feedback": json.get("feedback", "No feedback provided by AI.")
+		"offline": false,
+		"success": success,
+		"feedback": feedback,
 	})
+
+func _is_ai_provider_failure(feedback: String) -> bool:
+	var lower = feedback.to_lower()
+	return (
+		lower.contains("all ai providers failed")
+		or lower.contains("backend error")
+		or lower.contains("no ai api key")
+		or lower.contains("evaluation exception")
+		or lower.contains("ai provided an invalid")
+	)

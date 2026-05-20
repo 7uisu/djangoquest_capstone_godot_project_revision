@@ -1877,20 +1877,24 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
-		sm.save_game()
-		
-		# Show the loading overlay
 		var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
-		var overlay = LoadingOverlay.create(get_tree(), "Manual Saving, please wait...")
-		
-		await get_tree().create_timer(2.0).timeout
-		
+		var overlay_text = "Saving and syncing progress..." if ApiManager.is_logged_in() else "Saving progress..."
+		var overlay = LoadingOverlay.create(get_tree(), overlay_text)
+
+		var save_result: Dictionary = await _run_manual_save_and_wait(sm)
+
 		if is_instance_valid(overlay):
 			await overlay.dismiss()
-			
-		btn.text = "✅ Saved!"
-		btn.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
-		await get_tree().create_timer(1.5).timeout
+
+		if bool(save_result.get("success", false)):
+			btn.text = "✅ Saved!"
+			btn.add_theme_color_override("font_color", Color(0.4, 1.0, 0.5))
+		else:
+			btn.text = "⚠️ Save Failed"
+			btn.add_theme_color_override("font_color", Color(1.0, 0.75, 0.3))
+			push_warning("LaptopUI: Manual save failed: " + str(save_result.get("message", "Unknown save error.")))
+
+		await get_tree().create_timer(1.5, true, false, true).timeout
 		btn.text = "💾 Save"
 		btn.add_theme_color_override("font_color", Color(0.7, 1.0, 0.7))
 		btn.disabled = false
@@ -1899,14 +1903,40 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 		is_saving = false
 	else:
 		btn.text = "❌ Error"
-		await get_tree().create_timer(2.0).timeout
+		await get_tree().create_timer(2.0, true, false, true).timeout
 		btn.text = "💾 Save"
 		btn.disabled = false
 		if exit_btn:
 			exit_btn.disabled = false
 		is_saving = false
 
+func _run_manual_save_and_wait(sm: Node) -> Dictionary:
+	if not ApiManager.is_logged_in():
+		sm.save_game()
+		return {
+			"success": true,
+			"message": "Game saved!",
+		}
+
+	sm.save_game()
+
+	while true:
+		var result = await sm.save_completed
+		var message = str(result[1])
+		if message != "Saving...":
+			return {
+				"success": bool(result[0]),
+				"message": message,
+			}
+
+	return {
+		"success": false,
+		"message": "Save did not finish.",
+	}
+
 func _on_main_menu_pressed():
+	if is_saving:
+		return
 	CustomConfirm.prompt(
 		"Exit to Main Menu",
 		"Are you sure you want to exit game?",

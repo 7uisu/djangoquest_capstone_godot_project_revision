@@ -13,10 +13,12 @@ signal cloud_save_checked(has_cloud_save: bool)
 var _cloud_check_in_progress: bool = false
 var _cloud_save_data: Dictionary = {}
 var _waiting_for_save_upload: bool = false
+var _blocking_save_overlay = null
+var _blocking_save_previous_pause: bool = false
 
 # ─── Public API ──────────────────────────────────────────────────────────────
 
-func save_game() -> void:
+func save_game(block_player: bool = false, blocking_message: String = "Saving progress...") -> void:
 	var cd = get_node_or_null("/root/CharacterData")
 	if not cd:
 		emit_signal("save_completed", false, "CharacterData not found.")
@@ -75,6 +77,8 @@ func save_game() -> void:
 	# If logged in, also upload to the cloud
 	if ApiManager.is_logged_in():
 		_waiting_for_save_upload = true
+		if block_player:
+			_show_blocking_save_overlay(blocking_message)
 		print("SaveManager: Game saved to %s; waiting for online sync." % file_path)
 		emit_signal("save_completed", true, "Saving...")
 		ApiManager.upload_save(save_data)
@@ -233,6 +237,7 @@ func _on_save_downloaded(success: bool, data: Dictionary):
 	emit_signal("cloud_save_checked", not _cloud_save_data.is_empty())
 
 func _on_save_uploaded(success: bool, message: String) -> void:
+	_finish_blocking_save_overlay()
 	if success:
 		print("SaveManager: Cloud sync completed.")
 		if _waiting_for_save_upload:
@@ -243,6 +248,25 @@ func _on_save_uploaded(success: bool, message: String) -> void:
 		if _waiting_for_save_upload:
 			_waiting_for_save_upload = false
 			emit_signal("save_completed", false, "Game saved on this device, but online progress did not update. " + message)
+
+func _show_blocking_save_overlay(message: String) -> void:
+	if _blocking_save_overlay and is_instance_valid(_blocking_save_overlay):
+		if _blocking_save_overlay.has_method("set_subtitle"):
+			_blocking_save_overlay.set_subtitle(message)
+		return
+	_blocking_save_previous_pause = get_tree().paused
+	get_tree().paused = true
+	var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+	if LoadingOverlay:
+		_blocking_save_overlay = LoadingOverlay.create(get_tree(), message)
+
+func _finish_blocking_save_overlay() -> void:
+	if not (_blocking_save_overlay and is_instance_valid(_blocking_save_overlay)):
+		return
+	var overlay = _blocking_save_overlay
+	_blocking_save_overlay = null
+	overlay.dismiss()
+	get_tree().paused = _blocking_save_previous_pause
 
 
 func _get_save_path() -> String:

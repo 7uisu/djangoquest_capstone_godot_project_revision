@@ -488,7 +488,7 @@ func _activate_panelists(cd) -> void:
 		# Auto-save spotlight flag
 		var sm = get_node_or_null("/root/SaveManager")
 		if sm:
-			sm.save_game()
+			sm.save_game(true, "Saving progress...")
 
 	# Update quest HUD
 	_thesis_panel_controller._update_quest_hud()
@@ -790,4 +790,4 @@ func _run_shop_pan_tutorial(cd) -> void:
 	# Auto-save
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
-		sm.save_game()
+		sm.save_game(true, "Saving progress...")

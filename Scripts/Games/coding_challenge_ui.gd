@@ -1424,22 +1424,25 @@ func _request_premium_ai_hint():
 
 	if result.get("offline", false):
 		_ai_hint_text = "Premium AI hint is unavailable right now because the server could not be reached. Please try again later."
-		_ai_hint_used = true
+		_ai_hint_used = false
 	elif result.get("ai_hint", "") != "":
 		_ai_hint_text = result.get("ai_hint", "")
 		_ai_hint_used = true
 		emit_signal("hint_used")
 	else:
-		_ai_hint_text = "The premium assistant could not generate a hint for this attempt. Review the free hints and try a slightly different approach."
-		_ai_hint_used = true
-		emit_signal("hint_used")
+		_ai_hint_text = "The premium assistant could not generate a hint for this attempt. Please try again with a little more code written first."
+		_ai_hint_used = false
 
 	# Unlock close and refresh the panel with the actual hint
 	_premium_hint_loading = false
 	stack_close_button.disabled = false
 	_show_overflow_stack()
-	feedback_label.text = "Premium AI hint added to OverflowStack."
-	feedback_label.add_theme_color_override("font_color", Color("61afef"))
+	if _ai_hint_used:
+		feedback_label.text = "Premium AI hint added to OverflowStack."
+		feedback_label.add_theme_color_override("font_color", Color("61afef"))
+	else:
+		feedback_label.text = "Premium AI hint was not used. Try again in a moment."
+		feedback_label.add_theme_color_override("font_color", Color("e5c07b"))
 	feedback_label.visible = true
 
 func _build_ai_context_payload(active_code: String) -> String:
@@ -2163,6 +2166,8 @@ func _show_overflow_stack():
 		thread_lines.append("[color=#0077cc][b]Premium AI Hint:[/b] %s[/color]" % _ai_hint_text)
 	else:
 		thread_lines.append("")
+		if _ai_hint_text != "":
+			thread_lines.append("[color=#d19a66][b]Premium AI:[/b] %s[/color]" % _ai_hint_text)
 		thread_lines.append("[color=#5c6370]Need a stronger nudge? Use your one premium AI hint for this challenge.[/color]")
 		thread_lines.append("[color=#c678dd]Pro Tip: You must input your thought code in the IDE first! The AI will analyze your exact attempt.[/color]")
 

@@ -1422,7 +1422,7 @@ func _launch_removal_exam() -> bool:
 func _autosave_progress():
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
-		sm.save_game()
+		sm.save_game(true, "Saving progress...")
 
 	if player:
 		player.can_move = false

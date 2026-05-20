@@ -535,7 +535,7 @@ func _get_combined_thesis_grade() -> float:
 func _autosave_progress() -> void:
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
-		sm.save_game()
+		sm.save_game(true, "Saving progress...")
 
 	var players = get_tree().get_nodes_in_group("player")
 	var player = players[0] if players.size() > 0 else null
