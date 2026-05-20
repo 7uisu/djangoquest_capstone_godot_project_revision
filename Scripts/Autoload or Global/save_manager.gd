@@ -12,6 +12,7 @@ signal cloud_save_checked(has_cloud_save: bool)
 # Set to true while a cloud download is in progress (used by main menu)
 var _cloud_check_in_progress: bool = false
 var _cloud_save_data: Dictionary = {}
+var _waiting_for_save_upload: bool = false
 
 # ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -73,9 +74,11 @@ func save_game() -> void:
 
 	# If logged in, also upload to the cloud
 	if ApiManager.is_logged_in():
+		_waiting_for_save_upload = true
+		print("SaveManager: Game saved to %s; waiting for online sync." % file_path)
+		emit_signal("save_completed", true, "Saving...")
 		ApiManager.upload_save(save_data)
-		# We don't wait for the cloud response — local save is the source of truth.
-		# The signal from ApiManager will fire when the upload completes.
+		return
 
 	print("SaveManager: Game saved to %s" % file_path)
 	emit_signal("save_completed", true, "Game saved!")
@@ -217,6 +220,8 @@ func _ready():
 	# Listen for cloud download response
 	if not ApiManager.save_downloaded.is_connected(_on_save_downloaded):
 		ApiManager.save_downloaded.connect(_on_save_downloaded)
+	if not ApiManager.save_uploaded.is_connected(_on_save_uploaded):
+		ApiManager.save_uploaded.connect(_on_save_uploaded)
 
 func _on_save_downloaded(success: bool, data: Dictionary):
 	_cloud_check_in_progress = false
@@ -226,6 +231,18 @@ func _on_save_downloaded(success: bool, data: Dictionary):
 	else:
 		_cloud_save_data = {}
 	emit_signal("cloud_save_checked", not _cloud_save_data.is_empty())
+
+func _on_save_uploaded(success: bool, message: String) -> void:
+	if success:
+		print("SaveManager: Cloud sync completed.")
+		if _waiting_for_save_upload:
+			_waiting_for_save_upload = false
+			emit_signal("save_completed", true, "Game saved!")
+	else:
+		push_warning("SaveManager: Local save completed, but cloud sync failed: " + message)
+		if _waiting_for_save_upload:
+			_waiting_for_save_upload = false
+			emit_signal("save_completed", false, "Game saved on this device, but online progress did not update. " + message)
 
 
 func _get_save_path() -> String:

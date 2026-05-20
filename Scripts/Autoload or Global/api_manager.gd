@@ -182,14 +182,14 @@ func _delete_auth_file():
 
 # ─── Cloud Save ──────────────────────────────────────────────────────────────
 
-func upload_save(save_data: Dictionary):
+func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 	if not is_logged_in():
 		emit_signal("save_uploaded", false, "Not logged in.")
 		return
 
 	var http = HTTPRequest.new()
 	add_child(http)
-	http.request_completed.connect(_on_upload_save_response.bind(http))
+	http.request_completed.connect(_on_upload_save_response.bind(http, save_data, allow_refresh))
 
 	var body = JSON.stringify({"save_data": save_data})
 	var headers = [
@@ -202,11 +202,21 @@ func upload_save(save_data: Dictionary):
 		emit_signal("save_uploaded", false, "Network error.")
 		http.queue_free()
 
-func _on_upload_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+func _on_upload_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest, save_data: Dictionary, allow_refresh: bool):
 	http.queue_free()
 
 	if result != HTTPRequest.RESULT_SUCCESS:
 		emit_signal("save_uploaded", false, "Could not reach server.")
+		return
+
+	if response_code == 401 and allow_refresh:
+		print("ApiManager: Access token expired during save upload. Refreshing token...")
+		_refresh_access_token(func(success: bool):
+			if success:
+				upload_save(save_data, false)
+			else:
+				emit_signal("save_uploaded", false, "Session expired. Please log in again.")
+		)
 		return
 
 	if response_code == 200:
@@ -215,17 +225,19 @@ func _on_upload_save_response(result: int, response_code: int, _headers: PackedS
 	else:
 		var json = JSON.parse_string(body.get_string_from_utf8())
 		var detail = json.get("detail", "Upload failed.") if json else "Upload failed."
+		if json and json.has("errors") and json["errors"] is Array:
+			detail += " " + "; ".join(PackedStringArray(json["errors"]))
 		emit_signal("save_uploaded", false, detail)
 
 
-func download_save():
+func download_save(allow_refresh: bool = true):
 	if not is_logged_in():
 		emit_signal("save_downloaded", false, {})
 		return
 
 	var http = HTTPRequest.new()
 	add_child(http)
-	http.request_completed.connect(_on_download_save_response.bind(http))
+	http.request_completed.connect(_on_download_save_response.bind(http, allow_refresh))
 
 	var headers = [
 		"Content-Type: application/json",
@@ -237,11 +249,21 @@ func download_save():
 		emit_signal("save_downloaded", false, {})
 		http.queue_free()
 
-func _on_download_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
+func _on_download_save_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest, allow_refresh: bool):
 	http.queue_free()
 
 	if result != HTTPRequest.RESULT_SUCCESS:
 		emit_signal("save_downloaded", false, {})
+		return
+
+	if response_code == 401 and allow_refresh:
+		print("ApiManager: Access token expired during save download. Refreshing token...")
+		_refresh_access_token(func(success: bool):
+			if success:
+				download_save(false)
+			else:
+				emit_signal("save_downloaded", false, {})
+		)
 		return
 
 	if response_code == 200:
@@ -254,6 +276,43 @@ func _on_download_save_response(result: int, response_code: int, _headers: Packe
 	else:
 		# 404 = no save exists, which is a valid "success with no data" case
 		emit_signal("save_downloaded", false, {})
+
+
+func _refresh_access_token(done: Callable) -> void:
+	if _refresh_token == "":
+		done.call(false)
+		return
+
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(_on_refresh_access_token_response.bind(http, done))
+
+	var body = JSON.stringify({"refresh": _refresh_token})
+	var headers = ["Content-Type: application/json"]
+	var error = http.request(BASE_URL + "/api/game/token/refresh/", headers, HTTPClient.METHOD_POST, body)
+	if error != OK:
+		http.queue_free()
+		done.call(false)
+
+func _on_refresh_access_token_response(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest, done: Callable) -> void:
+	http.queue_free()
+
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		print("ApiManager: Token refresh failed. result=%s response=%s" % [str(result), str(response_code)])
+		done.call(false)
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json == null:
+		done.call(false)
+		return
+
+	_access_token = json.get("access", "")
+	if json.has("refresh"):
+		_refresh_token = json.get("refresh", _refresh_token)
+	_save_token()
+	print("ApiManager: Access token refreshed.")
+	done.call(_access_token != "")
 
 
 func delete_cloud_save():
