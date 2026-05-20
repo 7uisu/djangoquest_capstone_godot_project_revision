@@ -1152,56 +1152,96 @@ func _create_quest_card(quest_id: String, quest_text: String, qm) -> PanelContai
 # Uses a sticky header (non-scrolling) with a scrollable cards area below.
 
 func _build_sis() -> Control:
-	# Outer wrapper — fills the app content area, never scrolls
-	var outer = VBoxContainer.new()
+	var outer = Control.new()
 	outer.name = "SISOuter"
 	outer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	outer.add_theme_constant_override("separation", 0)
+	outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	outer.visible = false
 
-	# ── Sticky header panel ───────────────────────────────────────────────────
+	var margin = MarginContainer.new()
+	margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	outer.add_child(margin)
+
+	var layout = VBoxContainer.new()
+	layout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_theme_constant_override("separation", 12)
+	margin.add_child(layout)
+
 	var header_panel = PanelContainer.new()
 	header_panel.name = "SISHeaderPanel"
 	var header_panel_style = StyleBoxFlat.new()
-	header_panel_style.bg_color = Color(0.08, 0.10, 0.16, 1.0)
-	header_panel_style.border_color = Color(0.2, 0.25, 0.4, 0.7)
-	header_panel_style.border_width_bottom = 1
-	header_panel_style.set_content_margin_all(12)
+	header_panel_style.bg_color = Color(0.09, 0.115, 0.16, 1.0)
+	header_panel_style.border_color = Color(0.28, 0.38, 0.55, 0.7)
+	header_panel_style.set_border_width_all(1)
+	header_panel_style.set_corner_radius_all(8)
+	header_panel_style.set_content_margin_all(14)
 	header_panel.add_theme_stylebox_override("panel", header_panel_style)
-	outer.add_child(header_panel)
+	layout.add_child(header_panel)
+
+	var header_vbox = VBoxContainer.new()
+	header_vbox.add_theme_constant_override("separation", 6)
+	header_panel.add_child(header_vbox)
 
 	var header_hbox = HBoxContainer.new()
-	header_panel.add_child(header_hbox)
+	header_hbox.add_theme_constant_override("separation", 12)
+	header_vbox.add_child(header_hbox)
 
 	var header = Label.new()
 	header.name = "SISTitle"
-	header.text = "📋 Academic Records"
-	header.add_theme_font_size_override("font_size", 16)
-	header.add_theme_color_override("font_color", Color(0.8, 0.3, 0.3))
+	header.text = "Academic Records"
+	header.add_theme_font_size_override("font_size", 22)
+	header.add_theme_color_override("font_color", Color(0.92, 0.95, 1.0))
 	header.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header_hbox.add_child(header)
 
 	var gwa_label = Label.new()
 	gwa_label.name = "GWALabel"
 	gwa_label.text = "GWA: " + _calculate_gwa()
-	gwa_label.add_theme_font_size_override("font_size", 14)
+	gwa_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gwa_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	gwa_label.custom_minimum_size = Vector2(124, 34)
+	gwa_label.add_theme_font_size_override("font_size", 15)
 	gwa_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	var gwa_style = StyleBoxFlat.new()
+	gwa_style.bg_color = Color(0.18, 0.15, 0.08, 0.95)
+	gwa_style.border_color = Color(0.75, 0.55, 0.18, 0.8)
+	gwa_style.set_border_width_all(1)
+	gwa_style.set_corner_radius_all(6)
+	gwa_style.set_content_margin_all(8)
+	gwa_label.add_theme_stylebox_override("normal", gwa_style)
 	header_hbox.add_child(gwa_label)
 
-	# ── Scrollable cards area ─────────────────────────────────────────────────
+	var subtitle = Label.new()
+	subtitle.text = "Story grades, thesis evaluations, and learning mode records"
+	subtitle.add_theme_font_size_override("font_size", 12)
+	subtitle.add_theme_color_override("font_color", Color(0.58, 0.64, 0.74))
+	header_vbox.add_child(subtitle)
+
 	var scroll = ScrollContainer.new()
 	scroll.name = "SISScroll"
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	outer.add_child(scroll)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layout.add_child(scroll)
+
+	var center = CenterContainer.new()
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.add_child(center)
 
 	var vbox = VBoxContainer.new()
 	vbox.name = "SISCardVBox"
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 14)
-	scroll.add_child(vbox)
+	vbox.custom_minimum_size = Vector2(660, 0)
+	vbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	vbox.add_theme_constant_override("separation", 10)
+	center.add_child(vbox)
 
-	# Generate initial cards
 	_populate_sis_cards(vbox)
 
 	return outer
@@ -1226,6 +1266,8 @@ func _refresh_sis():
 
 func _populate_sis_cards(vbox: VBoxContainer) -> void:
 	var cd = get_node_or_null("/root/CharacterData")
+
+	vbox.add_child(_create_sis_section_label("Story Mode"))
 
 	# Prof Markup
 	if cd and (cd.get("ch2_y1s1_teaching_done") or float(cd.get("ch2_y1s1_final_grade")) > 0.0):
@@ -1314,18 +1356,7 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 
 	# ─── Thesis Defense (Panelists) ───────────────────────────────────────────
 	if cd and cd.thesis_panelist_progress > 0:
-		var t_sep = HSeparator.new()
-		var t_sep_style = StyleBoxLine.new()
-		t_sep_style.color = Color(0.7, 0.4, 0.2, 0.5)
-		t_sep_style.thickness = 2
-		t_sep.add_theme_stylebox_override("separator", t_sep_style)
-		vbox.add_child(t_sep)
-
-		var t_header = Label.new()
-		t_header.text = "🎓 Thesis Defense"
-		t_header.add_theme_font_size_override("font_size", 16)
-		t_header.add_theme_color_override("font_color", Color(0.9, 0.7, 0.3))
-		vbox.add_child(t_header)
+		vbox.add_child(_create_sis_section_label("Thesis Defense"))
 
 		# Panelist 1
 		if cd.thesis_panelist_progress >= 1:
@@ -1388,18 +1419,7 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 
 	# ─── Learning Mode Sandbox Grades ──────────────────────────────────────────
 	if cd and cd.get("learning_mode_grades") and not cd.learning_mode_grades.is_empty():
-		var lm_sep = HSeparator.new()
-		var lm_sep_style = StyleBoxLine.new()
-		lm_sep_style.color = Color(0.25, 0.45, 0.65, 0.5)
-		lm_sep_style.thickness = 2
-		lm_sep.add_theme_stylebox_override("separator", lm_sep_style)
-		vbox.add_child(lm_sep)
-
-		var lm_header = Label.new()
-		lm_header.text = "📚 Learning Mode Sandbox Grades"
-		lm_header.add_theme_font_size_override("font_size", 16)
-		lm_header.add_theme_color_override("font_color", Color(0.3, 0.75, 0.9))
-		vbox.add_child(lm_header)
+		vbox.add_child(_create_sis_section_label("Learning Mode"))
 
 		for prof_key in cd.learning_mode_grades.keys():
 			var grade = float(cd.learning_mode_grades[prof_key])
@@ -1470,36 +1490,78 @@ func _snap_thesis_grade(avg: float) -> float:
 	elif avg <= 2.75: return 2.5
 	else: return 3.0
 
+func _create_sis_section_label(text: String) -> PanelContainer:
+	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.075, 0.09, 0.13, 0.95)
+	style.border_color = Color(0.22, 0.29, 0.42, 0.75)
+	style.border_width_bottom = 1
+	style.set_content_margin(SIDE_LEFT, 12)
+	style.set_content_margin(SIDE_RIGHT, 12)
+	style.set_content_margin(SIDE_TOP, 8)
+	style.set_content_margin(SIDE_BOTTOM, 8)
+	panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	label.text = text.to_upper()
+	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_color_override("font_color", Color(0.68, 0.76, 0.9))
+	panel.add_child(label)
+	return panel
+
 func _create_active_prof_card(prof_name: String, grade: float, retakes: int, removal_passed: bool, is_passing: bool, ai_data: Dictionary = {}, show_inc: bool = true) -> PanelContainer:
 	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.16, 0.22, 1.0)
-	style.border_color = Color(0.4, 0.6, 0.9, 0.6)
+	style.bg_color = Color(0.105, 0.13, 0.18, 1.0)
+	style.border_color = Color(0.28, 0.36, 0.5, 0.85)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(8)
-	style.set_content_margin_all(14)
+	style.set_content_margin_all(12)
 	card.add_theme_stylebox_override("panel", style)
 
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 8)
+	vbox.add_theme_constant_override("separation", 10)
 	card.add_child(vbox)
 
+	var top = HBoxContainer.new()
+	top.add_theme_constant_override("separation", 12)
+	vbox.add_child(top)
+
 	var title = Label.new()
-	title.text = "▼ " + prof_name
-	title.add_theme_font_size_override("font_size", 16)
+	title.text = prof_name
+	title.add_theme_font_size_override("font_size", 15)
 	title.add_theme_color_override("font_color", Color(0.9, 0.95, 1.0))
-	vbox.add_child(title)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(title)
+
+	var grade_badge = Label.new()
+	grade_badge.text = _format_sis_grade(grade)
+	grade_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	grade_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	grade_badge.custom_minimum_size = Vector2(72, 30)
+	grade_badge.add_theme_font_size_override("font_size", 15)
+	grade_badge.add_theme_color_override("font_color", Color(0.08, 0.1, 0.12) if is_passing else Color(1.0, 0.92, 0.92))
+	var badge_style = StyleBoxFlat.new()
+	badge_style.bg_color = Color(0.55, 0.9, 0.62, 1.0) if is_passing else Color(0.72, 0.22, 0.25, 1.0)
+	badge_style.set_corner_radius_all(6)
+	badge_style.set_content_margin_all(6)
+	grade_badge.add_theme_stylebox_override("normal", badge_style)
+	top.add_child(grade_badge)
 
 	var grid = GridContainer.new()
-	grid.columns = 2
-	grid.add_theme_constant_override("h_separation", 40)
-	grid.add_theme_constant_override("v_separation", 4)
+	grid.columns = 6
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 6)
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_child(grid)
 
-	_add_grid_row(grid, "Final Grade:", "%.2f" % grade, Color(0.4, 0.9, 0.5) if is_passing else Color(0.9, 0.4, 0.4))
-	_add_grid_row(grid, "Retakes:", str(retakes), Color(0.8, 0.8, 0.8))
+	_add_grid_row(grid, "Status", "Passed" if is_passing else "Needs Work", Color(0.45, 0.9, 0.55) if is_passing else Color(0.95, 0.45, 0.45))
+	_add_grid_row(grid, "Retakes", str(retakes), Color(0.78, 0.82, 0.9))
 	if show_inc:
-		_add_grid_row(grid, "INC (Removal Exam):", "Passed" if removal_passed else ("Failed" if grade == 5.0 and retakes > 0 else "N/A"), Color(0.8, 0.8, 0.8))
+		_add_grid_row(grid, "Removal", "Passed" if removal_passed else ("Failed" if grade == 5.0 and retakes > 0 else "N/A"), Color(0.78, 0.82, 0.9))
 
 	# ─── AI Minigame Monitoring Section ───────────────────────────────────────
 	# Only shown when ai_data is provided (currently: Prof Query — Relationship Architecture)
@@ -1512,15 +1574,15 @@ func _create_active_prof_card(prof_name: String, grade: float, retakes: int, rem
 		vbox.add_child(ai_sep)
 
 		var ai_header = Label.new()
-		ai_header.text = "🤖 AI Minigame — Relationship Architecture"
+		ai_header.text = "AI Minigame - Relationship Architecture"
 		ai_header.add_theme_font_size_override("font_size", 13)
 		ai_header.add_theme_color_override("font_color", Color(0.6, 0.75, 1.0))
 		vbox.add_child(ai_header)
 
 		var ai_grid = GridContainer.new()
-		ai_grid.columns = 2
-		ai_grid.add_theme_constant_override("h_separation", 40)
-		ai_grid.add_theme_constant_override("v_separation", 4)
+		ai_grid.columns = 4
+		ai_grid.add_theme_constant_override("h_separation", 12)
+		ai_grid.add_theme_constant_override("v_separation", 6)
 		vbox.add_child(ai_grid)
 
 		var oto_skipped: bool = ai_data.get("ai_oto_skipped", false)
@@ -1547,34 +1609,62 @@ func _create_active_prof_card(prof_name: String, grade: float, retakes: int, rem
 
 func _create_locked_prof_card(prof_name: String) -> PanelContainer:
 	var card = PanelContainer.new()
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.1, 0.14, 0.8)
-	style.border_color = Color(0.2, 0.25, 0.35, 0.5)
+	style.bg_color = Color(0.07, 0.085, 0.12, 0.92)
+	style.border_color = Color(0.18, 0.22, 0.31, 0.75)
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(8)
-	style.set_content_margin_all(14)
+	style.set_content_margin_all(12)
 	card.add_theme_stylebox_override("panel", style)
 
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 12)
+	card.add_child(hbox)
+
 	var title = Label.new()
-	title.text = "▶ " + prof_name + " (Locked)"
+	title.text = prof_name
 	title.add_theme_font_size_override("font_size", 14)
-	title.add_theme_color_override("font_color", Color(0.4, 0.45, 0.55))
-	card.add_child(title)
+	title.add_theme_color_override("font_color", Color(0.52, 0.57, 0.67))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hbox.add_child(title)
+
+	var badge = Label.new()
+	badge.text = "Locked"
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	badge.custom_minimum_size = Vector2(76, 28)
+	badge.add_theme_font_size_override("font_size", 12)
+	badge.add_theme_color_override("font_color", Color(0.58, 0.62, 0.7))
+	var badge_style = StyleBoxFlat.new()
+	badge_style.bg_color = Color(0.11, 0.125, 0.16, 1.0)
+	badge_style.border_color = Color(0.22, 0.25, 0.33, 0.9)
+	badge_style.set_border_width_all(1)
+	badge_style.set_corner_radius_all(6)
+	badge_style.set_content_margin_all(5)
+	badge.add_theme_stylebox_override("normal", badge_style)
+	hbox.add_child(badge)
 
 	return card
 
 func _add_grid_row(grid: GridContainer, label_text: String, val_text: String, val_color: Color):
 	var lbl1 = Label.new()
-	lbl1.text = "  " + label_text
-	lbl1.add_theme_font_size_override("font_size", 14)
-	lbl1.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75))
+	lbl1.text = label_text
+	lbl1.add_theme_font_size_override("font_size", 11)
+	lbl1.add_theme_color_override("font_color", Color(0.55, 0.61, 0.72))
 	grid.add_child(lbl1)
 
 	var lbl2 = Label.new()
 	lbl2.text = val_text
-	lbl2.add_theme_font_size_override("font_size", 14)
+	lbl2.add_theme_font_size_override("font_size", 12)
 	lbl2.add_theme_color_override("font_color", val_color)
 	grid.add_child(lbl2)
+
+func _format_sis_grade(grade: float) -> String:
+	if is_equal_approx(grade, 0.0):
+		return "--"
+	return "%.2f" % grade
 
 # ─── Settings App ────────────────────────────────────────────────────────────
 

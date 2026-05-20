@@ -16,7 +16,8 @@ signal back_pressed
 
 @onready var character_data = get_node("/root/CharacterData")
 
-var sis_panel: Panel
+var sis_overlay: Control
+var sis_panel: PanelContainer
 var sis_label: RichTextLabel
 
 func _ready():
@@ -41,37 +42,61 @@ func _ready():
 		btn_container.add_child(sis_btn)
 	sis_btn.pressed.connect(_on_sis_pressed)
 	
-	sis_panel = Panel.new()
-	sis_panel.visible = false
-	sis_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	sis_panel.custom_minimum_size = Vector2(600, 450)
+	sis_overlay = Control.new()
+	sis_overlay.visible = false
+	sis_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sis_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var dimmer = ColorRect.new()
+	dimmer.color = Color(0.0, 0.0, 0.0, 0.58)
+	dimmer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sis_overlay.add_child(dimmer)
+
+	var center = CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sis_overlay.add_child(center)
+
+	sis_panel = PanelContainer.new()
+	sis_panel.custom_minimum_size = Vector2(640, 460)
 	
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.12, 0.95)
-	style.border_width_left = 3
-	style.border_width_top = 3
-	style.border_width_right = 3
-	style.border_width_bottom = 3
-	style.border_color = Color(0.3, 0.5, 0.8)
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_left = 8
-	style.corner_radius_bottom_right = 8
+	style.bg_color = Color(0.075, 0.095, 0.135, 0.98)
+	style.border_color = Color(0.28, 0.38, 0.55, 0.9)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(10)
+	style.set_content_margin_all(18)
 	sis_panel.add_theme_stylebox_override("panel", style)
 	
 	var vbox = VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("margin_left", 30)
-	vbox.add_theme_constant_override("margin_right", 30)
-	vbox.add_theme_constant_override("margin_top", 30)
-	vbox.add_theme_constant_override("margin_bottom", 30)
+	vbox.add_theme_constant_override("separation", 12)
 	sis_panel.add_child(vbox)
 	
+	var header = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 12)
+	vbox.add_child(header)
+
+	var title_box = VBoxContainer.new()
+	title_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_box.add_theme_constant_override("separation", 2)
+	header.add_child(title_box)
+
 	var title = Label.new()
-	title.text = "Django SIS - Learning Mode Transcript"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.text = "Learning Mode Transcript"
 	title.add_theme_font_size_override("font_size", 24)
-	vbox.add_child(title)
+	title.add_theme_color_override("font_color", Color(0.92, 0.95, 1.0))
+	title_box.add_child(title)
+
+	var subtitle = Label.new()
+	subtitle.text = "Best grades recorded from professor practice sessions"
+	subtitle.add_theme_font_size_override("font_size", 12)
+	subtitle.add_theme_color_override("font_color", Color(0.58, 0.64, 0.74))
+	title_box.add_child(subtitle)
+
+	var close_btn = Button.new()
+	close_btn.text = "Close"
+	close_btn.custom_minimum_size = Vector2(86, 34)
+	close_btn.pressed.connect(func(): sis_overlay.visible = false)
+	header.add_child(close_btn)
 	
 	var sep = HSeparator.new()
 	vbox.add_child(sep)
@@ -79,14 +104,13 @@ func _ready():
 	sis_label = RichTextLabel.new()
 	sis_label.bbcode_enabled = true
 	sis_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sis_label.fit_content = false
+	sis_label.scroll_active = true
+	sis_label.add_theme_font_size_override("normal_font_size", 14)
 	vbox.add_child(sis_label)
-	
-	var close_btn = Button.new()
-	close_btn.text = "Close Transcript"
-	close_btn.pressed.connect(func(): sis_panel.visible = false)
-	vbox.add_child(close_btn)
-	
-	add_child(sis_panel)
+
+	center.add_child(sis_panel)
+	add_child(sis_overlay)
 
 func _update_button_states():
 	# For now, make all buttons unlocked already as requested by the user
@@ -124,7 +148,7 @@ func _on_back_pressed():
 
 # ─── SIS LOGIC ──────────────────────────────────────────────────
 func _on_sis_pressed():
-	sis_panel.visible = true
+	sis_overlay.visible = true
 	_update_sis_display()
 
 func _update_sis_display():
@@ -134,11 +158,14 @@ func _update_sis_display():
 		
 	var grades = character_data.learning_mode_grades
 	if grades.is_empty():
-		sis_label.text = "\n[center][color=#a0a0a0]No Professor modules completed in Learning Mode yet.[/color][/center]"
+		sis_label.text = "\n\n[center][color=#9aa4b8]No professor modules completed in Learning Mode yet.[/color]\n[color=#657086]Finish a practice professor to record your best grade here.[/color][/center]"
 		return
 		
-	var text = "\n[center][table=2]\n"
-	text += "[cell][b]Professor / Module[/b]          [/cell][cell][b]Highest Grade[/b][/cell]\n"
+	var text = "[color=#6b7890]PROFESSOR RECORDS[/color]\n\n"
+	text += "[table=3]\n"
+	text += "[cell][color=#8fa2c2][b]Module[/b][/color][/cell]"
+	text += "[cell][color=#8fa2c2][b]Best Grade[/b][/color][/cell]"
+	text += "[cell][color=#8fa2c2][b]Standing[/b][/color][/cell]\n"
 	
 	var total = 0.0
 	var count = 0
@@ -160,13 +187,17 @@ func _update_sis_display():
 		var prof_name = name_map[prof_id] if name_map.has(prof_id) else prof_id
 		
 		var grade_class = _get_grade_class(raw)
-		text += "[cell]%s[/cell][cell][color=%s]%.1f[/color] ([color=%s]%s[/color])[/cell]\n" % [prof_name, grade_class[1], raw, grade_class[1], grade_class[0]]
+		text += "[cell][color=#e7ecf7]%s[/color][/cell]" % prof_name
+		text += "[cell][color=%s][b]%.2f[/b][/color][/cell]" % [grade_class[1], raw]
+		text += "[cell][color=%s]%s[/color][/cell]\n" % [grade_class[1], grade_class[0]]
 		
-	text += "[/table][/center]\n\n"
+	text += "[/table]\n\n"
 	
 	var gwa = total / float(count)
 	var gwa_class = _get_grade_class(gwa)
-	text += "[center][b]Overall Learning Mode GWA:[/b] [color=%s]%.2f[/color][/center]" % [gwa_class[1], gwa]
+	text += "[center][color=#8fa2c2]OVERALL LEARNING MODE GWA[/color]\n"
+	text += "[font_size=30][color=%s][b]%.2f[/b][/color][/font_size]\n" % [gwa_class[1], gwa]
+	text += "[color=%s]%s[/color][/center]" % [gwa_class[1], gwa_class[0]]
 	
 	sis_label.text = text
 
@@ -178,4 +209,3 @@ func _get_grade_class(raw: float) -> Array:
 	if raw <= 3.00: return ["Passing", "#f87171"]
 	if raw <= 4.00: return ["Incomplete", "#a78bfa"]
 	return ["Failed", "#ef4444"]
-
