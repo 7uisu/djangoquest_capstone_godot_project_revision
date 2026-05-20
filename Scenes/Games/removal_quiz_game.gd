@@ -25,8 +25,7 @@ var questions: Array = []
 var current_question: int = 0
 var score: int = 0
 var selected_answer: int = -1
-var is_drawing: bool = false
-var drawing_points: Array = []
+var hovered_answer: int = -1
 var is_quiz_completed: bool = false
 var answer_locked: bool = false
 var is_in_tutorial: bool = true
@@ -59,7 +58,7 @@ func _ready():
 
 func show_tutorial():
 	is_in_tutorial = true
-	question_label.text = "REMOVAL EXAM\n\nInstructions:\nTo select an answer, DRAW A CIRCLE around the letter corresponding to your choice.\n\nYou need at least %d out of %d to pass.\n\nGood Luck!" % [pass_score, quiz_count]
+	question_label.text = "REMOVAL EXAM\n\nInstructions:\nHover a choice to preview the pen circle, then CLICK the letter you want.\nYou can still change your answer before pressing Next.\n\nYou need at least %d out of %d to pass.\n\nGood Luck!" % [pass_score, quiz_count]
 
 	for label in option_labels:
 		label.visible = false
@@ -113,8 +112,8 @@ func load_question():
 		option_labels[i].text = q.options[i]
 
 	selected_answer = -1
+	hovered_answer = -1
 	answer_locked = false
-	drawing_points.clear()
 	drawing_area.queue_redraw()
 	next_button.disabled = true
 	feedback_label.modulate.a = 0.0
@@ -127,59 +126,48 @@ func load_question():
 	tween.tween_property(question_label, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 
 
-# ── Drawing Input ─────────────────────────────────────────────────────
+# ── Hover/Click Answer Input ──────────────────────────────────────────
 
 func _on_drawing_area_gui_input(event):
 	if is_quiz_completed or is_in_tutorial or answer_locked:
 		return
 
+	if event is InputEventMouseMotion:
+		var next_hover = get_option_index_at_position(event.position)
+		if next_hover != hovered_answer:
+			hovered_answer = next_hover
+			drawing_area.queue_redraw()
+
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				is_drawing = true
-				drawing_points.clear()
-				drawing_points.append(event.position)
-				selected_answer = -1
-				for i in range(4):
-					option_labels[i].modulate = Color.WHITE
-				next_button.disabled = true
+				var clicked_option = get_option_index_at_position(event.position)
+				if clicked_option != -1:
+					selected_answer = clicked_option
+					hovered_answer = clicked_option
+					highlight_selection(selected_answer)
+					next_button.disabled = false
+				else:
+					hovered_answer = -1
 				drawing_area.queue_redraw()
-			else:
-				is_drawing = false
-				check_circle_selection()
-	elif event is InputEventMouseMotion and is_drawing:
-		drawing_points.append(event.position)
-		drawing_area.queue_redraw()
 
 
 func _on_drawing_area_draw():
-	if drawing_points.size() > 1:
-		var color = Color(0.85, 0.1, 0.1, 0.85)
-		for i in range(1, drawing_points.size()):
-			drawing_area.draw_line(drawing_points[i - 1], drawing_points[i], color, 4.0)
+	if hovered_answer != -1 and hovered_answer != selected_answer:
+		draw_option_circle(hovered_answer, Color(0.82, 0.18, 0.18, 0.55), 3.0)
+	if selected_answer != -1:
+		draw_option_circle(selected_answer, Color(0.82, 0.18, 0.18, 0.9), 4.0)
 
 
-func check_circle_selection():
-	if drawing_points.size() < 10:
-		return
-
-	var center = get_drawing_center()
-	var radius = get_average_radius(center)
-
-	if is_closed_stroke(radius) and is_roughly_circular(center, radius):
-		var encircled_options = []
-		for i in range(4):
-			if is_letter_encircled(i, center, radius):
-				encircled_options.append(i)
-		
-		# Only select if exactly ONE option is encircled. Prevents ambiguous large shapes.
-		if encircled_options.size() == 1:
-			selected_answer = encircled_options[0]
-			highlight_selection(selected_answer)
-			next_button.disabled = false
+func draw_option_circle(option_index: int, color: Color, width: float) -> void:
+	var anchor = get_option_anchor(option_index)
+	var primary_center = anchor + Vector2(8.0, 0.0)
+	var radius = 23.0
+	drawing_area.draw_arc(primary_center, radius, 0.18, TAU - 0.12, 40, color, width, true)
+	drawing_area.draw_arc(primary_center + Vector2(1.5, -1.0), radius - 2.5, 0.1, TAU - 0.2, 36, color.darkened(0.08), max(1.5, width - 1.0), true)
 
 
-func is_letter_encircled(option_index: int, circle_center: Vector2, circle_radius: float) -> bool:
+func get_option_anchor(option_index: int) -> Vector2:
 	var option_label = option_labels[option_index]
 	var option_global_pos = option_label.global_position
 	var drawing_area_global = drawing_area.global_position
@@ -187,55 +175,19 @@ func is_letter_encircled(option_index: int, circle_center: Vector2, circle_radiu
 	var letter_pos = option_global_pos - drawing_area_global
 	letter_pos.x += 10
 	letter_pos.y += option_label.size.y / 2
-
-	var distance_to_letter = circle_center.distance_to(letter_pos)
-	var max_distance = min(35.0, max(22.0, circle_radius * 0.5))
-	return distance_to_letter < max_distance and circle_radius > 15 and circle_radius < 80
+	return letter_pos
 
 
-func get_drawing_center() -> Vector2:
-	var sum = Vector2.ZERO
-	for point in drawing_points:
-		sum += point
-	return sum / drawing_points.size()
-
-
-func get_average_radius(center: Vector2) -> float:
-	var total_distance = 0.0
-	for point in drawing_points:
-		total_distance += center.distance_to(point)
-	return total_distance / drawing_points.size()
-
-
-func is_roughly_circular(center: Vector2, expected_radius: float) -> bool:
-	if expected_radius < 15 or expected_radius > 80:
-		return false
-
-	var bounds = Rect2(drawing_points[0], Vector2.ZERO)
-	for point in drawing_points:
-		bounds = bounds.expand(point)
-
-	if bounds.size.x < 25 or bounds.size.y < 25:
-		return false
-
-	var aspect_ratio = bounds.size.x / max(bounds.size.y, 0.001)
-	if aspect_ratio < 0.55 or aspect_ratio > 1.8:
-		return false
-
-	var variance_threshold = expected_radius * 0.4
-	var good_points = 0
-	for point in drawing_points:
-		var distance = center.distance_to(point)
-		if abs(distance - expected_radius) < variance_threshold:
-			good_points += 1
-	return good_points > drawing_points.size() * 0.6
-
-
-func is_closed_stroke(expected_radius: float) -> bool:
-	var start_point = drawing_points[0]
-	var end_point = drawing_points[drawing_points.size() - 1]
-	var closure_distance = start_point.distance_to(end_point)
-	return closure_distance <= min(45.0, expected_radius * 0.75)
+func get_option_index_at_position(position: Vector2) -> int:
+	for i in range(option_labels.size()):
+		var option_label = option_labels[i]
+		if not option_label.visible:
+			continue
+		var label_top_left = option_label.global_position - drawing_area.global_position
+		var hit_rect = Rect2(label_top_left - Vector2(20.0, 10.0), option_label.size + Vector2(40.0, 20.0))
+		if hit_rect.has_point(position):
+			return i
+	return -1
 
 
 func highlight_selection(option_index: int):
@@ -319,7 +271,7 @@ func show_final_score():
 	continue_button.visible = true
 	continue_button.grab_focus()
 
-	drawing_points.clear()
+	hovered_answer = -1
 	drawing_area.queue_redraw()
 
 
@@ -329,9 +281,9 @@ func _on_restart_button_pressed():
 	current_question = 0
 	score = 0
 	selected_answer = -1
+	hovered_answer = -1
 	is_quiz_completed = false
 	answer_locked = false
-	drawing_points.clear()
 
 	for label in option_labels:
 		label.visible = true
