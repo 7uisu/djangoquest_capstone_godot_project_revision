@@ -1354,9 +1354,9 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 	else:
 		vbox.add_child(_create_locked_prof_card("Professor REST — APIs & Modern Systems"))
 
-	# ─── Thesis Defense (Panelists) ───────────────────────────────────────────
+	# ─── Thesis Defense ───────────────────────────────────────────────────────
 	if cd and cd.thesis_panelist_progress > 0:
-		vbox.add_child(_create_sis_section_label("Thesis Defense"))
+		vbox.add_child(_create_sis_section_label("Thesis Defense Panelist Grades"))
 
 		# Panelist 1
 		if cd.thesis_panelist_progress >= 1:
@@ -1365,7 +1365,7 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 				cd.thesis_panelist_1_grade,
 				cd.thesis_panelist_1_retakes,
 				false,
-				true,
+				float(cd.thesis_panelist_1_grade) <= 3.0,
 				{},
 				false
 			))
@@ -1379,7 +1379,7 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 				cd.thesis_panelist_2_grade,
 				cd.thesis_panelist_2_retakes,
 				false,
-				true,
+				float(cd.thesis_panelist_2_grade) <= 3.0,
 				{},
 				false
 			))
@@ -1393,24 +1393,25 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 				cd.thesis_panelist_3_grade,
 				cd.thesis_panelist_3_retakes,
 				false,
-				true,
+				float(cd.thesis_panelist_3_grade) <= 3.0,
 				{},
 				false
 			))
 		else:
 			vbox.add_child(_create_locked_prof_card("Panelist Reyes — System Debugging (Final Boss)"))
 
-		# Combined thesis grade
 		if cd.thesis_completed:
+			vbox.add_child(_create_sis_section_label("Academic GWA Subject"))
 			var combined = (cd.thesis_panelist_1_grade + cd.thesis_panelist_2_grade + cd.thesis_panelist_3_grade) / 3.0
 			var combined_snap = _snap_thesis_grade(combined)
 			var combined_card = _create_active_prof_card(
-				"📊 Combined Thesis Grade",
+				"Thesis — Final Subject Grade",
 				combined_snap,
 				0,
 				false,
-				true,
+				combined_snap <= 3.0,
 				{},
+				false,
 				false
 			)
 			vbox.add_child(combined_card)
