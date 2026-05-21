@@ -1202,10 +1202,10 @@ func _build_sis() -> Control:
 
 	var gwa_label = Label.new()
 	gwa_label.name = "GWALabel"
-	gwa_label.text = "GWA: " + _calculate_gwa()
+	gwa_label.text = "Academic GWA: " + _calculate_gwa()
 	gwa_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	gwa_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	gwa_label.custom_minimum_size = Vector2(124, 34)
+	gwa_label.custom_minimum_size = Vector2(172, 34)
 	gwa_label.add_theme_font_size_override("font_size", 15)
 	gwa_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
 	var gwa_style = StyleBoxFlat.new()
@@ -1218,7 +1218,7 @@ func _build_sis() -> Control:
 	header_hbox.add_child(gwa_label)
 
 	var subtitle = Label.new()
-	subtitle.text = "Story grades, thesis evaluations, and learning mode records"
+	subtitle.text = "Story professor grades, thesis evaluations, and learning mode records"
 	subtitle.add_theme_font_size_override("font_size", 12)
 	subtitle.add_theme_color_override("font_color", Color(0.58, 0.64, 0.74))
 	header_vbox.add_child(subtitle)
@@ -1252,7 +1252,7 @@ func _refresh_sis():
 	# Update the sticky GWA label in-place (no rebuild needed)
 	var gwa_lbl = sis_content.find_child("GWALabel", true, false)
 	if gwa_lbl:
-		gwa_lbl.text = "GWA: " + _calculate_gwa()
+		gwa_lbl.text = "Academic GWA: " + _calculate_gwa()
 
 	# Clear and repopulate only the scrollable cards vbox
 	var vbox = sis_content.find_child("SISCardVBox", true, false) as VBoxContainer
@@ -1417,7 +1417,7 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 	elif cd and cd.student_seq_progress.get("y3mid", 0) >= 5:
 		vbox.add_child(_create_locked_prof_card("🎓 Thesis Defense — Locked (complete all professors first)"))
 
-	# ─── Learning Mode Sandbox Grades ──────────────────────────────────────────
+	# ─── Learning Mode Grades ──────────────────────────────────────────────────
 	if cd and cd.get("learning_mode_grades") and not cd.learning_mode_grades.is_empty():
 		vbox.add_child(_create_sis_section_label("Learning Mode"))
 
@@ -1427,11 +1427,14 @@ func _populate_sis_cards(vbox: VBoxContainer) -> void:
 			var prof_display = prof_key.capitalize()
 			
 			var card = _create_active_prof_card(
-				"Professor " + prof_display + " (Sandbox)",
+				"Professor " + prof_display + " (Learning Mode)",
 				grade,
-				0,			# Sandbox doesn't track retakes over time
-				false,		# No removal exams in sandbox
-				is_passing
+				0,
+				false,
+				is_passing,
+				{},
+				false,
+				false
 			)
 			vbox.add_child(card)
 
@@ -1470,7 +1473,7 @@ func _calculate_gwa() -> String:
 		total_grades += float(cd.ch2_y3mid_final_grade)
 		count += 1
 
-	# Include thesis defense combined grade if completed
+	# Thesis is counted as one completed subject after the three panelist grades are combined.
 	if cd.thesis_completed:
 		var combined = (cd.thesis_panelist_1_grade + cd.thesis_panelist_2_grade + cd.thesis_panelist_3_grade) / 3.0
 		total_grades += _snap_thesis_grade(combined)
@@ -1510,7 +1513,7 @@ func _create_sis_section_label(text: String) -> PanelContainer:
 	panel.add_child(label)
 	return panel
 
-func _create_active_prof_card(prof_name: String, grade: float, retakes: int, removal_passed: bool, is_passing: bool, ai_data: Dictionary = {}, show_inc: bool = true) -> PanelContainer:
+func _create_active_prof_card(prof_name: String, grade: float, retakes: int, removal_passed: bool, is_passing: bool, ai_data: Dictionary = {}, show_inc: bool = true, show_retakes: bool = true) -> PanelContainer:
 	var card = PanelContainer.new()
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var style = StyleBoxFlat.new()
@@ -1559,7 +1562,8 @@ func _create_active_prof_card(prof_name: String, grade: float, retakes: int, rem
 	vbox.add_child(grid)
 
 	_add_grid_row(grid, "Status", "Passed" if is_passing else "Needs Work", Color(0.45, 0.9, 0.55) if is_passing else Color(0.95, 0.45, 0.45))
-	_add_grid_row(grid, "Retakes", str(retakes), Color(0.78, 0.82, 0.9))
+	if show_retakes:
+		_add_grid_row(grid, "Retakes", str(retakes), Color(0.78, 0.82, 0.9))
 	if show_inc:
 		_add_grid_row(grid, "Removal", "Passed" if removal_passed else ("Failed" if grade == 5.0 and retakes > 0 else "N/A"), Color(0.78, 0.82, 0.9))
 

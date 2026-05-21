@@ -176,6 +176,9 @@ func _ready():
 	free_type_edit.add_theme_font_size_override("font_size", 14)
 	stack_answer.add_theme_font_override("normal_font", code_font)
 	stack_answer.add_theme_font_size_override("normal_font_size", 13)
+	stack_answer.fit_content = false
+	stack_answer.scroll_active = true
+	stack_answer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	# Ensure SFX streams are loaded
 	keypad_sfx.stream = preload("res://Sounds/UI SFX/UIClick_BLEEOOP_Keypad_Click.wav")
@@ -2118,6 +2121,7 @@ func _show_overflow_stack():
 	var hints_array = _get_hints_array()
 	var total_free_hints = min(hints_array.size(), MAX_FREE_HINTS)
 	var title = current_challenge.get("title", "Help")
+	_layout_overflow_stack_panel()
 
 	# Style the overlay
 	var panel_style = StyleBoxFlat.new()
@@ -2147,6 +2151,8 @@ func _show_overflow_stack():
 	stack_answer.bbcode_enabled = true
 	stack_answer.scroll_active = true
 	stack_answer.scroll_following = true
+	stack_answer.fit_content = false
+	stack_answer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var thread_lines: Array[String] = []
 	thread_lines.append("[color=#3b4045][b]Accepted Answer[/b][/color]")
 
@@ -2201,6 +2207,22 @@ func _show_overflow_stack():
 	overflow_overlay.modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(overflow_overlay, "modulate:a", 1.0, 0.25)
+
+func _layout_overflow_stack_panel() -> void:
+	var viewport_size = get_viewport_rect().size
+	var target_width = min(720.0, viewport_size.x - 48.0)
+	var target_height = min(520.0, viewport_size.y - 48.0)
+	target_width = max(target_width, 360.0)
+	target_height = max(target_height, 320.0)
+
+	overflow_overlay.anchor_left = 0.5
+	overflow_overlay.anchor_top = 0.5
+	overflow_overlay.anchor_right = 0.5
+	overflow_overlay.anchor_bottom = 0.5
+	overflow_overlay.offset_left = -target_width / 2.0
+	overflow_overlay.offset_right = target_width / 2.0
+	overflow_overlay.offset_top = -target_height / 2.0
+	overflow_overlay.offset_bottom = target_height / 2.0
 
 # ─── Light Theme Troll ─────────────────────────────────────────────────────
 
