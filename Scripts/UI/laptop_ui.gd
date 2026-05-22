@@ -991,6 +991,8 @@ func _build_quest_log() -> ScrollContainer:
 
 	var sep = HSeparator.new()
 	vbox.add_child(sep)
+	var qm = get_node_or_null("/root/QuestManager")
+	_add_quest_recovery_controls(vbox, qm)
 
 	# ── Main Quest section ──────────────────────────────────────
 	var main_header = Label.new()
@@ -999,7 +1001,7 @@ func _build_quest_log() -> ScrollContainer:
 	main_header.add_theme_color_override("font_color", Color(0.7, 0.8, 1.0))
 	vbox.add_child(main_header)
 
-	var qm = get_node_or_null("/root/QuestManager")
+
 	if qm and qm.current_quest_text != "":
 		var card = _create_quest_card(qm.current_quest_id, qm.current_quest_text, qm)
 		vbox.add_child(card)
@@ -1053,6 +1055,7 @@ func _on_quest_changed_refresh(_id: String, _text: String) -> void:
 	header.add_theme_color_override("font_color", Color(0.3, 0.75, 0.4))
 	vbox.add_child(header)
 	vbox.add_child(HSeparator.new())
+	_add_quest_recovery_controls(vbox, get_node_or_null("/root/QuestManager"))
 
 	var main_header = Label.new()
 	main_header.text = "📌 Main Quest"
@@ -1138,6 +1141,10 @@ func _create_quest_card(quest_id: String, quest_text: String, qm) -> PanelContai
 	track_btn.add_theme_stylebox_override("normal", btn_style)
 	track_btn.add_theme_color_override("font_color", Color(0.5, 0.95, 0.6))
 	track_btn.pressed.connect(func():
+		if qm.has_method("recover_visible_quest"):
+			qm.recover_visible_quest()
+		elif qm.has_method("reset_suppression"):
+			qm.reset_suppression()
 		qm.set_tracked_quest(quest_id)
 		indicator.text = "✅ Tracking"
 	)
@@ -1147,6 +1154,36 @@ func _create_quest_card(quest_id: String, quest_text: String, qm) -> PanelContai
 	_quest_cards[quest_id] = {"card": card, "indicator": indicator}
 
 	return card
+
+func _add_quest_recovery_controls(vbox: VBoxContainer, qm) -> void:
+	var row = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	vbox.add_child(row)
+
+	var restore_btn = Button.new()
+	restore_btn.text = "Restore Quest HUD"
+	restore_btn.add_theme_font_size_override("font_size", 11)
+	restore_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.22, 0.34, 0.95)
+	style.border_color = Color(0.25, 0.5, 0.75, 0.85)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(5)
+	restore_btn.add_theme_stylebox_override("normal", style)
+	restore_btn.add_theme_color_override("font_color", Color(0.68, 0.86, 1.0))
+	restore_btn.disabled = qm == null
+	restore_btn.pressed.connect(func():
+		var qm_live = get_node_or_null("/root/QuestManager")
+		if qm_live == null:
+			return
+		if qm_live.has_method("recover_visible_quest"):
+			qm_live.recover_visible_quest()
+		elif qm_live.has_method("reset_suppression"):
+			qm_live.reset_suppression()
+		_on_quest_changed_refresh(qm_live.current_quest_id, qm_live.current_quest_text)
+	)
+	row.add_child(restore_btn)
 
 # ─── SIS App ─────────────────────────────────────────────────────────────────
 # Uses a sticky header (non-scrolling) with a scrollable cards area below.
@@ -1944,15 +1981,36 @@ func _on_main_menu_pressed():
 		return
 	CustomConfirm.prompt(
 		"Exit to Main Menu",
-		"Are you sure you want to exit game?",
+		"Are you sure you want to exit game?\n\nYour progress will be saved first.",
 		func():
-			var qm = get_node_or_null("/root/QuestManager")
-			if qm:
-				qm.clear_quest()
-			close()
-			get_tree().paused = false
-			get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+			_exit_to_main_menu_after_save()
 	)
+
+func _exit_to_main_menu_after_save() -> void:
+	if is_saving:
+		return
+	is_saving = true
+
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
+		var overlay_text = "Saving progress before exiting..."
+		var overlay = LoadingOverlay.create(get_tree(), overlay_text)
+		var save_result: Dictionary = await _run_manual_save_and_wait(sm)
+		if is_instance_valid(overlay):
+			await overlay.dismiss()
+		if not bool(save_result.get("success", false)):
+			push_warning("LaptopUI: Exit save failed: " + str(save_result.get("message", "Unknown save error.")))
+			is_saving = false
+			return
+
+	var qm = get_node_or_null("/root/QuestManager")
+	if qm:
+		qm.clear_quest()
+	is_saving = false
+	close()
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
 
 # ─── Navigation ──────────────────────────────────────────────────────────────
 
