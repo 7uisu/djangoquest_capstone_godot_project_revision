@@ -76,6 +76,32 @@ func is_quest_content_visible() -> bool:
 	return _has_quest and _suppress_depth == 0
 
 
+func recover_visible_quest() -> void:
+	reset_suppression()
+	refresh_current_scene_quest()
+	if tracked_quest_id.is_empty() and not current_quest_id.is_empty():
+		tracked_quest_id = current_quest_id
+		tracked_quest_changed.emit(tracked_quest_id)
+	_sync_hud()
+
+
+func refresh_current_scene_quest() -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var path: String = String(scene.scene_file_path)
+	if path.ends_with("school_map.tscn"):
+		refresh_ch1_school_quest()
+	elif path.ends_with("outdoor_map_convenience_store_cutscene2.tscn"):
+		refresh_ch1_outdoor_quest()
+	elif path.ends_with("internet_cafe_map_cutscene.tscn"):
+		refresh_ch1_internet_cafe_quest()
+	elif path.ends_with("college_map.tscn"):
+		refresh_college_quest()
+	elif path.ends_with("college_2nd_floor_map.tscn"):
+		refresh_college_2nd_floor_quest()
+
+
 func get_arrow_target_global_position() -> Vector2:
 	var scene := get_tree().current_scene
 	if scene == null or target_node_names.is_empty():

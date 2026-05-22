@@ -737,29 +737,38 @@ func _bfs_walk_away():
 	var walk_duration = 2.0
 	var walk_distance = 200.0  # pixels upward
 
-	# Play walking-up animations
-	if male_bf:
-		var male_sprite = male_bf.get_node_or_null("AnimatedSprite2D")
-		if male_sprite:
-			male_sprite.play("male_student_walking_up")
-	if female_bf:
-		var female_sprite = female_bf.get_node_or_null("AnimatedSprite2D")
-		if female_sprite:
-			female_sprite.play("female_student_walking_up")
-
-	# Tween both BFs upward simultaneously
-	var tween = create_tween().set_parallel(true)
-	if male_bf:
-		tween.tween_property(male_bf, "position:y", male_bf.position.y - walk_distance, walk_duration)
-	if female_bf:
-		tween.tween_property(female_bf, "position:y", female_bf.position.y - walk_distance, walk_duration)
-	await tween.finished
+	_walk_bf_away_one(male_bf, "male_student_walking_up", walk_duration, walk_distance)
+	_walk_bf_away_one(female_bf, "female_student_walking_up", walk_duration, walk_distance)
+	await get_tree().create_timer(walk_duration + 0.55).timeout
 
 	# Hide them and disable collision — they've "left" for 7-11
 	for npc in [male_bf, female_bf]:
 		if npc:
 			npc.visible = false
 			npc.process_mode = Node.PROCESS_MODE_DISABLED
+
+func _walk_bf_away_one(npc: Node2D, up_animation: String, walk_duration: float, walk_distance: float) -> void:
+	if not npc:
+		return
+	_disable_npc_collision_for_walk(npc)
+	var sprite = npc.get_node_or_null("AnimatedSprite2D")
+	if sprite:
+		sprite.play(up_animation)
+
+	var target_y = npc.position.y - walk_distance
+	var tween = create_tween()
+	tween.tween_property(npc, "position:y", target_y, walk_duration)
+
+func _disable_npc_collision_for_walk(npc: Node) -> void:
+	if npc is CollisionObject2D:
+		(npc as CollisionObject2D).collision_layer = 0
+		(npc as CollisionObject2D).collision_mask = 0
+	for child in npc.get_children():
+		if child is CollisionObject2D:
+			(child as CollisionObject2D).collision_layer = 0
+			(child as CollisionObject2D).collision_mask = 0
+		elif child is CollisionShape2D:
+			(child as CollisionShape2D).disabled = true
 
 # -----------------------------------------------------------------------
 #  HELPERS

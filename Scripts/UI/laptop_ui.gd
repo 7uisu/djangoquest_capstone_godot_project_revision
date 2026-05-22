@@ -1981,18 +1981,26 @@ func _on_main_menu_pressed():
 		return
 	CustomConfirm.prompt(
 		"Exit to Main Menu",
-		"Are you sure you want to exit game?\n\nYour progress will be saved first.",
+		"Are you sure you want to exit game?",
 		func():
-			_exit_to_main_menu_after_save()
+			_prompt_exit_save_choice()
 	)
 
-func _exit_to_main_menu_after_save() -> void:
+func _prompt_exit_save_choice() -> void:
+	CustomConfirm.prompt(
+		"Save Before Exiting?",
+		"Do you want to save your progress before going back to the main menu?\n\nYes = save first\nNo = exit without saving",
+		Callable(self, "_exit_to_main_menu").bind(true),
+		Callable(self, "_exit_to_main_menu").bind(false)
+	)
+
+func _exit_to_main_menu(save_first: bool) -> void:
 	if is_saving:
 		return
 	is_saving = true
 
 	var sm = get_node_or_null("/root/SaveManager")
-	if sm:
+	if save_first and sm:
 		var LoadingOverlay = load("res://Scripts/UI/loading_overlay.gd")
 		var overlay_text = "Saving progress before exiting..."
 		var overlay = LoadingOverlay.create(get_tree(), overlay_text)
