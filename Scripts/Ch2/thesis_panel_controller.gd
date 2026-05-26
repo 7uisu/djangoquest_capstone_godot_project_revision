@@ -202,6 +202,10 @@ func _start_panelist(panelist_index: int) -> void:
 	_current_panelist = panelist_index
 	_current_challenge_idx = 0
 
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("PPT")
+
 	var config = PANELIST_CONFIG[panelist_index]
 	_max_hearts = config["hearts"]
 	_hearts = _max_hearts
@@ -474,6 +478,10 @@ func _close_ide() -> void:
 		_ide_canvas = null
 		_ide_instance = null
 		_health_ui = null
+
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_scene_music"):
+		audio_manager.play_scene_music()
 
 func _increment_retakes() -> void:
 	if _character_data:

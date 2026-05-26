@@ -262,7 +262,26 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Login"
 
-[node name="QuitButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/SessionButtons" unique_id=1120704315]
+[node name="FooterButtons" type="HBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SettingsButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/FooterButtons"]
+custom_minimum_size = Vector2(156, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.72, 1, 1)
+theme_override_colors/font_hover_color = Color(0.95, 0.82, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/FooterButtons" unique_id=1120704315]
 custom_minimum_size = Vector2(156, 36)
 layout_mode = 2
 size_flags_horizontal = 3

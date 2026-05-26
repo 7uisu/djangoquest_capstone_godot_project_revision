@@ -95,6 +95,10 @@ func interact():
 # ── CUTSCENE ──────────────────────────────────────────────────────────
 
 func _start_cutscene():
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("SPAGHETTI_MAN_CUTSCENE")
+
 	if not player:
 		var players = get_tree().get_nodes_in_group("player")
 		if players.size() > 0:
@@ -469,6 +473,9 @@ func _play_completion_sequence(pname: String):
 
 func _play_epilogue_sequence(pname: String):
 	# ─── PHASE 6: Epilogue — Graduation & College ───────────────────
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("GRADUATION_DAY")
 
 	# Top-down: player reflects on the experience
 	await get_tree().create_timer(0.4).timeout

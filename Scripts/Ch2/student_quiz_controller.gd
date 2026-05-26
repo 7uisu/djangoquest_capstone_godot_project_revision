@@ -206,6 +206,10 @@ func _open_ide_for_student(student_index: int) -> void:
 	if student_index >= _student_challenges.size():
 		return
 
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("STUDENT_CHALLENGES")
+
 	var student_data = _student_challenges[student_index]
 	var questions = student_data.get("questions", [])
 	if questions.is_empty():
@@ -550,6 +554,10 @@ func _close_ide() -> void:
 		if _ide_instance.challenge_failed.is_connected(_on_challenge_failed):
 			_ide_instance.challenge_failed.disconnect(_on_challenge_failed)
 	get_tree().paused = false
+
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_scene_music"):
+		audio_manager.play_scene_music()
 
 func _build_attempt_questions(student_data: Dictionary) -> Array:
 	var questions = student_data.get("questions", []).duplicate(true)

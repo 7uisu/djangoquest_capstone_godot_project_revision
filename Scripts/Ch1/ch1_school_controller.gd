@@ -200,6 +200,10 @@ func _enter_phase_2():
 	if qm:
 		qm.hide_quest()
 
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("SHS_PROFESSOR_TEACHING")
+
 	# 1. Freeze the player
 	if player:
 		player.can_move = false
@@ -497,6 +501,9 @@ func _on_quiz_completed(score: int):
 func _enter_remedial_phase():
 	_did_remedial_class = true
 	character_data.ch1_did_remedial = true
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("REMEDIAL")
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm:
 		qm.hide_quest()

@@ -239,7 +239,7 @@ func _create_desktop() -> Control:
 		{"id": "retro_browser", "name": "RetroBrowser", "icon": "🌐", "color": Color(0.2, 0.5, 0.9), "desc": "Replay unlocked challenges"},
 		{"id": "notes", "name": "Notes", "icon": "📝", "color": Color(0.85, 0.75, 0.2), "desc": "Your knowledge base"},
 		{"id": "quest_log", "name": "Quest Log", "icon": "📋", "color": Color(0.3, 0.75, 0.4), "desc": "Track your quests"},
-		{"id": "settings", "name": "Settings", "icon": "⚙️", "color": Color(0.6, 0.35, 0.8), "desc": "Customize your IDE"},
+		{"id": "settings", "name": "Settings", "icon": "⚙️", "color": Color(0.6, 0.35, 0.8), "desc": "Audio and IDE options"},
 		{"id": "certificates", "name": "Certificates", "icon": "🏆", "color": Color(0.85, 0.65, 0.1), "desc": "View earned ECertificates"},
 		{"id": "achievements", "name": "Achievements", "icon": "🏅", "color": Color(0.9, 0.55, 0.1), "desc": "Your earned badges"},
 	]
@@ -1722,30 +1722,61 @@ func _build_settings() -> ScrollContainer:
 
 	# Header
 	var header = Label.new()
-	header.text = "⚙️ Settings — IDE Customization"
+	header.text = "⚙️ Settings — Audio & IDE"
 	header.add_theme_font_size_override("font_size", 16)
 	header.add_theme_color_override("font_color", Color(0.6, 0.35, 0.8))
 	vbox.add_child(header)
 
+	var audio_card = _create_settings_card()
+	vbox.add_child(audio_card)
+
+	var audio_vbox = VBoxContainer.new()
+	audio_vbox.add_theme_constant_override("separation", 8)
+	audio_card.add_child(audio_vbox)
+
+	var audio_header = _create_settings_section_header("🔊 Audio")
+	audio_vbox.add_child(audio_header)
+
+	var audio_desc = Label.new()
+	audio_desc.text = "Tune the background music and the sound effects without leaving the game."
+	audio_desc.add_theme_font_size_override("font_size", 10)
+	audio_desc.add_theme_color_override("font_color", Color(0.48, 0.54, 0.65))
+	audio_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	audio_vbox.add_child(audio_desc)
+
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	var music_volume = 0.75
+	var sfx_volume = 0.85
+	if audio_manager:
+		music_volume = audio_manager.get_music_volume()
+		sfx_volume = audio_manager.get_sfx_volume()
+
+	audio_vbox.add_child(_create_audio_slider_row("Background Music", music_volume, _on_laptop_music_changed))
+	audio_vbox.add_child(_create_audio_slider_row("Sound Effects", sfx_volume, _on_laptop_sfx_changed))
+
+	var ide_card = _create_settings_card()
+	vbox.add_child(ide_card)
+
+	var ide_vbox = VBoxContainer.new()
+	ide_vbox.add_theme_constant_override("separation", 10)
+	ide_card.add_child(ide_vbox)
+
 	# Theme section
-	var theme_header = Label.new()
-	theme_header.text = "🎨 IDE Themes"
-	theme_header.add_theme_font_size_override("font_size", 13)
-	theme_header.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85))
-	vbox.add_child(theme_header)
+	var theme_header = _create_settings_section_header("🎨 IDE Themes")
+	ide_vbox.add_child(theme_header)
 
 	var theme_desc = Label.new()
 	theme_desc.text = "Unlock new themes by completing challenges!"
 	theme_desc.add_theme_font_size_override("font_size", 10)
 	theme_desc.add_theme_color_override("font_color", Color(0.45, 0.5, 0.6))
-	vbox.add_child(theme_desc)
+	ide_vbox.add_child(theme_desc)
 
 	# Theme grid
 	var theme_grid = GridContainer.new()
 	theme_grid.columns = 3
 	theme_grid.add_theme_constant_override("h_separation", 10)
 	theme_grid.add_theme_constant_override("v_separation", 10)
-	vbox.add_child(theme_grid)
+	ide_vbox.add_child(theme_grid)
 
 	var themes = [
 		{"name": "Default Dark", "color": Color(0.16, 0.18, 0.24), "unlocked": true},
@@ -1761,6 +1792,69 @@ func _build_settings() -> ScrollContainer:
 		theme_grid.add_child(theme_btn)
 
 	return scroll
+
+func _create_settings_card() -> PanelContainer:
+	var card = PanelContainer.new()
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.09, 0.14, 1.0)
+	style.border_color = Color(0.19, 0.23, 0.34, 0.95)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(12)
+	card.add_theme_stylebox_override("panel", style)
+	return card
+
+func _create_settings_section_header(text_value: String) -> Label:
+	var label = Label.new()
+	label.text = text_value
+	label.add_theme_font_size_override("font_size", 13)
+	label.add_theme_color_override("font_color", Color(0.7, 0.75, 0.85))
+	return label
+
+func _create_audio_slider_row(label_text: String, current_value: float, changed_handler: Callable) -> VBoxContainer:
+	var block = VBoxContainer.new()
+	block.add_theme_constant_override("separation", 6)
+
+	var title = Label.new()
+	title.text = label_text
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", Color(0.85, 0.9, 0.98))
+	block.add_child(title)
+
+	var row = HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	block.add_child(row)
+
+	var slider = HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 100.0
+	slider.step = 1.0
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.value = roundi(current_value * 100.0)
+	row.add_child(slider)
+
+	var value_label = Label.new()
+	value_label.custom_minimum_size = Vector2(44, 0)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	value_label.add_theme_font_size_override("font_size", 10)
+	value_label.add_theme_color_override("font_color", Color(0.62, 0.68, 0.8))
+	value_label.text = "%d%%" % int(slider.value)
+	row.add_child(value_label)
+
+	slider.value_changed.connect(changed_handler.bind(value_label))
+	return block
+
+func _on_laptop_music_changed(value: float, value_label: Label) -> void:
+	value_label.text = "%d%%" % int(round(value))
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager:
+		audio_manager.set_music_volume(value / 100.0)
+
+func _on_laptop_sfx_changed(value: float, value_label: Label) -> void:
+	value_label.text = "%d%%" % int(round(value))
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager:
+		audio_manager.set_sfx_volume(value / 100.0)
 
 func _create_theme_card(theme_data: Dictionary) -> PanelContainer:
 	var card = PanelContainer.new()

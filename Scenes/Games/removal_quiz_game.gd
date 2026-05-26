@@ -1,6 +1,6 @@
 # Scenes/Games/removal_quiz_game.gd
 # Reusable removal exam — circle-the-letter mechanic.
-# Based on python_history_quiz_game (v.gd) but accepts dynamic question injection.
+# Based on python_history_quiz_game.gd but accepts dynamic question injection.
 #
 # Usage from professor controller:
 #   var quiz = REMOVAL_QUIZ_SCENE.instantiate()
@@ -49,6 +49,9 @@ var is_in_tutorial: bool = true
 
 
 func _ready():
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_track"):
+		audio_manager.play_track("REMOVAL EXAMS")
 	setup_ui()
 	shuffle_questions()
 	show_tutorial()
@@ -306,3 +309,8 @@ func _on_restart_button_pressed():
 func _on_continue_pressed():
 	emit_signal("quiz_completed", score)
 	queue_free()
+
+func _exit_tree() -> void:
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager and audio_manager.has_method("play_scene_music"):
+		audio_manager.play_scene_music()

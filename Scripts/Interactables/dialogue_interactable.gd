@@ -78,6 +78,11 @@ func interact():
 	if has_meta("lesson_controller"):
 		print("dialogue_interactable: has lesson_controller meta!")
 		var ctrl = get_meta("lesson_controller")
+		if has_meta("music_track"):
+			var track_key = String(get_meta("music_track"))
+			var audio_manager = get_node_or_null("/root/AudioManager")
+			if audio_manager and audio_manager.has_method("play_track"):
+				audio_manager.play_track(track_key)
 		if ctrl and ctrl.has_method("_on_professor_interacted"):
 			print("dialogue_interactable: calling controller._on_professor_interacted()")
 			ctrl._on_professor_interacted()

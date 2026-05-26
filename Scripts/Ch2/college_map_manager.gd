@@ -119,6 +119,7 @@ func _setup_professor_markup():
 	# Set the controller on the NPC via meta — dialogue_interactable.gd
 	# checks for this in interact() and routes to the controller
 	prof_npc.set_meta("lesson_controller", _professor_markup_controller)
+	prof_npc.set_meta("music_track", "Professor_Markup")
 	
 	print("CollegeMapManager: Meta 'lesson_controller' set on NPC")
 	print("CollegeMapManager: NPC has_meta check = ", prof_npc.has_meta("lesson_controller"))
@@ -146,6 +147,7 @@ func _setup_professor_syntax():
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_syntax_controller)
+	prof_npc.set_meta("music_track", "Professor_Syntax")
 	
 	print("CollegeMapManager: Professor Syntax wired to NPCFemaleCollegeProf01 successfully!")
 
@@ -171,6 +173,7 @@ func _setup_professor_view():
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_view_controller)
+	prof_npc.set_meta("music_track", "Professor_View")
 	
 	
 	print("CollegeMapManager: Professor View wired to NPCMaleCollegeProf02 successfully!")
@@ -197,6 +200,7 @@ func _setup_professor_query():
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_query_controller)
+	prof_npc.set_meta("music_track", "Professor_Query")
 	
 	print("CollegeMapManager: Professor Query wired to NPCMaleCollegeProf03 successfully!")
 
@@ -222,6 +226,7 @@ func _setup_professor_token():
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_token_controller)
+	prof_npc.set_meta("music_track", "Professor_Token")
 	
 	print("CollegeMapManager: Professor Token wired to NPCMaleCollegeProf04 successfully!")
 
@@ -247,6 +252,7 @@ func _setup_professor_auth():
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_auth_controller)
+	prof_npc.set_meta("music_track", "Professor_Auth")
 	
 	print("CollegeMapManager: Professor Auth wired to NPCFemaleCollegeProf02 successfully!")
 
@@ -272,6 +278,7 @@ func _setup_professor_rest():
 	
 	# Set the controller on the NPC via meta
 	prof_npc.set_meta("lesson_controller", _professor_rest_controller)
+	prof_npc.set_meta("music_track", "Professor_Rest")
 	
 	print("CollegeMapManager: Professor REST wired to NPCFemaleCollegeProf03 successfully!")
 
@@ -429,14 +436,17 @@ func _setup_thesis_panel_controller(cd) -> void:
 		_thesis_panel_controller.register_panelist_npc(1, p1)
 		p1.set_meta("lesson_controller", _thesis_panel_controller)
 		p1.set_meta("panelist_index", 1)
+		p1.set_meta("music_track", "PPT")
 	if p2:
 		_thesis_panel_controller.register_panelist_npc(2, p2)
 		p2.set_meta("lesson_controller", _thesis_panel_controller)
 		p2.set_meta("panelist_index", 2)
+		p2.set_meta("music_track", "PPT")
 	if p3:
 		_thesis_panel_controller.register_panelist_npc(3, p3)
 		p3.set_meta("lesson_controller", _thesis_panel_controller)
 		p3.set_meta("panelist_index", 3)
+		p3.set_meta("music_track", "PPT")
 
 	# Check if panelists should be active right now
 	if cd and cd.student_seq_progress.get("y3mid", 0) >= 5 and cd.thesis_panelist_progress < 3:
