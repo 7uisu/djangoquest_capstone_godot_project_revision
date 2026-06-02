@@ -6,6 +6,15 @@ extends Control
 const DIALOGUE_BOX_SCENE = preload("res://Scenes/UI/dialogue_box.tscn")
 const PROFESSOR_SELECT_SCENE = preload("res://Scenes/UI/learning_professor_select.tscn")
 const LEARNING_USB_QUANTITY: int = 100
+const PROFESSOR_MUSIC := {
+	"markup": "Professor_Markup",
+	"syntax": "Professor_Syntax",
+	"view": "Professor_View",
+	"query": "Professor_Query",
+	"auth": "Professor_Auth",
+	"token": "Professor_Token",
+	"rest": "Professor_Rest",
+}
 
 @onready var character_data = get_node("/root/CharacterData")
 
@@ -120,6 +129,8 @@ func _on_back_pressed():
 	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
 
 func _launch_professor_lessons(professor_name: String):
+	_play_professor_music(professor_name)
+
 	match professor_name:
 		"markup":
 			_launch_markup_lessons()
@@ -138,6 +149,13 @@ func _launch_professor_lessons(professor_name: String):
 		_:
 			print("LearningModeController: Unknown professor: ", professor_name)
 			_show_professor_selection()  # Show selection again
+
+func _play_professor_music(professor_name: String) -> void:
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager == null or not audio_manager.has_method("play_track"):
+		return
+	if PROFESSOR_MUSIC.has(professor_name):
+		audio_manager.play_track(PROFESSOR_MUSIC[professor_name])
 
 func _launch_markup_lessons():
 	# Create and configure Professor Markup controller

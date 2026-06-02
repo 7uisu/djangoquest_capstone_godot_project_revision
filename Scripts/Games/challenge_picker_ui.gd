@@ -176,10 +176,36 @@ func _launch_challenge(challenge: Dictionary):
 	# Hide picker, show IDE
 	visible = false
 	var ide = ChallengeScene.instantiate()
+	ide.music_track_override = _get_topic_music_track(current_topic, challenge)
 	ide.challenge_completed.connect(_on_challenge_done)
 	get_tree().root.add_child(ide)
 	# Must be in tree before load so @onready nodes are ready
 	ide.load_challenge(challenge)
+
+func _get_topic_music_track(topic: String, challenge: Dictionary) -> String:
+	var combined = (
+		String(challenge.get("id", "")) + " " +
+		String(challenge.get("title", "")) + " " +
+		String(challenge.get("file_name", ""))
+	).to_lower()
+
+	match topic:
+		"html", "css":
+			return "Professor_Markup"
+		"python":
+			return "Professor_Syntax"
+		"django":
+			if combined.contains("auth") or combined.contains("login") or combined.contains("permission") or combined.contains("password") or combined.contains("user"):
+				return "Professor_Auth"
+			if combined.contains("form") or combined.contains("csrf") or combined.contains("message"):
+				return "Professor_Token"
+			if combined.contains("api") or combined.contains("rest") or combined.contains("json") or combined.contains("serializer") or combined.contains("viewset"):
+				return "Professor_Rest"
+			if combined.contains("model") or combined.contains("query") or combined.contains("orm") or combined.contains("database") or combined.contains("admin"):
+				return "Professor_Query"
+			return "Professor_View"
+
+	return "STUDENT_CHALLENGES"
 
 func _on_challenge_done(_success: bool, _id: String):
 	# Show picker again when challenge ends

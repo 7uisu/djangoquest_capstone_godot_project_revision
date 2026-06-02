@@ -20,6 +20,7 @@ var is_terminal: bool = false   # true for terminal command challenges
 var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 var is_student_sequence: bool = false # explicitly for the rapid-fire NPC loop
+var music_track_override: String = ""
 
 var _attempts: int = 0  # tracks incorrect submissions
 var _ai_network_failures: int = 0
@@ -264,6 +265,7 @@ func get_hints_used() -> int:
 
 func load_challenge(challenge: Dictionary) -> void:
 	current_challenge = challenge
+	_play_challenge_music(challenge)
 	is_completed = false
 	selected_option = -1
 	_attempts = 0
@@ -306,6 +308,54 @@ func load_challenge(challenge: Dictionary) -> void:
 		_render_project_tree(current_challenge["project_tree"], _active_file_name)
 	elif project_tree_panel:
 		project_tree_panel.visible = false
+
+func _play_challenge_music(challenge: Dictionary) -> void:
+	var audio_manager = get_node_or_null("/root/AudioManager")
+	if audio_manager == null or not audio_manager.has_method("play_track"):
+		return
+
+	if music_track_override != "":
+		audio_manager.play_track(music_track_override)
+		return
+
+	var current_track = ""
+	if audio_manager.has_method("get_current_track"):
+		current_track = audio_manager.get_current_track()
+
+	if current_track.begins_with("Professor_") or current_track in ["STUDENT_CHALLENGES", "PPT", "SPAGHETTI_MAN_CUTSCENE"]:
+		return
+
+	var track = _resolve_challenge_music(challenge)
+	if track != "":
+		audio_manager.play_track(track)
+
+func _resolve_challenge_music(challenge: Dictionary) -> String:
+	if challenge.has("music_track"):
+		return String(challenge["music_track"])
+
+	var topic = String(challenge.get("topic", "")).to_lower()
+	var combined = (
+		String(challenge.get("id", "")) + " " +
+		String(challenge.get("title", "")) + " " +
+		String(challenge.get("file_name", ""))
+	).to_lower()
+
+	if topic in ["html", "css"] or combined.contains("html") or combined.contains("css"):
+		return "Professor_Markup"
+	if topic == "python":
+		return "Professor_Syntax"
+	if combined.contains("auth") or combined.contains("login") or combined.contains("permission") or combined.contains("password") or combined.contains("user"):
+		return "Professor_Auth"
+	if combined.contains("form") or combined.contains("csrf") or combined.contains("message"):
+		return "Professor_Token"
+	if combined.contains("api") or combined.contains("rest") or combined.contains("json") or combined.contains("serializer") or combined.contains("viewset"):
+		return "Professor_Rest"
+	if combined.contains("model") or combined.contains("query") or combined.contains("orm") or combined.contains("database") or combined.contains("admin"):
+		return "Professor_Query"
+	if topic == "django" or combined.contains("django") or combined.contains("view") or combined.contains("url") or combined.contains("template") or combined.contains("static"):
+		return "Professor_View"
+
+	return "STUDENT_CHALLENGES"
 
 func load_challenge_set(challenges: Array, index: int = 0) -> void:
 	"""Load a set of challenges, showing progress like 'Challenge 1 / 5'."""

@@ -3,6 +3,7 @@ extends Node
 const MUSIC_BUS_NAME := "Music"
 const SFX_BUS_NAME := "SFX"
 const SETTINGS_PATH := "user://audio_settings.cfg"
+const FADE_DURATION := 0.45
 
 const TRACK_PATHS := {
 	"MAIN_MENU_MUSIC": "res://Sounds/BACKGROUND_MUSICS/MAIN_MENU_MUSIC.mp3",
@@ -35,8 +36,11 @@ var _current_track: String = ""
 var _current_scene_path: String = ""
 var _music_volume: float = 0.75
 var _sfx_volume: float = 0.85
+var _fade_tween: Tween = null
+var _pending_track: String = ""
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_ensure_audio_bus(MUSIC_BUS_NAME)
 	_ensure_audio_bus(SFX_BUS_NAME)
 	_load_settings()
@@ -44,7 +48,9 @@ func _ready() -> void:
 	_music_player = AudioStreamPlayer.new()
 	_music_player.name = "BackgroundMusicPlayer"
 	_music_player.bus = MUSIC_BUS_NAME
+	_music_player.volume_db = -80.0
 	add_child(_music_player)
+	_music_player.finished.connect(_on_music_finished)
 
 	_apply_volumes()
 
@@ -74,15 +80,41 @@ func play_track(track_key: String, restart: bool = false) -> void:
 	if not restart and _current_track == track_key and _music_player.playing:
 		return
 
-	_current_track = track_key
-	if _music_player.stream != stream:
-		_music_player.stream = stream
-	_music_player.play()
+	_pending_track = track_key
+	_transition_to_track(track_key, stream)
 
 func play_scene_music(restart: bool = false) -> void:
 	var scene_track = _resolve_scene_track(_current_scene_path)
 	if scene_track != "":
 		play_track(scene_track, restart)
+
+func get_current_track() -> String:
+	return _current_track
+
+func is_playing_music() -> bool:
+	return _music_player != null and _music_player.playing
+
+func _transition_to_track(track_key: String, stream: AudioStream) -> void:
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()
+
+	if _music_player.playing and _music_player.stream != null:
+		_fade_tween = create_tween()
+		_fade_tween.tween_property(_music_player, "volume_db", -80.0, FADE_DURATION)
+		await _fade_tween.finished
+
+	if _pending_track != track_key:
+		return
+
+	_current_track = track_key
+	_prepare_stream_for_looping(stream)
+	if _music_player.stream != stream:
+		_music_player.stream = stream
+	_music_player.volume_db = -80.0
+	_music_player.play()
+
+	_fade_tween = create_tween()
+	_fade_tween.tween_property(_music_player, "volume_db", 0.0, FADE_DURATION)
 
 func set_music_volume(value: float) -> void:
 	_music_volume = clampf(value, 0.0, 1.0)
@@ -137,11 +169,38 @@ func _get_track_stream(track_key: String) -> AudioStream:
 
 	var stream = load(path)
 	if stream is AudioStream:
+		_prepare_stream_for_looping(stream)
 		_track_cache[track_key] = stream
 		return stream
 
 	push_warning("AudioManager: Resource is not an AudioStream: " + path)
 	return null
+
+func _prepare_stream_for_looping(stream: AudioStream) -> void:
+	if stream == null:
+		return
+
+	if _has_property(stream, "loop"):
+		stream.set("loop", true)
+	if _has_property(stream, "loop_mode"):
+		stream.set("loop_mode", 1)
+
+func _has_property(object: Object, property_name: String) -> bool:
+	for property in object.get_property_list():
+		if String(property.get("name", "")) == property_name:
+			return true
+	return false
+
+func _on_music_finished() -> void:
+	if _current_track == "" or _music_player.stream == null:
+		return
+
+	_music_player.volume_db = -80.0
+	_music_player.play()
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()
+	_fade_tween = create_tween()
+	_fade_tween.tween_property(_music_player, "volume_db", 0.0, FADE_DURATION)
 
 func _get_current_scene_path() -> String:
 	var scene = get_tree().current_scene
