@@ -10,6 +10,7 @@ const THESIS_CHALLENGE_DATA = preload("res://Scripts/Ch2/thesis_challenge_data.g
 
 var is_open: bool = false
 var is_saving: bool = false
+var _exit_to_menu_in_progress: bool = false
 var current_app: String = ""  # "" = desktop, "retro_browser", "notes", "quest_log", "settings", "certificates"
 
 # ─── Root Nodes ──────────────────────────────────────────────────────────────
@@ -2081,7 +2082,7 @@ func _run_manual_save_and_wait(sm: Node) -> Dictionary:
 	}
 
 func _on_main_menu_pressed():
-	if is_saving:
+	if is_saving or _exit_to_menu_in_progress:
 		return
 	CustomConfirm.prompt(
 		"Exit to Main Menu",
@@ -2099,8 +2100,9 @@ func _prompt_exit_save_choice() -> void:
 	)
 
 func _exit_to_main_menu(save_first: bool) -> void:
-	if is_saving:
+	if is_saving or _exit_to_menu_in_progress:
 		return
+	_exit_to_menu_in_progress = true
 	is_saving = true
 
 	var sm = get_node_or_null("/root/SaveManager")
@@ -2114,17 +2116,24 @@ func _exit_to_main_menu(save_first: bool) -> void:
 		if not bool(save_result.get("success", false)):
 			var message := str(save_result.get("message", "Unknown save error."))
 			push_warning("LaptopUI: Exit save warning: " + message)
-			if not message.begins_with("Game saved on this device"):
-				is_saving = false
-				return
+	elif save_first:
+		push_warning("LaptopUI: SaveManager not found while exiting to main menu.")
 
+	_go_to_main_menu()
+
+func _go_to_main_menu() -> void:
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm:
 		qm.clear_quest()
 	is_saving = false
-	close()
+	is_open = false
+	visible = false
+	current_app = ""
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+	var err := get_tree().change_scene_to_file("res://Scenes/UI/main_menu.tscn")
+	if err != OK:
+		_exit_to_menu_in_progress = false
+		push_error("LaptopUI: Failed to change to main menu scene. Error code: %s" % err)
 
 # ─── Navigation ──────────────────────────────────────────────────────────────
 
