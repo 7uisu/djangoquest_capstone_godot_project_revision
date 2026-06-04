@@ -1441,8 +1441,12 @@ func _request_premium_ai_hint():
 	var topic = current_challenge.get("topic", "python")
 	var language = "python"
 	match topic:
-		"html", "css", "http":
+		"html":
 			language = "html"
+		"css":
+			language = "css"
+		"http":
+			language = "text"
 		"django":
 			language = "django"
 		"python", "oop", "variables", "functions", "loops":
@@ -1450,9 +1454,9 @@ func _request_premium_ai_hint():
 
 	var challenge_id = current_challenge.get("id", "")
 	var expected_output = current_challenge.get("correct_output", "Success!")
-	var code_to_check = submission.get("player_typed_only", "")
+	var code_to_check = submission.get("full_text", "")
 	if code_to_check == "":
-		code_to_check = submission.get("full_text", "")
+		code_to_check = submission.get("player_typed_only", "")
 	# Strip hardcoded template comments before sending to AI
 	code_to_check = _strip_code_comments(code_to_check, language)
 	var hint_context = _build_ai_context_payload(code_to_check)
@@ -1947,10 +1951,7 @@ func _run_free_type_local(submission: Dictionary, expected_answers):
 			var tab_pass = false
 			for answer in file_answers:
 				var cleaned_ans = _strip_code_comments(str(answer), file_lang).strip_edges()
-				if file_content == cleaned_ans or cleaned_ans in file_content:
-					tab_pass = true
-					break
-				if _normalize_whitespace(file_content) == _normalize_whitespace(cleaned_ans) or _normalize_whitespace(cleaned_ans) in _normalize_whitespace(file_content):
+				if _submission_matches_answer(file_content, "", cleaned_ans, file_lang):
 					tab_pass = true
 					break
 			if not tab_pass:
@@ -1973,23 +1974,7 @@ func _run_free_type_local(submission: Dictionary, expected_answers):
 		else:
 			for answer in expected_answers:
 				var cleaned_ans = _strip_code_comments(str(answer), lang).strip_edges()
-				# Exact match of typed text
-				if player_typed_only == cleaned_ans:
-					is_correct = true
-					break
-				# Exact match of full content
-				if full_text == cleaned_ans:
-					is_correct = true
-					break
-				# Substring match (comment-stripped)
-				if cleaned_ans != "" and cleaned_ans in full_text:
-					is_correct = true
-					break
-				# Normalized whitespace comparison
-				if _normalize_whitespace(player_typed_only) == _normalize_whitespace(cleaned_ans):
-					is_correct = true
-					break
-				if _normalize_whitespace(full_text) == _normalize_whitespace(cleaned_ans):
+				if _submission_matches_answer(full_text, player_typed_only, cleaned_ans, lang):
 					is_correct = true
 					break
 
@@ -2136,6 +2121,71 @@ func _normalize_whitespace(text: String) -> String:
 		else:
 			result += c
 			prev_was_space = false
+	return result.strip_edges()
+
+func _submission_matches_answer(full_text: String, player_typed_only: String, answer: String, language: String) -> bool:
+	var answer_clean = answer.strip_edges()
+	if answer_clean == "":
+		return false
+
+	var candidates = []
+	if player_typed_only.strip_edges() != "":
+		candidates.append(player_typed_only.strip_edges())
+	if full_text.strip_edges() != "":
+		candidates.append(full_text.strip_edges())
+
+	for candidate in candidates:
+		if candidate == answer_clean:
+			return true
+		if answer_clean in candidate:
+			return true
+
+		var norm_candidate = _normalize_whitespace(candidate)
+		var norm_answer = _normalize_whitespace(answer_clean)
+		if norm_candidate == norm_answer:
+			return true
+		if norm_answer != "" and norm_answer in norm_candidate:
+			return true
+
+		var compact_candidate = _normalize_answer_semantics(candidate, language)
+		var compact_answer = _normalize_answer_semantics(answer_clean, language)
+		if compact_candidate == compact_answer:
+			return true
+		if compact_answer != "" and compact_answer in compact_candidate:
+			return true
+
+	return false
+
+func _normalize_answer_semantics(text: String, language: String) -> String:
+	var normalized = _normalize_whitespace(text)
+	match language:
+		"html":
+			return _compact_html_for_answer(normalized)
+		"css":
+			return _compact_css_for_answer(normalized)
+		_:
+			return normalized
+
+func _compact_html_for_answer(text: String) -> String:
+	var result = ""
+	var i = 0
+	while i < text.length():
+		var c = text.substr(i, 1)
+		if c == " ":
+			var prev_char = result.substr(result.length() - 1, 1) if result.length() > 0 else ""
+			var next_char = text.substr(i + 1, 1) if i + 1 < text.length() else ""
+			if prev_char == ">" and next_char == "<":
+				i += 1
+				continue
+		result += c
+		i += 1
+	return result
+
+func _compact_css_for_answer(text: String) -> String:
+	var result = text
+	for token in [":", ";", "{", "}", "(", ")", ","]:
+		result = result.replace(" " + token, token)
+		result = result.replace(token + " ", token)
 	return result
 
 func _style_free_type_edit():
