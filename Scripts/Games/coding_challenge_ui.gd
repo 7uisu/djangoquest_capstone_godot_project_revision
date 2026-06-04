@@ -24,6 +24,7 @@ var music_track_override: String = ""
 
 var _attempts: int = 0  # tracks incorrect submissions
 var _ai_network_failures: int = 0
+var _ai_auto_skipped: bool = false
 var _ai_hint_used: bool = false       # one AI hint per challenge
 var _ai_hint_text: String = ""        # cached AI hint so player can review it
 var _free_hints_revealed: int = 0     # how many free hints are visible in OverflowStack
@@ -110,6 +111,9 @@ const KEYPAD_COOLDOWN_TIME: float = 0.15  # seconds between keypad clicks
 @onready var troll_text: RichTextLabel = $TrollDialogue/TrollMargin/TrollVBox/TrollText
 @onready var troll_continue: Label = $TrollDialogue/TrollMargin/TrollVBox/TrollContinue
 var _troll_tween: Tween = null
+var _light_theme_tween: Tween = null
+var _light_theme_origin: Vector2 = Vector2.ZERO
+var _light_theme_origin_set: bool = false
 var _troll_lines: Array = []
 var _troll_line_index: int = 0
 var _troll_typing: bool = false
@@ -269,6 +273,8 @@ func load_challenge(challenge: Dictionary) -> void:
 	is_completed = false
 	selected_option = -1
 	_attempts = 0
+	_ai_network_failures = 0
+	_ai_auto_skipped = false
 	_ai_hint_used = false
 	_ai_hint_text = ""
 	_free_hints_revealed = 0
@@ -1614,7 +1620,7 @@ func _play_click():
 var _browser_nag_shown: bool = false
 
 func _on_continue_pressed():
-	var success = results_title.text.contains("Correct") or results_title.text.contains("Solved")
+	var success = _ai_auto_skipped or results_title.text.contains("Correct") or results_title.text.contains("Solved")
 	
 	# Give the student a chance to view their browser before destroying the IDE
 	if success and _get_output_type() == "browser" and not _browser_nag_shown:
@@ -1671,6 +1677,22 @@ func _show_results(success: bool):
 	results_text.add_theme_color_override("font_color", Color("abb2bf"))
 
 	# Animate in
+	results_overlay.modulate.a = 0.0
+	var tween = create_tween()
+	tween.tween_property(results_overlay, "modulate:a", 1.0, 0.3)
+
+func _show_ai_auto_skip_result():
+	_switch_to_ide_instant()
+	_ai_auto_skipped = true
+	results_overlay.visible = true
+	results_title.text = "⚠️ AI Challenge Auto-Skipped"
+	results_title.add_theme_color_override("font_color", Color("e5c07b"))
+	results_text.text = "The evaluator server could not be reached after retries. This attempt will not count against the grade, and the skip was recorded for the dashboard."
+	results_text.add_theme_color_override("font_color", Color("abb2bf"))
+	continue_button.visible = true
+	continue_button.text = "Next ▸"
+	close_button.visible = false
+
 	results_overlay.modulate.a = 0.0
 	var tween = create_tween()
 	tween.tween_property(results_overlay, "modulate:a", 1.0, 0.3)
@@ -1794,7 +1816,7 @@ func _handle_ai_evaluator_result(result: Dictionary):
 			code_edit.editable = false
 
 			await get_tree().create_timer(2.5).timeout
-			_show_results(true)
+			_show_ai_auto_skip_result()
 			return
 		else:
 			# ── Retry available ───────────────────────────────────────────────────
@@ -2284,19 +2306,26 @@ func _on_gear_pressed():
 
 func _troll_light_theme():
 	is_dark_theme = false
+	if not _light_theme_origin_set:
+		_light_theme_origin = position
+		_light_theme_origin_set = true
+	if _light_theme_tween and _light_theme_tween.is_valid():
+		_light_theme_tween.kill()
+	position = _light_theme_origin
 
 	# Blinding white flash
 	light_flash.visible = true
 	light_flash.modulate.a = 1.0
 
 	# Screen shake
-	var original_pos = position
-	var tween = create_tween()
+	var original_pos = _light_theme_origin
+	_light_theme_tween = create_tween()
 	for i in range(6):
 		var shake_x = randf_range(-8, 8)
 		var shake_y = randf_range(-5, 5)
-		tween.tween_property(self, "position", original_pos + Vector2(shake_x, shake_y), 0.05)
-	tween.tween_property(self, "position", original_pos, 0.05)
+		_light_theme_tween.tween_property(self, "position", original_pos + Vector2(shake_x, shake_y), 0.05)
+	_light_theme_tween.tween_property(self, "position", original_pos, 0.05)
+	_light_theme_tween.tween_callback(func(): position = original_pos)
 
 	# Fade flash down
 	var flash_tween = create_tween()
@@ -2386,6 +2415,10 @@ func _on_troll_panel_clicked(event: InputEvent):
 
 func _restore_dark_theme():
 	is_dark_theme = true
+	if _light_theme_tween and _light_theme_tween.is_valid():
+		_light_theme_tween.kill()
+	if _light_theme_origin_set:
+		position = _light_theme_origin
 	light_flash.visible = false
 	troll_dialogue.visible = false
 

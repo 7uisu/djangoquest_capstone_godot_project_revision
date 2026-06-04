@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://opk37t3tjhev"
-path="res://.godot/imported/COLLEGE.png-449bbe3c6efd1176d491825a86663724.ctex"
+uid="uid://blumm71v5f87k"
+path="res://.godot/imported/Male_SHS_Graduation_Picture.png-36444417d57728ba42749f8a69015b5f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Textures/COLLEGE.png"
-dest_files=["res://.godot/imported/COLLEGE.png-449bbe3c6efd1176d491825a86663724.ctex"]
+source_file="res://Textures/Male_SHS_Graduation_Picture.png"
+dest_files=["res://.godot/imported/Male_SHS_Graduation_Picture.png-36444417d57728ba42749f8a69015b5f.ctex"]
 
 [params]
 

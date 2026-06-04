@@ -2047,27 +2047,37 @@ func _on_save_pressed(btn: Button, exit_btn: Button = null):
 		is_saving = false
 
 func _run_manual_save_and_wait(sm: Node) -> Dictionary:
-	if not ApiManager.is_logged_in():
-		sm.save_game()
-		return {
-			"success": true,
-			"message": "Game saved!",
-		}
+	var completed := false
+	var final_success := false
+	var final_message := "Save did not finish."
+	var on_completed := func(success: bool, message: String) -> void:
+		if message == "Saving...":
+			return
+		completed = true
+		final_success = success
+		final_message = message
 
+	if not sm.save_completed.is_connected(on_completed):
+		sm.save_completed.connect(on_completed)
 	sm.save_game()
 
-	while true:
-		var result = await sm.save_completed
-		var message = str(result[1])
-		if message != "Saving...":
-			return {
-				"success": bool(result[0]),
-				"message": message,
-			}
+	var waited := 0.0
+	while not completed and waited < 25.0:
+		await get_tree().create_timer(0.1, true, false, true).timeout
+		waited += 0.1
+
+	if sm.save_completed.is_connected(on_completed):
+		sm.save_completed.disconnect(on_completed)
+
+	if completed:
+		return {
+			"success": final_success,
+			"message": final_message,
+		}
 
 	return {
 		"success": false,
-		"message": "Save did not finish.",
+		"message": "Save timed out. Your local save may still be available.",
 	}
 
 func _on_main_menu_pressed():
@@ -2102,9 +2112,11 @@ func _exit_to_main_menu(save_first: bool) -> void:
 		if is_instance_valid(overlay):
 			await overlay.dismiss()
 		if not bool(save_result.get("success", false)):
-			push_warning("LaptopUI: Exit save failed: " + str(save_result.get("message", "Unknown save error.")))
-			is_saving = false
-			return
+			var message := str(save_result.get("message", "Unknown save error."))
+			push_warning("LaptopUI: Exit save warning: " + message)
+			if not message.begins_with("Game saved on this device"):
+				is_saving = false
+				return
 
 	var qm = get_node_or_null("/root/QuestManager")
 	if qm:

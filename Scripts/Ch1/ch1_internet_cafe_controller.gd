@@ -13,7 +13,11 @@ func _get_gendered_texture(full_path: String) -> Texture2D:
 	var file_name = full_path.substr(last_slash + 1)
 	var tex = load(folder + prefix + file_name)
 	if not tex:
+		if prefix == "Female_":
+			push_warning("Missing female cutscene image: " + folder + prefix + file_name)
 		tex = load(full_path) # Fallback
+	if not tex and prefix == "Female_":
+		tex = load(folder + "Male_" + file_name)
 	return tex
 
 @onready var character_data = get_node("/root/CharacterData")
@@ -516,7 +520,7 @@ func _play_epilogue_sequence(pname: String):
 	await get_tree().create_timer(0.3).timeout
 
 	# College image
-	_show_fullscreen_image(load("res://Textures/COLLEGE.png"))
+	_show_fullscreen_image(_get_gendered_texture("res://Textures/COLLEGE.png"))
 
 	if dialogue_box:
 		_show_dialogue_with_log(dialogue_box, [
