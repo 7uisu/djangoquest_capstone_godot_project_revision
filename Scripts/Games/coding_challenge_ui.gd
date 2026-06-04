@@ -1455,7 +1455,7 @@ func _request_premium_ai_hint():
 		code_to_check = submission.get("full_text", "")
 	# Strip hardcoded template comments before sending to AI
 	code_to_check = _strip_code_comments(code_to_check, language)
-	code_to_check = _build_ai_context_payload(code_to_check)
+	var hint_context = _build_ai_context_payload(code_to_check)
 
 	# Lock the OverflowStack so it can't be closed while loading
 	_premium_hint_loading = true
@@ -1478,7 +1478,7 @@ func _request_premium_ai_hint():
 		premium_button.disabled = true
 		premium_button.text = "Loading Premium AI Hint..."
 
-	ApiManager.check_code(code_to_check, language, challenge_id, expected_answers, expected_output)
+	ApiManager.check_code(code_to_check, language, challenge_id, expected_answers, expected_output, hint_context, true)
 	var result = await ApiManager.code_checked
 
 	if result.get("offline", false):

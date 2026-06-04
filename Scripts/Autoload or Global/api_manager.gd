@@ -494,7 +494,7 @@ func _on_delete_save_response(result: int, response_code: int, _headers: PackedS
 # ─── Code Checking (Controlled Validation + Gemini/Groq) ────────────────────
 
 func check_code(code: Variant, language: String, challenge_id: String, 
-				expected_answers: Variant, expected_output: String = ""):
+				expected_answers: Variant, expected_output: String = "", hint_context: String = "", hint_mode: bool = false):
 	var http = HTTPRequest.new()
 	http.process_mode = Node.PROCESS_MODE_ALWAYS
 	http.timeout = 90  # AI-assisted feedback can take a while on a cold backend.
@@ -507,6 +507,8 @@ func check_code(code: Variant, language: String, challenge_id: String,
 		"challenge_id": challenge_id,
 		"expected_answers": expected_answers,
 		"expected_output": expected_output,
+		"hint_context": hint_context,
+		"hint_mode": hint_mode,
 	})
 	var headers = ["Content-Type: application/json"]
 	
@@ -555,6 +557,7 @@ func _on_check_code_response(result: int, response_code: int, _headers: PackedSt
 		"success": json.get("success", false),
 		"output": json.get("output", ""),
 		"ai_hint": json.get("ai_hint", ""),
+		"ai_hint_source": json.get("ai_hint_source", ""),
 		"judge0_output": json.get("judge0_output", ""),
 	})
 
