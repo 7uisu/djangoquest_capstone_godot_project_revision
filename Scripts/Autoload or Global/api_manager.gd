@@ -631,9 +631,6 @@ func _on_ai_evaluator_response(result: int, response_code: int, _headers: Packed
 func _is_ai_provider_failure(feedback: String) -> bool:
 	var lower = feedback.to_lower()
 	return (
-		lower.contains("all ai providers failed")
-		or lower.contains("backend error")
-		or lower.contains("no ai api key")
-		or lower.contains("evaluation exception")
+		lower.contains("backend error")
 		or lower.contains("ai provided an invalid")
 	)
