@@ -614,11 +614,15 @@ func _on_ai_evaluator_response(result: int, response_code: int, _headers: Packed
 
 	var feedback = json.get("feedback", "No feedback provided by AI.")
 	var success = json.get("success", false)
+	var ai_source = json.get("ai_source", "")
+	if ai_source != "":
+		print("[ApiManager] ai-evaluator source: %s" % ai_source)
 	if not success and _is_ai_provider_failure(feedback):
 		emit_signal("ai_evaluated", {
 			"offline": true,
 			"success": false,
 			"feedback": feedback,
+			"ai_source": ai_source,
 		})
 		return
 
@@ -626,6 +630,7 @@ func _on_ai_evaluator_response(result: int, response_code: int, _headers: Packed
 		"offline": false,
 		"success": success,
 		"feedback": feedback,
+		"ai_source": ai_source,
 	})
 
 func _is_ai_provider_failure(feedback: String) -> bool:
