@@ -3,7 +3,11 @@
 extends Node
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-const BASE_URL: String = "https://djangoquest-backend.onrender.com"
+# In Editor → connect to local Django dev server (localhost:8000)
+# In Exported Build → connect to live production server (Render)
+const PRODUCTION_URL: String = "https://djangoquest-backend.onrender.com"
+const DEV_URL: String = "http://127.0.0.1:8000"
+var BASE_URL: String = DEV_URL if OS.has_feature("editor") else PRODUCTION_URL
 const AUTH_FILE: String = "user://auth.cfg"
 
 # ─── Signals ─────────────────────────────────────────────────────────────────

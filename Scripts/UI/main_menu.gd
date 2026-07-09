@@ -7,17 +7,20 @@ var _loading_overlay = null
 var _settings_overlay: Control = null
 
 @onready var continue_button: Button = $MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons/ContinueButton
-@onready var account_status_label: Label = $MenuScroll/MenuCenter/VBoxContainer/AccountStatusLabel
 @onready var story_button: Button = $MenuScroll/MenuCenter/VBoxContainer/PrimaryButtons/StoryButton
 @onready var learning_button: Button = $MenuScroll/MenuCenter/VBoxContainer/ModeButtons/LearningButton
 @onready var challenge_button: Button = $MenuScroll/MenuCenter/VBoxContainer/ModeButtons/ChallengeButton
 @onready var quit_button: Button = $MenuScroll/MenuCenter/VBoxContainer/FooterButtons/QuitButton
 @onready var settings_button: Button = $MenuScroll/MenuCenter/VBoxContainer/FooterButtons/SettingsButton
+
+@onready var account_status_label: Label = $ProfileCorner/ProfileVBox/AccountStatusLabel
+@onready var logout_button: Button = $ProfileCorner/ProfileVBox/SessionButtons/LogoutButton
+@onready var login_button: Button = $ProfileCorner/ProfileVBox/SessionButtons/LoginButton
+
+@onready var enroll_button: Button = $EnrollCorner/AccountButtons/EnrollButton
+@onready var unenroll_button: Button = $EnrollCorner/AccountButtons/UnenrollButton
+
 @onready var testing_button: Button = $TestingButton
-@onready var enroll_button: Button = $MenuScroll/MenuCenter/VBoxContainer/AccountButtons/EnrollButton
-@onready var unenroll_button: Button = $MenuScroll/MenuCenter/VBoxContainer/AccountButtons/UnenrollButton
-@onready var logout_button: Button = $MenuScroll/MenuCenter/VBoxContainer/SessionButtons/LogoutButton
-@onready var login_button: Button = $MenuScroll/MenuCenter/VBoxContainer/SessionButtons/LoginButton
 
 func _ready():
 	continue_button.pressed.connect(_on_continue_pressed)

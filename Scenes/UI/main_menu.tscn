@@ -107,19 +107,7 @@ theme_override_font_sizes/font_size = 32
 text = "DjangoQuest"
 horizontal_alignment = 1
 
-[node name="AccountStatusLabel" type="Label" parent="MenuScroll/MenuCenter/VBoxContainer"]
-custom_minimum_size = Vector2(320, 32)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.76, 0.88, 1)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 12
-text = "Guest mode | saves stay on this laptop"
-horizontal_alignment = 1
-autowrap_mode = 3
 
-[node name="Spacer" type="Control" parent="MenuScroll/MenuCenter/VBoxContainer" unique_id=347256663]
-custom_minimum_size = Vector2(0, 8)
-layout_mode = 2
 
 [node name="PrimaryButtons" type="VBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
 layout_mode = 2
@@ -190,77 +178,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Challenges"
 
-[node name="AccountButtons" type="VBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
 
-[node name="EnrollButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/AccountButtons" unique_id=777888999]
-custom_minimum_size = Vector2(320, 36)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
-theme_override_colors/font_hover_color = Color(0.5, 1, 0.5, 1)
-theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Enroll in Class"
-
-[node name="UnenrollButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/AccountButtons" unique_id=777888123]
-custom_minimum_size = Vector2(320, 36)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
-theme_override_colors/font_hover_color = Color(1, 0.8, 0.4, 1)
-theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Unenroll from Class"
-
-[node name="Spacer2" type="Control" parent="MenuScroll/MenuCenter/VBoxContainer" unique_id=1014813799]
-custom_minimum_size = Vector2(0, 16)
-layout_mode = 2
-
-[node name="SessionButtons" type="HBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="LogoutButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/SessionButtons" unique_id=888999000]
-custom_minimum_size = Vector2(156, 36)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
-theme_override_colors/font_hover_color = Color(1, 0.5, 0.5, 1)
-theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 13
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Logout"
-
-[node name="LoginButton" type="Button" parent="MenuScroll/MenuCenter/VBoxContainer/SessionButtons" unique_id=987654321]
-custom_minimum_size = Vector2(156, 36)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
-theme_override_colors/font_hover_color = Color(0.6, 0.9, 1, 1)
-theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.5, 0.6)
-theme_override_fonts/font = ExtResource("3_button_font")
-theme_override_font_sizes/font_size = 13
-theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
-text = "Login"
 
 [node name="FooterButtons" type="HBoxContainer" parent="MenuScroll/MenuCenter/VBoxContainer"]
 layout_mode = 2
@@ -297,7 +215,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
 text = "Exit"
 
 [node name="TestingButton" type="Button" parent="." unique_id=604401785]
-modulate = Color(1, 1, 1, 0.1)
+modulate = Color(1, 1, 1, 0.0)
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -307,4 +225,103 @@ offset_top = 10.0
 offset_right = -10.0
 offset_bottom = 41.0
 grow_horizontal = 0
+mouse_filter = 2
 text = "TESTING"
+
+[node name="ProfileCorner" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_bottom = 100.0
+grow_horizontal = 0
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+
+[node name="ProfileVBox" type="VBoxContainer" parent="ProfileCorner"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 0
+
+[node name="AccountStatusLabel" type="Label" parent="ProfileCorner/ProfileVBox"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.88, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+text = "Guest mode"
+horizontal_alignment = 2
+autowrap_mode = 3
+
+[node name="SessionButtons" type="HBoxContainer" parent="ProfileCorner/ProfileVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="LogoutButton" type="Button" parent="ProfileCorner/ProfileVBox/SessionButtons" unique_id=888999000]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_hover_color = Color(1, 0.5, 0.5, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Logout"
+
+[node name="LoginButton" type="Button" parent="ProfileCorner/ProfileVBox/SessionButtons" unique_id=987654321]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_hover_color = Color(0.6, 0.9, 1, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Login"
+
+[node name="EnrollCorner" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -100.0
+offset_right = 200.0
+grow_vertical = 0
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="AccountButtons" type="VBoxContainer" parent="EnrollCorner"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EnrollButton" type="Button" parent="EnrollCorner/AccountButtons" unique_id=777888999]
+custom_minimum_size = Vector2(200, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 1, 0.4, 1)
+theme_override_colors/font_hover_color = Color(0.5, 1, 0.5, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Enroll in Class"
+
+[node name="UnenrollButton" type="Button" parent="EnrollCorner/AccountButtons" unique_id=777888123]
+custom_minimum_size = Vector2(200, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.7, 0.3, 1)
+theme_override_colors/font_hover_color = Color(1, 0.8, 0.4, 1)
+theme_override_fonts/font = ExtResource("3_button_font")
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_btn_disabled")
+text = "Unenroll from Class"
