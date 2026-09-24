@@ -17,6 +17,8 @@
 [ext_resource type="PackedScene" uid="uid://cspky18x7odq8" path="res://Scenes/Ch1/Tiles/bathroom_objects.tscn" id="15_gj337"]
 [ext_resource type="PackedScene" uid="uid://dp2nfuwgoyl6f" path="res://Scenes/Player/player.tscn" id="16_d33mj"]
 [ext_resource type="PackedScene" uid="uid://drk574mk23xlh" path="res://Scenes/Ch3/Door/elevator_door_1.tscn" id="17_kk28r"]
+[ext_resource type="PackedScene" uid="uid://cjhmu7ranw02n" path="res://Scenes/Interactables/object_dialogue_interactable.tscn" id="18_obj_interactable"]
+[ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="19_dialogue_box"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_map0q"]
 texture = ExtResource("6_dtbib")
@@ -746,9 +748,6 @@ tile_map_data = PackedByteArray("AAAiAAkAAAAKAAkAAAAiAAoAAAAKAAoAAAAjAAkAAAALAAU
 
 [node name="IceCreamShopObjects2" parent="." unique_id=17187066 instance=ExtResource("12_f624w")]
 
-[node name="SlidingDoor" parent="." unique_id=1618620930 instance=ExtResource("13_tsjvr")]
-position = Vector2(608, 194)
-
 [node name="FrontDoor1" parent="." unique_id=765459355 instance=ExtResource("14_b5a3s")]
 position = Vector2(-336, 296)
 
@@ -807,7 +806,316 @@ y_sort_enabled = true
 
 [node name="SlidingDoor" parent="YSortLayer" unique_id=186882951 instance=ExtResource("13_tsjvr")]
 y_sort_enabled = true
-position = Vector2(608, 194)
+position = Vector2(608, 193)
 
 [node name="Player" parent="YSortLayer" unique_id=833241429 instance=ExtResource("16_d33mj")]
 position = Vector2(560, 63)
+
+[node name="FurnitureOfficeDesk" parent="YSortLayer" unique_id=690671878 instance=ExtResource("18_obj_interactable")]
+position = Vector2(207, -12)
+interaction_text = "Dispensor"
+speaker_name = "Water Dispensor"
+dialogue_line_1 = "GLUG GLUG GLUG*"
+
+[node name="FurnitureOfficeDesk13" parent="YSortLayer" unique_id=895338550 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1391, -364)
+interaction_text = "Dispensor"
+speaker_name = "Water Dispensor"
+dialogue_line_1 = "GLUG GLUG GLUG*"
+
+[node name="FurnitureOfficeDesk25" parent="YSortLayer" unique_id=404550540 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1872, -108)
+interaction_text = "Dispensor"
+speaker_name = "Water Dispensor"
+dialogue_line_1 = "GLUG GLUG GLUG*"
+
+[node name="FurnitureOfficeDesk4" parent="YSortLayer" unique_id=131502839 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1068, -278)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk5" parent="YSortLayer" unique_id=559525717 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1198, -271)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk6" parent="YSortLayer" unique_id=1998698337 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1327, -276)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk7" parent="YSortLayer" unique_id=600276094 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1326, -174)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk8" parent="YSortLayer" unique_id=1724976306 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1197, -175)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk9" parent="YSortLayer" unique_id=609582506 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1071, -174)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk10" parent="YSortLayer" unique_id=1473904543 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1073, -89)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk14" parent="YSortLayer" unique_id=681554732 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-145, -136)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk15" parent="YSortLayer" unique_id=917987506 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-17, -138)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk16" parent="YSortLayer" unique_id=180269604 instance=ExtResource("18_obj_interactable")]
+position = Vector2(112, -139)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk17" parent="YSortLayer" unique_id=457268256 instance=ExtResource("18_obj_interactable")]
+position = Vector2(110, -42)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk18" parent="YSortLayer" unique_id=282549078 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-17, -45)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk19" parent="YSortLayer" unique_id=2071775883 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-145, -44)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk20" parent="YSortLayer" unique_id=1656779209 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-144, 51)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk21" parent="YSortLayer" unique_id=1473912848 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-16, 53)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk41" parent="YSortLayer" unique_id=540868869 instance=ExtResource("18_obj_interactable")]
+position = Vector2(36, 425)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Its lock."
+
+[node name="FurnitureOfficeDesk42" parent="YSortLayer" unique_id=1439359313 instance=ExtResource("18_obj_interactable")]
+position = Vector2(101, 425)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Its lock."
+
+[node name="FurnitureOfficeDesk43" parent="YSortLayer" unique_id=797194456 instance=ExtResource("18_obj_interactable")]
+position = Vector2(165, 424)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Its lock."
+
+[node name="FurnitureOfficeDesk44" parent="YSortLayer" unique_id=1606378925 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-579, 427)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Its lock."
+
+[node name="FurnitureOfficeDesk45" parent="YSortLayer" unique_id=529421077 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-640, 427)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Its lock."
+
+[node name="FurnitureOfficeDesk46" parent="YSortLayer" unique_id=185802445 instance=ExtResource("18_obj_interactable")]
+position = Vector2(-704, 427)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Its lock."
+
+[node name="FurnitureOfficeDesk11" parent="YSortLayer" unique_id=513122771 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1327, -90)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk26" parent="YSortLayer" unique_id=1816617181 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1553, -14)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk27" parent="YSortLayer" unique_id=471464557 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1681, -15)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk28" parent="YSortLayer" unique_id=31750424 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1808, -15)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk29" parent="YSortLayer" unique_id=1924178256 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1806, 80)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk30" parent="YSortLayer" unique_id=2127578201 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1678, 79)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk31" parent="YSortLayer" unique_id=1611510624 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1549, 179)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk39" parent="YSortLayer" unique_id=751803599 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1168, 220)
+interaction_text = "Refrigerator"
+speaker_name = "Refrigerator"
+dialogue_line_1 = "Someone left the refrigirator open."
+dialogue_line_2 = "You ignore it and left is open aswell."
+
+[node name="FurnitureOfficeDesk40" parent="YSortLayer" unique_id=553404010 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1279, 212)
+interaction_text = "Leftover"
+speaker_name = "Leftover"
+dialogue_line_1 = "Someone left some bits of food here."
+dialogue_line_2 = "You took one."
+dialogue_line_3 = "It taste like expired cheese."
+dialogue_line_4 = "Yum!"
+
+[node name="FurnitureOfficeDesk48" parent="YSortLayer" unique_id=1361337410 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1392, 225)
+interaction_text = "Bottle of Waters"
+speaker_name = "Bottle of Waters"
+dialogue_line_1 = "A bunch of bottle of waters."
+dialogue_line_2 = "Its still sealed so you cant take one."
+
+[node name="FurnitureOfficeDesk32" parent="YSortLayer" unique_id=658564909 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1679, 178)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk33" parent="YSortLayer" unique_id=478771902 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1809, 179)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "You have no access to this device"
+
+[node name="FurnitureOfficeDesk3" parent="YSortLayer" unique_id=778262175 instance=ExtResource("18_obj_interactable")]
+position = Vector2(192, -201)
+interaction_text = "Shelf"
+speaker_name = "Shelf"
+dialogue_line_1 = "Bunch of random books."
+
+[node name="FurnitureOfficeDesk12" parent="YSortLayer" unique_id=1946300550 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1057, -362)
+interaction_text = "Shelf"
+speaker_name = "Shelf"
+dialogue_line_1 = "Bunch of random books."
+
+[node name="FurnitureOfficeDesk34" parent="YSortLayer" unique_id=317971106 instance=ExtResource("18_obj_interactable")]
+position = Vector2(796, 209)
+interaction_text = "Shelf"
+speaker_name = "Shelf"
+dialogue_line_1 = "Bunch of random books."
+
+[node name="FurnitureOfficeDesk47" parent="YSortLayer" unique_id=1792672838 instance=ExtResource("18_obj_interactable")]
+position = Vector2(961, 380)
+interaction_text = "Arcade Machine"
+speaker_name = "Arcade Machine"
+dialogue_line_1 = "The machine is broken."
+
+[node name="FurnitureOfficeDesk35" parent="YSortLayer" unique_id=1055509239 instance=ExtResource("18_obj_interactable")]
+position = Vector2(736, 215)
+interaction_text = "Vending Machine"
+speaker_name = "Vending Machine"
+dialogue_line_1 = "A vending machine."
+dialogue_line_2 = "You tried getting a chip."
+dialogue_line_3 = "But it got stucked."
+
+[node name="FurnitureOfficeDesk37" parent="YSortLayer" unique_id=1433326101 instance=ExtResource("18_obj_interactable")]
+position = Vector2(255, 309)
+interaction_text = "Vending Machine"
+speaker_name = "Vending Machine"
+dialogue_line_1 = "A vending machine."
+dialogue_line_2 = "You tried getting a chip."
+dialogue_line_3 = "But it got stucked."
+
+[node name="FurnitureOfficeDesk36" parent="YSortLayer" unique_id=1603054767 instance=ExtResource("18_obj_interactable")]
+position = Vector2(961, 211)
+interaction_text = "Vending Machine"
+speaker_name = "Vending Machine"
+dialogue_line_1 = "A vending machine."
+dialogue_line_2 = "You tried getting a chip."
+dialogue_line_3 = "But it got stucked."
+
+[node name="FurnitureOfficeDesk38" parent="YSortLayer" unique_id=1434385847 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1185, 330)
+interaction_text = "Ice Cream"
+speaker_name = "Ice Cream"
+dialogue_line_1 = "You are wondering why theres a lot of different flavor of ice cream here."
+dialogue_line_2 = "You are wondering again why there is ice cream here in the office?!"
+
+[node name="FurnitureOfficeDesk24" parent="YSortLayer" unique_id=1072356313 instance=ExtResource("18_obj_interactable")]
+position = Vector2(1537, -108)
+interaction_text = "Shelf"
+speaker_name = "Shelf"
+dialogue_line_1 = "Bunch of random books."
+
+[node name="FurnitureOfficeDesk2" parent="YSortLayer" unique_id=1542076091 instance=ExtResource("18_obj_interactable")]
+y_sort_enabled = true
+position = Vector2(33, -214)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Sales seems going up."
+dialogue_line_2 = "Oh wait nevermind its going down."
+
+[node name="FurnitureOfficeDesk22" parent="YSortLayer" unique_id=1455693431 instance=ExtResource("18_obj_interactable")]
+y_sort_enabled = true
+position = Vector2(1153, -374)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Sales seems going up."
+dialogue_line_2 = "Oh wait nevermind its going down."
+
+[node name="FurnitureOfficeDesk23" parent="YSortLayer" unique_id=1310720053 instance=ExtResource("18_obj_interactable")]
+y_sort_enabled = true
+position = Vector2(1634, -118)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Sales seems going up."
+dialogue_line_2 = "Oh wait nevermind its going down."
+
+[node name="DialogueBox" parent="." unique_id=473414334 instance=ExtResource("19_dialogue_box")]
+visible = false
