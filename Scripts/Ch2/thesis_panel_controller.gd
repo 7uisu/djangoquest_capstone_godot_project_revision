@@ -198,6 +198,33 @@ func _show_locked_dialogue(panelist_index: int) -> void:
 # ─── Challenge Orchestration ─────────────────────────────────────────────────
 
 func _start_panelist(panelist_index: int) -> void:
+	# ─── DEBUG SKIP THESIS ───────────────────────────────────────────────
+	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
+	var DEBUG_SKIP_THESIS = true
+	# ─── END OF DEBUG SKIP THESIS ────────────────────────────────────────
+	if DEBUG_SKIP_THESIS:
+		_active = true
+		_current_panelist = panelist_index
+		var config = PANELIST_CONFIG[panelist_index]
+		_max_hearts = config["hearts"]
+		_hearts = _max_hearts
+		_current_challenge_idx = 0
+		_challenges = []
+		if _character_data:
+			_character_data.set("thesis_panelist_%d_grade" % panelist_index, 1.0)
+			_character_data.thesis_panelist_progress = panelist_index
+			if panelist_index >= 3:
+				_character_data.thesis_completed = true
+				_character_data.thesis_completed_at = Time.get_datetime_string_from_system()
+		_active = false
+		panelist_defeated.emit(panelist_index)
+		if panelist_index >= 3:
+			thesis_completed.emit()
+		await _autosave_progress()
+		_update_npc_visuals()
+		_update_quest_hud()
+		return
+
 	_active = true
 	_current_panelist = panelist_index
 	_current_challenge_idx = 0

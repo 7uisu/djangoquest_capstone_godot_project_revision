@@ -190,7 +190,7 @@ func _start_lesson_sequence():
 		
 	# ─── DEBUG SKIP IDE ────────────────────────────────────────────
 	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
-	var DEBUG_SKIP_IDE = false
+	var DEBUG_SKIP_IDE = true
 	# ─── END OF DEBUG SKIP IDE ────────────────────────────────────
 	
 	# IDE is created lazily on first challenge (after teaching placeholders).

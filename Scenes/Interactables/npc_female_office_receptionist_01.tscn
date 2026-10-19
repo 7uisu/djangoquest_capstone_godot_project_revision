@@ -3,10 +3,19 @@
 [ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
 [ext_resource type="Texture2D" uid="uid://bbuuqcve1mb47" path="res://Textures/NPC/Office NPCs/NPCFemaleOfficeReceptionist01.png" id="2_texture"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_g68qt"]
+radius = 12.0
+
 [node name="NPCFemaleOfficeReceptionist01" unique_id=1184912451 instance=ExtResource("1_base")]
 y_sort_enabled = true
 npc_texture = ExtResource("2_texture")
 speaker_name = "Receptionist"
 
-[node name="AnimatedSprite2D" parent="." index="0" unique_id=265595737]
-animation = &"idle_down"
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3" unique_id=1715525527]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0" unique_id=194246768]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_g68qt")

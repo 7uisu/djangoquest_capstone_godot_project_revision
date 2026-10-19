@@ -5,9 +5,6 @@ extends Control
 signal challenge_completed(success: bool, challenge_id: String)
 signal challenge_failed
 signal hint_used
-# Emitted when an AI evaluator challenge is auto-skipped due to connection failures.
-# challenge_id matches the challenge's "id" field (e.g. "query_ai_evaluator_1").
-signal ai_challenge_skipped(challenge_id: String)
 
 # ─── Challenge Data ──────────────────────────────────────────────────────────
 var current_challenge: Dictionary = {}
@@ -23,8 +20,6 @@ var is_student_sequence: bool = false # explicitly for the rapid-fire NPC loop
 var music_track_override: String = ""
 
 var _attempts: int = 0  # tracks incorrect submissions
-var _ai_network_failures: int = 0
-var _ai_auto_skipped: bool = false
 var _ai_hint_used: bool = false       # one AI hint per challenge
 var _ai_hint_text: String = ""        # cached AI hint so player can review it
 var _free_hints_revealed: int = 0     # how many free hints are visible in OverflowStack
@@ -273,8 +268,6 @@ func load_challenge(challenge: Dictionary) -> void:
 	is_completed = false
 	selected_option = -1
 	_attempts = 0
-	_ai_network_failures = 0
-	_ai_auto_skipped = false
 	_ai_hint_used = false
 	_ai_hint_text = ""
 	_free_hints_revealed = 0
@@ -1624,7 +1617,7 @@ func _play_click():
 var _browser_nag_shown: bool = false
 
 func _on_continue_pressed():
-	var success = _ai_auto_skipped or results_title.text.contains("Correct") or results_title.text.contains("Solved")
+	var success = results_title.text.contains("Correct") or results_title.text.contains("Solved")
 	
 	# Give the student a chance to view their browser before destroying the IDE
 	if success and _get_output_type() == "browser" and not _browser_nag_shown:
@@ -1685,22 +1678,6 @@ func _show_results(success: bool):
 	var tween = create_tween()
 	tween.tween_property(results_overlay, "modulate:a", 1.0, 0.3)
 
-func _show_ai_auto_skip_result():
-	_switch_to_ide_instant()
-	_ai_auto_skipped = true
-	results_overlay.visible = true
-	results_title.text = "⚠️ AI Challenge Auto-Skipped"
-	results_title.add_theme_color_override("font_color", Color("e5c07b"))
-	results_text.text = "The evaluator server could not be reached after retries. This attempt will not count against the grade, and the skip was recorded for the dashboard."
-	results_text.add_theme_color_override("font_color", Color("abb2bf"))
-	continue_button.visible = true
-	continue_button.text = "Next ▸"
-	close_button.visible = false
-
-	results_overlay.modulate.a = 0.0
-	var tween = create_tween()
-	tween.tween_property(results_overlay, "modulate:a", 1.0, 0.3)
-
 func show_custom_result(custom_title: String, custom_body: String, button_text: String):
 	_switch_to_ide_instant()
 	results_overlay.visible = true
@@ -1721,7 +1698,6 @@ func show_custom_result(custom_title: String, custom_body: String, button_text: 
 func _run_free_type():
 	var submission = _get_player_submission()
 	var expected_answers = current_challenge.get("expected_answers", [])
-	var topic = current_challenge.get("topic", "python")
 
 	terminal_output.bbcode_enabled = true
 	terminal_output.text = "[color=#61afef]⏳ Checking...[/color]"
@@ -1735,140 +1711,8 @@ func _run_free_type():
 	# Brief delay for visual feedback
 	await get_tree().create_timer(0.5).timeout
 
-	if topic == "ai_evaluator":
-		var student_text = submission.get("player_typed_only", submission.get("full_text", ""))
-		# Strip hardcoded template comments before sending to AI
-		student_text = _strip_code_comments(student_text, "python")
-		var context = "\n".join(current_challenge.get("instructions", []))
-		var ctype = current_challenge.get("challenge_type", current_challenge.get("id", "ai_task"))
-		ApiManager.check_ai_evaluator(ctype, student_text, context)
-		var result = await ApiManager.ai_evaluated
-		_handle_ai_evaluator_result(result)
-		return
-
 	# ── Local-only validation (no server/Judge0 needed) ──
 	_run_free_type_local(submission, expected_answers)
-
-func _handle_ai_evaluator_result(result: Dictionary):
-	terminal_output.bbcode_enabled = true
-	var is_offline = result.get("offline", false)
-	var is_correct = result.get("success", false)
-	var output = result.get("feedback", "")
-	var challenge_id = current_challenge.get("id", "")
-
-	if is_offline:
-		_ai_network_failures += 1
-		print("[DEBUG] AI Network Failure — Challenge: %s | Failure #%d" % [challenge_id, _ai_network_failures])
-		var retries_left = 2 - _ai_network_failures
-
-		var warning_text = "[color=#e5c07b]⚠️ Cannot connect to the AI evaluation server.[/color]\n"
-		warning_text += "[color=#abb2bf]This attempt will NOT count against your grade.[/color]\n"
-
-		if _ai_network_failures >= 2:
-			# ── Auto-skip: max retries hit ───────────────────────────────────────
-			warning_text += "\n[color=#e06c75]Max retries reached.[/color]\n"
-			warning_text += "[color=#e5c07b]This challenge has been [b]auto-skipped[/b].[/color]\n"
-			warning_text += "[color=#abb2bf]Your teacher's dashboard will record this skip.[/color]"
-			terminal_output.text = warning_text
-
-			# ── Write skip flag to CharacterData ─────────────────────────────────
-			var cd = get_node_or_null("/root/CharacterData")
-			if cd:
-				match challenge_id:
-					"query_ai_evaluator_1":
-						cd.ch2_y2s2_ai_oto_skipped = true
-						print("[DEBUG] CharacterData: OTO challenge auto-skipped and flagged.")
-					"query_ai_evaluator_2":
-						cd.ch2_y2s2_ai_otm_skipped = true
-						print("[DEBUG] CharacterData: OTM challenge auto-skipped and flagged.")
-					"query_ai_evaluator_3":
-						cd.ch2_y2s2_ai_mtm_skipped = true
-						print("[DEBUG] CharacterData: MTM challenge auto-skipped and flagged.")
-					"syntax_ai_data_types":
-						cd.ch2_y1s2_ai_data_types_skipped = true
-						cd.ch2_y1s2_ai_fully_offline = true
-						print("[DEBUG] CharacterData: Data Type Detective auto-skipped and flagged.")
-					"view_ai_url_routing":
-						cd.ch2_y2s1_ai_url_routing_skipped = true
-						cd.ch2_y2s1_ai_fully_offline = true
-						print("[DEBUG] CharacterData: URL Router auto-skipped and flagged.")
-					"auth_ai_checker":
-						cd.ch2_y3s2_ai_auth_checker_skipped = true
-						cd.ch2_y3s2_ai_fully_offline = true
-						print("[DEBUG] CharacterData: Auth Checker auto-skipped and flagged.")
-					"rest_ai_http_verbs":
-						cd.ch2_y3mid_ai_http_verbs_skipped = true
-						cd.ch2_y3mid_ai_fully_offline = true
-						print("[DEBUG] CharacterData: HTTP Verbs auto-skipped and flagged.")
-				# If all three were ultimately skipped, mark full offline run
-				if cd.ch2_y2s2_ai_oto_skipped and cd.ch2_y2s2_ai_otm_skipped and cd.ch2_y2s2_ai_mtm_skipped:
-					cd.ch2_y2s2_ai_fully_offline = true
-					print("[DEBUG] CharacterData: All three AI challenges skipped — fully_offline flagged.")
-
-			# ── Signal upward so the professor controller can react ───────────────
-			emit_signal("ai_challenge_skipped", challenge_id)
-			print("[DEBUG] Emitted ai_challenge_skipped: ", challenge_id)
-
-			feedback_label.text = "⚠️ Auto-skipped (connection error logged)"
-			feedback_label.add_theme_color_override("font_color", Color("e5c07b"))
-			feedback_label.visible = true
-			run_button.disabled = true
-
-			is_completed = true
-			timer_running = false
-			free_type_edit.editable = false
-			code_edit.editable = false
-
-			await get_tree().create_timer(2.5).timeout
-			_show_ai_auto_skip_result()
-			return
-		else:
-			# ── Retry available ───────────────────────────────────────────────────
-			warning_text += "\n[color=#abb2bf]You have [b]%d retr%s[/b] before this challenge is auto-skipped.[/color]" % [
-				retries_left, "y" if retries_left == 1 else "ies"
-			]
-			terminal_output.text = warning_text
-
-			feedback_label.text = "⚠️ Connection Failed — Retry available"
-			feedback_label.add_theme_color_override("font_color", Color("e5c07b"))
-			feedback_label.visible = true
-
-			free_type_edit.editable = true
-			code_edit.editable = true
-			run_button.disabled = false
-			return
-
-	if is_correct:
-		is_completed = true
-		timer_running = false
-		free_type_edit.editable = false
-		code_edit.editable = false
-
-		terminal_output.text = "[color=#98c379]" + output + "[/color]"
-
-		feedback_label.text = "✅ Concept Mastered!"
-		feedback_label.add_theme_color_override("font_color", Color("98c379"))
-		feedback_label.visible = true
-		run_button.disabled = true
-		if correct_sfx.stream:
-			correct_sfx.play()
-
-		await get_tree().create_timer(2.0).timeout
-		_show_results(true)
-	else:
-		_attempts += 1
-		emit_signal("challenge_failed")
-		terminal_output.text = "[color=#e06c75]" + output + "[/color]"
-
-		feedback_label.text = "❌ Not quite — adjust your hypothesis."
-		feedback_label.add_theme_color_override("font_color", Color("e06c75"))
-		feedback_label.visible = true
-		if wrong_sfx.stream:
-			wrong_sfx.play()
-
-		free_type_edit.editable = true
-		code_edit.editable = true
-		run_button.disabled = false
 
 
 func _handle_server_result(result: Dictionary):

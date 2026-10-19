@@ -40,6 +40,23 @@ func _ready() -> void:
 
 ## Start the 5-student sequence for a given professor
 func start_sequence(prof_key: String, npc_nodes: Array) -> void:
+	# ─── DEBUG SKIP STUDENTS ────────────────────────────────────────────
+	# @TODO: CHANGE THIS TO false WHEN DONE TESTING
+	var DEBUG_SKIP_STUDENTS = true
+	# ─── END OF DEBUG SKIP STUDENTS ────────────────────────────────────
+	if DEBUG_SKIP_STUDENTS:
+		_prof_key = prof_key
+		if _character_data:
+			_character_data.student_seq_active_professor = ""
+			_character_data.student_seq_active_npcs = []
+			_character_data.student_seq_names = []
+			_character_data.student_seq_completed_indices = []
+			if not _character_data.student_seq_progress.has(prof_key):
+				_character_data.student_seq_progress[prof_key] = 0
+			_character_data.student_seq_progress[prof_key] = 5
+		student_sequence_completed.emit(prof_key)
+		return
+
 	_prof_key = prof_key
 	_active = true
 	_hearts = _max_hearts
