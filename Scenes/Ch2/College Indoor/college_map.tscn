@@ -40,6 +40,8 @@
 [ext_resource type="PackedScene" uid="uid://1tla2l4f0xyd" path="res://Scenes/Button Keys/esc_button.tscn" id="37_mynpu"]
 [ext_resource type="PackedScene" uid="uid://xridexptwi1x" path="res://Scenes/NPC/shop_npc.tscn" id="39_7sg5i"]
 [ext_resource type="Texture2D" uid="uid://b3ltbg4738crv" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf04.png" id="40_8p7pu"]
+[ext_resource type="PackedScene" uid="uid://cjhmu7ranw02n" path="res://Scenes/Interactables/object_dialogue_interactable.tscn" id="41_obj_interactable"]
+[ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="42_dialogue_box"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0ykgn"]
 texture = ExtResource("10_nww6i")
@@ -1133,3 +1135,200 @@ visible = false
 [node name="ShopNPC" parent="." unique_id=1480841219 instance=ExtResource("39_7sg5i")]
 position = Vector2(669, 73)
 npc_texture = ExtResource("40_8p7pu")
+
+[node name="Interactables" type="Node2D" parent="." unique_id=910000000]
+y_sort_enabled = true
+
+[node name="Interactable_Bookshelf_Classroom1" parent="Interactables" unique_id=910000001 instance=ExtResource("41_obj_interactable")]
+position = Vector2(0, -10)
+interaction_text = "Bookshelf"
+speaker_name = "Bookshelf"
+dialogue_line_1 = "Shelves stocked with introductory Python textbooks."
+dialogue_line_2 = "Beginner's Guide to Django and Web Development 101."
+
+[node name="Interactable_Whiteboard_Classroom1_Left" parent="Interactables" unique_id=910000002 instance=ExtResource("41_obj_interactable")]
+position = Vector2(72, -18)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Lecture notes on Django URL routing and View functions."
+dialogue_line_2 = "urlpatterns = [ path('hello/', views.hello_world) ]"
+
+[node name="Interactable_Whiteboard_Classroom1_Right" parent="Interactables" unique_id=910000003 instance=ExtResource("41_obj_interactable")]
+position = Vector2(184, -18)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Diagram of the HTTP Request and Response cycle in Django."
+
+[node name="Interactable_Noticeboard_Classroom1" parent="Interactables" unique_id=910000004 instance=ExtResource("41_obj_interactable")]
+position = Vector2(248, -18)
+interaction_text = "Notice Board"
+speaker_name = "Notice Board"
+dialogue_line_1 = "Class Schedule:"
+dialogue_line_2 = "CS101: Introduction to Web Systems - MWF 9:00 AM."
+
+[node name="Interactable_Shop_Counter" parent="Interactables" unique_id=910000006 instance=ExtResource("41_obj_interactable")]
+position = Vector2(720, 100)
+interaction_text = "Register Counter"
+speaker_name = "Register Counter"
+dialogue_line_1 = "The campus convenience store checkout counter."
+dialogue_line_2 = "Talk to the shopkeeper if you want to buy items with your Credits!"
+
+[node name="Interactable_Faculty_FilingCabinet" parent="Interactables" unique_id=910000007 instance=ExtResource("41_obj_interactable")]
+position = Vector2(635, 240)
+interaction_text = "Filing Cabinet"
+speaker_name = "Filing Cabinet"
+dialogue_line_1 = "Filing cabinet labeled 'Student Academic Records - CONFIDENTIAL'."
+dialogue_line_2 = "It's locked."
+
+[node name="Interactable_Faculty_Desk_PC" parent="Interactables" unique_id=910000010 instance=ExtResource("41_obj_interactable")]
+position = Vector2(945, 411)
+interaction_text = "Faculty PC"
+speaker_name = "Faculty PC"
+dialogue_line_1 = "Professor's workstation."
+dialogue_line_2 = "Grading portal and lesson curriculum are displayed on the screens."
+
+[node name="Interactable_Bookshelf_Classroom2" parent="Interactables" unique_id=910000011 instance=ExtResource("41_obj_interactable")]
+position = Vector2(-32, 555)
+interaction_text = "Bookshelf"
+speaker_name = "Bookshelf"
+dialogue_line_1 = "Advanced Python & Django reference manuals."
+
+[node name="Interactable_Whiteboard_Classroom2_Left" parent="Interactables" unique_id=910000012 instance=ExtResource("41_obj_interactable")]
+position = Vector2(63, 548)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Django ORM query methods: filter(), exclude(), order_by()."
+
+[node name="Interactable_Whiteboard_Classroom2_Right" parent="Interactables" unique_id=910000013 instance=ExtResource("41_obj_interactable")]
+position = Vector2(193, 547)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Database relationships diagram: ForeignKey, OneToOneField, ManyToManyField."
+
+[node name="Interactable_Noticeboard_Classroom2" parent="Interactables" unique_id=910000014 instance=ExtResource("41_obj_interactable")]
+position = Vector2(258, 549)
+interaction_text = "Notice Board"
+speaker_name = "Notice Board"
+dialogue_line_1 = "Midterm exam schedule posted."
+dialogue_line_2 = "Be sure to practice your Django coding challenges!"
+
+[node name="Interactable_Faculty_Lounge_Sofa" parent="Interactables" unique_id=910000015 instance=ExtResource("41_obj_interactable")]
+position = Vector2(969, 298)
+interaction_text = "Sofa"
+speaker_name = "Sofa"
+dialogue_line_1 = "A comfortable leather sofa for faculty meetings and breaks."
+dialogue_line_2 = "Someone left a half-empty coffee mug on the side table."
+
+[node name="Interactable_Faculty_Cubicle_R1_1" parent="Interactables" unique_id=910000016 instance=ExtResource("41_obj_interactable")]
+position = Vector2(753, 460)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A faculty researcher's desk."
+dialogue_line_2 = "Browser tabs open to research papers on Artificial Intelligence and Python."
+
+[node name="Interactable_Faculty_Cubicle_R1_2" parent="Interactables" unique_id=910000017 instance=ExtResource("41_obj_interactable")]
+position = Vector2(851, 460)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A desk piled high with graded student homework."
+dialogue_line_2 = "A red pen lies on top of a stack of Python quiz papers."
+
+[node name="Interactable_Faculty_Cubicle_R2_2" parent="Interactables" unique_id=910000018 instance=ExtResource("41_obj_interactable")]
+position = Vector2(749, 655)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Dual monitor setup showing the university's course management system."
+dialogue_line_2 = "Syllabus updates for next semester are being drafted."
+
+[node name="Interactable_Faculty_Cubicle_R2_3" parent="Interactables" unique_id=910000019 instance=ExtResource("41_obj_interactable")]
+position = Vector2(949, 654)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Terminal connected to the campus database server."
+dialogue_line_2 = "PostgreSQL connection active on port 5432."
+
+[node name="Interactable_Faculty_Cubicle_R3_2" parent="Interactables" unique_id=910000020 instance=ExtResource("41_obj_interactable")]
+position = Vector2(751, 819)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Teaching assistant's workstation."
+dialogue_line_2 = "Code reviews for student pull requests are displayed on the IDE."
+
+[node name="Interactable_Faculty_Cubicle_R3_3" parent="Interactables" unique_id=910000021 instance=ExtResource("41_obj_interactable")]
+position = Vector2(849, 822)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Monitoring dashboard for computer lab uptime and network bandwidth."
+
+[node name="Interactable_Faculty_Cubicle_R4_2" parent="Interactables" unique_id=910000022 instance=ExtResource("41_obj_interactable")]
+position = Vector2(751, 908)
+interaction_text = "Desk"
+speaker_name = "Desk"
+dialogue_line_1 = "A clean office desk reserved for visiting faculty and student consultations."
+
+[node name="Interactable_LeftRestroom_MirrorSink" parent="Interactables" unique_id=910000030 instance=ExtResource("41_obj_interactable")]
+position = Vector2(352, 1088)
+interaction_text = "Sink"
+speaker_name = "Sink"
+dialogue_line_1 = "The mirror is clear. You wash your hands with soap."
+dialogue_line_2 = "Feeling refreshed and ready to get back to coding."
+
+[node name="Interactable_LeftRestroom_Stall_Upper" parent="Interactables" unique_id=910000031 instance=ExtResource("41_obj_interactable")]
+position = Vector2(210, 1090)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Someone is inside."
+dialogue_line_2 = "You hear faint typing sounds from a phone."
+
+[node name="Interactable_LeftRestroom_Stall_Lower" parent="Interactables" unique_id=910000032 instance=ExtResource("41_obj_interactable")]
+position = Vector2(210, 1165)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "It's locked."
+
+[node name="Interactable_LeftRestroom_Toilet" parent="Interactables" unique_id=910000033 instance=ExtResource("41_obj_interactable")]
+position = Vector2(376, 1270)
+interaction_text = "Toilet"
+speaker_name = "Toilet"
+dialogue_line_1 = "A clean toilet. You hear water running in the pipes."
+
+[node name="Interactable_LeftRestroom_Dispenser" parent="Interactables" unique_id=910000034 instance=ExtResource("41_obj_interactable")]
+position = Vector2(439, 1108)
+interaction_text = "Dispenser"
+speaker_name = "Dispenser"
+dialogue_line_1 = "A restroom supplies dispenser."
+dialogue_line_2 = "Paper towels and hand sanitizer."
+
+[node name="Interactable_RightRestroom_MirrorSink" parent="Interactables" unique_id=910000035 instance=ExtResource("41_obj_interactable")]
+position = Vector2(579, 1092)
+interaction_text = "Sink"
+speaker_name = "Sink"
+dialogue_line_1 = "The mirror is clear. You wash your hands with soap."
+dialogue_line_2 = "Looking sharp!"
+
+[node name="Interactable_RightRestroom_Stall_Upper" parent="Interactables" unique_id=910000036 instance=ExtResource("41_obj_interactable")]
+position = Vector2(750, 1090)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "The stall is occupied."
+
+[node name="Interactable_RightRestroom_Stall_Lower" parent="Interactables" unique_id=910000037 instance=ExtResource("41_obj_interactable")]
+position = Vector2(750, 1165)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "It's locked."
+
+[node name="Interactable_RightRestroom_Urinal" parent="Interactables" unique_id=910000038 instance=ExtResource("41_obj_interactable")]
+position = Vector2(588, 1270)
+interaction_text = "Urinals"
+speaker_name = "Urinals"
+dialogue_line_1 = "Automatic sensor urinals."
+
+[node name="Interactable_RightRestroom_Vending" parent="Interactables" unique_id=910000039 instance=ExtResource("41_obj_interactable")]
+position = Vector2(491, 1107)
+interaction_text = "Vending Machine"
+speaker_name = "Vending Machine"
+dialogue_line_1 = "A hygiene products and mints dispenser."
+
+[node name="DialogueBox" parent="." unique_id=229437293 instance=ExtResource("42_dialogue_box")]
+visible = false

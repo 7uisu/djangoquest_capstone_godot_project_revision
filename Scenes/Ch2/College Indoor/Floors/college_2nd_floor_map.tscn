@@ -41,6 +41,8 @@
 [ext_resource type="PackedScene" uid="uid://dtlui10prrlxp" path="res://Scenes/Ch1/Interactive Objects/Door/front_door_1.tscn" id="21_k147o"]
 [ext_resource type="Texture2D" uid="uid://cnlh64i44uixr" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf02.png" id="23_pan2"]
 [ext_resource type="Texture2D" uid="uid://bbjtqll7fys00" path="res://Textures/NPC/College Profs/Male/NPCMaleCollegeProf03.png" id="24_pan3"]
+[ext_resource type="PackedScene" uid="uid://cjhmu7ranw02n" path="res://Scenes/Interactables/object_dialogue_interactable.tscn" id="25_obj_interactable"]
+[ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="26_dialogue_box"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_0ykgn"]
 texture = ExtResource("10_xefev")
@@ -1171,3 +1173,256 @@ speaker_name = "Male Student 15"
 
 [node name="Player" parent="." unique_id=833241429 instance=ExtResource("15_6cks7")]
 position = Vector2(411, -82)
+
+[node name="Interactables" type="Node2D" parent="." unique_id=920000000]
+y_sort_enabled = true
+
+[node name="Interactable_Bookshelf_TopLeft" parent="Interactables" unique_id=920000001 instance=ExtResource("25_obj_interactable")]
+position = Vector2(0, -10)
+interaction_text = "Bookshelf"
+speaker_name = "Bookshelf"
+dialogue_line_1 = "Rows of programming books and Django documentation."
+dialogue_line_2 = "Two Scoops of Django, Python Crash Course, and Clean Code."
+
+[node name="Interactable_Whiteboard_TopLeft" parent="Interactables" unique_id=920000002 instance=ExtResource("25_obj_interactable")]
+position = Vector2(72, -18)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "The whiteboard is filled with notes on Django models."
+dialogue_line_2 = "class Post(models.Model): title = models.CharField(max_length=200)"
+
+[node name="Interactable_Whiteboard_TopRight" parent="Interactables" unique_id=920000003 instance=ExtResource("25_obj_interactable")]
+position = Vector2(184, -18)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Diagrams showing Django's MVT (Model-View-Template) cycle."
+
+[node name="Interactable_Noticeboard_Top" parent="Interactables" unique_id=920000004 instance=ExtResource("25_obj_interactable")]
+position = Vector2(248, -18)
+interaction_text = "Notice Board"
+speaker_name = "Notice Board"
+dialogue_line_1 = "Class Schedule & Reminders:"
+dialogue_line_2 = "Don't forget to run your migrations before submitting assignments!"
+
+[node name="Interactable_Bookshelf_Lower" parent="Interactables" unique_id=920000005 instance=ExtResource("25_obj_interactable")]
+position = Vector2(-33, 554)
+interaction_text = "Bookshelf"
+speaker_name = "Bookshelf"
+dialogue_line_1 = "Reference manuals on Software Engineering and Database Design."
+
+[node name="Interactable_Whiteboard_Lower" parent="Interactables" unique_id=920000006 instance=ExtResource("25_obj_interactable")]
+position = Vector2(63, 545)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Query optimization tips written in green marker."
+dialogue_line_2 = "Use select_related() and prefetch_related() to prevent N+1 queries!"
+
+[node name="Interactable_PC_Lab_R1_1" parent="Interactables" unique_id=920000010 instance=ExtResource("25_obj_interactable")]
+position = Vector2(687, 165)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A lab computer running Django development server."
+dialogue_line_2 = "Watching for file changes with StatReloader... System check identified no issues."
+
+[node name="Interactable_PC_Lab_R1_2" parent="Interactables" unique_id=920000011 instance=ExtResource("25_obj_interactable")]
+position = Vector2(815, 165)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A student PC with VS Code open."
+dialogue_line_2 = "A bunch of tabs: urls.py, views.py, models.py, and forms.py."
+
+[node name="Interactable_PC_Lab_R1_3" parent="Interactables" unique_id=920000012 instance=ExtResource("25_obj_interactable")]
+position = Vector2(943, 165)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "The screen shows SQLite database browser."
+dialogue_line_2 = "Inspecting auth_user and django_session tables."
+
+[node name="Interactable_PC_Lab_R2_1" parent="Interactables" unique_id=920000013 instance=ExtResource("25_obj_interactable")]
+position = Vector2(687, 265)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Terminal window with active git commands."
+dialogue_line_2 = "git status: On branch main, Your branch is up to date with 'origin/main'."
+
+[node name="Interactable_PC_Lab_R2_2" parent="Interactables" unique_id=920000014 instance=ExtResource("25_obj_interactable")]
+position = Vector2(815, 265)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Postman is open with API test requests."
+dialogue_line_2 = "GET /api/v1/students/ - 200 OK."
+
+[node name="Interactable_PC_Lab_R2_3" parent="Interactables" unique_id=920000015 instance=ExtResource("25_obj_interactable")]
+position = Vector2(943, 265)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Django official documentation page on REST Framework serializers."
+
+[node name="Interactable_PC_Lab_R3_1" parent="Interactables" unique_id=920000016 instance=ExtResource("25_obj_interactable")]
+position = Vector2(815, 360)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A student terminal running tests:"
+dialogue_line_2 = "python manage.py test -- OK (14 tests passed)."
+
+[node name="Interactable_PC_Lab_R3_2" parent="Interactables" unique_id=920000017 instance=ExtResource("25_obj_interactable")]
+position = Vector2(943, 360)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Browser open to http://127.0.0.1:8000/admin/"
+dialogue_line_2 = "The Django Admin dashboard is displayed."
+
+[node name="Interactable_Server_Station" parent="Interactables" unique_id=920000018 instance=ExtResource("25_obj_interactable")]
+position = Vector2(624, 430)
+interaction_text = "Server Terminal"
+speaker_name = "Server Terminal"
+dialogue_line_1 = "Main lab server workstation with dual monitors."
+dialogue_line_2 = "Docker containers running PostgreSQL and Redis cache."
+
+[node name="Interactable_Whiteboard_LowerClassroom_Right" parent="Interactables" unique_id=920000020 instance=ExtResource("25_obj_interactable")]
+position = Vector2(191, 544)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Diagram of Django request-response middleware lifecycle."
+dialogue_line_2 = "SecurityMiddleware -> SessionMiddleware -> AuthenticationMiddleware."
+
+[node name="Interactable_Noticeboard_LowerClassroom" parent="Interactables" unique_id=920000021 instance=ExtResource("25_obj_interactable")]
+position = Vector2(256, 544)
+interaction_text = "Notice Board"
+speaker_name = "Notice Board"
+dialogue_line_1 = "Department notices and internship opportunities."
+dialogue_line_2 = "Looking for junior Django web developers! Inquire at the faculty office."
+
+[node name="Interactable_Whiteboard_LowerLab_Left" parent="Interactables" unique_id=920000022 instance=ExtResource("25_obj_interactable")]
+position = Vector2(706, 532)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "API Endpoint Documentation:"
+dialogue_line_2 = "POST /api/token/ - Obtain JWT pair. POST /api/token/refresh/ - Refresh token."
+
+[node name="Interactable_PresentationScreen_LowerLab" parent="Interactables" unique_id=920000023 instance=ExtResource("25_obj_interactable")]
+position = Vector2(802, 543)
+interaction_text = "Presentation Screen"
+speaker_name = "Presentation Screen"
+dialogue_line_1 = "Lecture slides: \"Building Scalable REST APIs with Django & DRF\"."
+
+[node name="Interactable_Whiteboard_LowerLab_Right" parent="Interactables" unique_id=920000024 instance=ExtResource("25_obj_interactable")]
+position = Vector2(894, 535)
+interaction_text = "White Board"
+speaker_name = "White Board"
+dialogue_line_1 = "Permission classes cheat sheet:"
+dialogue_line_2 = "AllowAny, IsAuthenticated, IsAdminUser, and custom BasePermission."
+
+[node name="Interactable_PC_LowerLab_R1_1" parent="Interactables" unique_id=920000025 instance=ExtResource("25_obj_interactable")]
+position = Vector2(686, 615)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A lab workstation running automated test suites."
+dialogue_line_2 = "Ran 28 tests in 1.412s. OK."
+
+[node name="Interactable_PC_LowerLab_R1_2" parent="Interactables" unique_id=920000026 instance=ExtResource("25_obj_interactable")]
+position = Vector2(814, 615)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A student PC with Django REST Framework browsable API open."
+
+[node name="Interactable_PC_LowerLab_R1_3" parent="Interactables" unique_id=920000027 instance=ExtResource("25_obj_interactable")]
+position = Vector2(942, 615)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Swagger UI / OpenAPI documentation generator is open."
+
+[node name="Interactable_PC_LowerLab_R2_1" parent="Interactables" unique_id=920000028 instance=ExtResource("25_obj_interactable")]
+position = Vector2(686, 710)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A code editor with serializers.py."
+dialogue_line_2 = "Nested serializers and ModelSerializer validation logic."
+
+[node name="Interactable_PC_LowerLab_R2_2" parent="Interactables" unique_id=920000029 instance=ExtResource("25_obj_interactable")]
+position = Vector2(814, 710)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Database query log viewer."
+dialogue_line_2 = "Monitoring SQL query execution times and query cache hits."
+
+[node name="Interactable_PC_LowerLab_R2_3" parent="Interactables" unique_id=920000030 instance=ExtResource("25_obj_interactable")]
+position = Vector2(942, 710)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "A student's project repository on GitHub."
+dialogue_line_2 = "Latest commit: \"Fixed authentication bug in user profile endpoint\"."
+
+[node name="Interactable_PC_LowerLab_R3_1" parent="Interactables" unique_id=920000031 instance=ExtResource("25_obj_interactable")]
+position = Vector2(814, 900)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Terminal showing active celery background worker tasks."
+
+[node name="Interactable_PC_LowerLab_R3_2" parent="Interactables" unique_id=920000032 instance=ExtResource("25_obj_interactable")]
+position = Vector2(942, 900)
+interaction_text = "PC"
+speaker_name = "PC"
+dialogue_line_1 = "Redis CLI monitor displaying session cache keys."
+
+[node name="Interactable_Server_Station_LowerLab" parent="Interactables" unique_id=920000033 instance=ExtResource("25_obj_interactable")]
+position = Vector2(624, 970)
+interaction_text = "Server Terminal"
+speaker_name = "Server Terminal"
+dialogue_line_1 = "Department backup server console."
+dialogue_line_2 = "Daily database backup completed successfully at 03:00."
+
+[node name="Interactable_LeftRestroom_MirrorSink" parent="Interactables" unique_id=920000040 instance=ExtResource("25_obj_interactable")]
+position = Vector2(353, 1079)
+interaction_text = "Sink"
+speaker_name = "Sink"
+dialogue_line_1 = "The mirror is clear. You wash your hands with soap."
+dialogue_line_2 = "Feeling refreshed and ready to get back to coding."
+
+[node name="Interactable_LeftRestroom_Stall_Upper" parent="Interactables" unique_id=920000041 instance=ExtResource("25_obj_interactable")]
+position = Vector2(198, 1106)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "Someone is inside."
+dialogue_line_2 = "You hear faint typing sounds from a phone."
+
+[node name="Interactable_LeftRestroom_Stall_Lower" parent="Interactables" unique_id=920000042 instance=ExtResource("25_obj_interactable")]
+position = Vector2(187, 1216)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "It's locked."
+
+[node name="Interactable_LeftRestroom_Dispenser" parent="Interactables" unique_id=920000044 instance=ExtResource("25_obj_interactable")]
+position = Vector2(442, 1108)
+interaction_text = "Dispenser"
+speaker_name = "Dispenser"
+dialogue_line_1 = "A restroom supplies dispenser."
+dialogue_line_2 = "Paper towels and hand sanitizer."
+
+[node name="Interactable_RightRestroom_MirrorSink" parent="Interactables" unique_id=920000045 instance=ExtResource("25_obj_interactable")]
+position = Vector2(577, 1080)
+interaction_text = "Sink"
+speaker_name = "Sink"
+dialogue_line_1 = "The mirror is clear. You wash your hands with soap."
+dialogue_line_2 = "Looking sharp!"
+
+[node name="Interactable_RightRestroom_Stall_Upper" parent="Interactables" unique_id=920000046 instance=ExtResource("25_obj_interactable")]
+position = Vector2(728, 1119)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "The stall is occupied."
+
+[node name="Interactable_RightRestroom_Stall_Lower" parent="Interactables" unique_id=920000047 instance=ExtResource("25_obj_interactable")]
+position = Vector2(738, 1208)
+interaction_text = "Stall"
+speaker_name = "Stall"
+dialogue_line_1 = "It's locked."
+
+[node name="Interactable_RightRestroom_Vending" parent="Interactables" unique_id=920000049 instance=ExtResource("25_obj_interactable")]
+position = Vector2(488, 1107)
+interaction_text = "Vending Machine"
+speaker_name = "Vending Machine"
+dialogue_line_1 = "A hygiene products and mints dispenser."
+
+[node name="DialogueBox" parent="." unique_id=920000099 instance=ExtResource("26_dialogue_box")]
+visible = false
