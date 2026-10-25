@@ -12,6 +12,12 @@ var _room_label: Label
 var _current_room: String = ""
 
 
+func set_indicator_visible(value: bool) -> void:
+	var layer := get_node_or_null("RoomIndicatorLayer") as CanvasLayer
+	if layer:
+		layer.visible = value
+
+
 func _ready() -> void:
 	_create_indicator()
 	call_deferred("_update_room_label")

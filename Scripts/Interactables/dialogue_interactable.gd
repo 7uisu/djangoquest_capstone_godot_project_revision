@@ -33,6 +33,21 @@ enum DialogueMode { VISUAL_NOVEL, CHAT_BUBBLE }
 @export_multiline var dialogue_line_5: String = ""
 @export var dialogue_line_5_mode: DialogueMode = DialogueMode.VISUAL_NOVEL
 
+@export_group("Repeat Dialogue — Second Visit")
+@export_multiline var second_visit_dialogue: String = ""
+@export var second_visit_mode: DialogueMode = DialogueMode.CHAT_BUBBLE
+
+@export_group("Repeat Dialogue — Reminder")
+@export_multiline var reminder_dialogue: String = ""
+@export var reminder_mode: DialogueMode = DialogueMode.CHAT_BUBBLE
+
+@export_group("Optional Conversation Choice")
+@export_multiline var optional_choice_prompt: String = ""
+@export var optional_choice_a: String = "Tell me more"
+@export var optional_choice_b: String = "Maybe later"
+@export_multiline var optional_choice_reply_a: String = ""
+@export_multiline var optional_choice_reply_b: String = ""
+
 @export_group("")
 
 const CHAT_BUBBLE_SCENE = preload("res://Scenes/UI/chat_bubble.tscn")
@@ -47,8 +62,10 @@ var passive_label_text: String = ""
 # Queue of dialogue groups: each is { "mode": DialogueMode, "lines": Array }
 var _dialogue_queue: Array = []
 var _is_sequencing: bool = false
+var _ordinary_interaction_count := 0
 
 func _ready():
+	set_process(true)
 	if npc_texture:
 		$AnimatedSprite2D.sprite_frames = _build_sprite_frames(npc_texture)
 		$AnimatedSprite2D.play("idle_down")
@@ -56,6 +73,30 @@ func _ready():
 		interaction_label.text = interaction_text
 		interaction_label.visible = false
 		interaction_label.modulate.a = 0.0
+
+
+func _process(_delta: float) -> void:
+	if interaction_label == null:
+		return
+	var suppress_prompt := _is_sequencing or _has_active_dialogue_ui()
+	if suppress_prompt:
+		interaction_label.visible = false
+		interaction_label.modulate.a = 0.0
+	elif player_is_inside and not interaction_label.visible:
+		_show_label()
+
+
+func _has_active_dialogue_ui() -> bool:
+	var scene := get_tree().current_scene
+	if scene and bool(scene.get_meta("ch3_interactions_locked", false)):
+		return true
+	for node in get_tree().get_nodes_in_group("dialogue_box"):
+		if node is CanvasLayer and node.visible and node.get_node_or_null("Panel") is Control and node.get_node("Panel").visible:
+			return true
+	for node in get_tree().get_nodes_in_group("chat_bubble"):
+		if node is Control and node.visible and bool(node.get("is_active")):
+			return true
+	return false
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
@@ -73,11 +114,19 @@ func interact():
 	if _is_sequencing:
 		print("dialogue_interactable: blocked by _is_sequencing")
 		return  # Already playing dialogue
+	_ordinary_interaction_count += 1
 
 	# External controller override (e.g. professor lesson controllers)
 	if has_meta("lesson_controller"):
 		print("dialogue_interactable: has lesson_controller meta!")
 		var ctrl = get_meta("lesson_controller")
+		if has_meta("interview_entry") and ctrl and ctrl.has_method("_on_interview_interacted"):
+			print("dialogue_interactable: calling controller._on_interview_interacted()")
+			ctrl._on_interview_interacted()
+			return
+		if has_meta("ch3_narrative_role") and ctrl and ctrl.has_method("_on_ch3_narrative_interacted"):
+			ctrl._on_ch3_narrative_interacted(self)
+			return
 		if has_meta("music_track"):
 			var track_key = String(get_meta("music_track"))
 			var audio_manager = get_node_or_null("/root/AudioManager")
@@ -89,6 +138,8 @@ func interact():
 			return
 		else:
 			print("dialogue_interactable: ctrl invalid or missing method. ctrl=", ctrl)
+	if _ordinary_interaction_count > 1 and _play_repeat_dialogue(_ordinary_interaction_count):
+		return
 
 	var all_lines = _build_dialogue_lines()
 	if all_lines.is_empty():
@@ -98,7 +149,50 @@ func interact():
 	# Group consecutive lines that share the same mode
 	_dialogue_queue = _group_lines_by_mode(all_lines)
 	_is_sequencing = true
+	interaction_label.visible = false
+	interaction_label.modulate.a = 0.0
 	_play_next_group()
+
+
+func has_repeat_dialogue(visit_number: int) -> bool:
+	return second_visit_dialogue.strip_edges() != "" if visit_number == 2 else reminder_dialogue.strip_edges() != ""
+
+
+func get_repeat_dialogue_lines(visit_number: int) -> Array:
+	var text := second_visit_dialogue if visit_number == 2 else reminder_dialogue
+	if text.strip_edges().is_empty():
+		return []
+	var mode := second_visit_mode if visit_number == 2 else reminder_mode
+	return [{"name": speaker_name, "text": text, "mode": mode}]
+
+
+func get_initial_dialogue_lines() -> Array:
+	return _build_dialogue_lines()
+
+
+func get_optional_choice_data() -> Dictionary:
+	if optional_choice_prompt.strip_edges().is_empty():
+		return {}
+	return {
+		"speaker": speaker_name,
+		"prompt": optional_choice_prompt,
+		"choice_a": optional_choice_a,
+		"choice_b": optional_choice_b,
+		"reply_a": optional_choice_reply_a,
+		"reply_b": optional_choice_reply_b
+	}
+
+
+func _play_repeat_dialogue(visit_number: int) -> bool:
+	var lines := get_repeat_dialogue_lines(visit_number)
+	if lines.is_empty():
+		return false
+	_dialogue_queue = _group_lines_by_mode(lines)
+	_is_sequencing = true
+	interaction_label.visible = false
+	interaction_label.modulate.a = 0.0
+	_play_next_group()
+	return true
 
 ## Build lines with per-line mode info.
 func _build_dialogue_lines() -> Array:
@@ -146,6 +240,8 @@ func _group_lines_by_mode(all_lines: Array) -> Array:
 func _play_next_group():
 	if _dialogue_queue.is_empty():
 		_is_sequencing = false
+		if player_is_inside:
+			_show_label()
 		return
 
 	var group = _dialogue_queue.pop_front()
@@ -203,7 +299,7 @@ func _get_or_create_chat_bubble() -> Control:
 # --- Label fade helpers (same pattern as door.gd) ---
 
 func _show_label():
-	if not interaction_label:
+	if not interaction_label or _is_sequencing or _has_active_dialogue_ui():
 		return
 	interaction_label.text = interaction_text
 	interaction_label.visible = true

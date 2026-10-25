@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://b22uic5ghd30u"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" uid="uid://fnyuapgtuwlp" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Tercio_Mateo_Ramos_Technical_Support_Specialist.png" id="2_texture"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tercio_interaction"]
+size = Vector2(40, 32)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tercio"]
+radius = 12.0
+
+[node name="NPCTercioMateoRamos" unique_id=324245329 instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Tercio Mateo Ramos"
+interaction_text = "(F) to Talk"
+dialogue_line_1 = "Organizing hardware backups and server cables. Clean infrastructure prevents random downtime!"
+second_visit_dialogue = "Credentials should stay out of source control, even when a repository is private."
+reminder_dialogue = "Rotate exposed secrets and keep replacements in secure environment configuration."
+optional_choice_prompt = "Want a quick reminder about leaked credentials?"
+optional_choice_a = "Yes, tell me."
+optional_choice_b = "I know not to commit them."
+optional_choice_reply_a = "Remove the secret from the repository, rotate it, and store the replacement outside source control."
+optional_choice_reply_b = "Right—and if one leaks, removing the line isn't enough. Rotate the credential too."
+
+[node name="CollisionShape2D" parent="." index="2" unique_id=1865194984]
+position = Vector2(0, 46)
+shape = SubResource("RectangleShape2D_tercio_interaction")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3" unique_id=224963162]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0" unique_id=69905911]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_tercio")

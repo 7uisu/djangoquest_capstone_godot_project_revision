@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_patricio_mateo"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Patricio_Mateo_QA_Tester.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_patricio"]
+radius = 12.0
+
+[node name="NPCPatricioMateo" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Patricio Mateo"
+dialogue_line_1 = "Hey! Working on the database migrations? Remember to review your schema before applying to production."
+second_visit_dialogue = "Check the migration plan and confirm the target environment before applying schema changes."
+reminder_dialogue = "Review migrations before production, then verify that the database matches the application."
+optional_choice_prompt = "Want the pre-migration check I use?"
+optional_choice_a = "Yes, please."
+optional_choice_b = "I can check the migration files."
+optional_choice_reply_a = "Check which migrations are pending in the target environment before applying anything."
+optional_choice_reply_b = "Good. Also compare the target database state with the migration history."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_patricio")

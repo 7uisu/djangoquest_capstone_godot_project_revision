@@ -50,6 +50,13 @@ var ch2_y3mid_teaching_done: bool = false      # Year 3 Midyear all modules comp
 var ch2_y3mid_teaching_done_at: String = ""    # ISO datetime when completed
 var ch2_y3mid_current_module: int = 0          # 0-1 (which module player is on)
 
+# Chapter 3 — DJQ Corp office arc
+var ch3_intro_cutscene_done: bool = false
+var ch3_receptionist_talked: bool = false
+var ch3_interview_passed: bool = false
+var ch3_has_green_badge: bool = false
+var ch3_has_blue_badge: bool = false
+
 # ─── Student Application Sequence Tracking ───────────────────────────────────
 # Per-professor: how many of the 5 students (4 regular + 1 mini-boss) are done
 var student_seq_progress: Dictionary = {}  # e.g. {"y1s1": 3, "y1s2": 5}
@@ -268,6 +275,11 @@ func reset_data():
 	ch2_y3mid_teaching_done = false
 	ch2_y3mid_teaching_done_at = ""
 	ch2_y3mid_current_module = 0
+	ch3_intro_cutscene_done = false
+	ch3_receptionist_talked = false
+	ch3_interview_passed = false
+	ch3_has_green_badge = false
+	ch3_has_blue_badge = false
 	# Grade / Retake tracking reset
 	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
 		set("ch2_%s_retake_count" % prefix, 0)
@@ -362,6 +374,12 @@ func to_save_dict() -> Dictionary:
 		"ch2_y3mid_teaching_done": ch2_y3mid_teaching_done,
 		"ch2_y3mid_teaching_done_at": ch2_y3mid_teaching_done_at,
 		"ch2_y3mid_current_module": ch2_y3mid_current_module,
+		# Chapter 3 — DJQ Corp
+		"ch3_intro_cutscene_done": ch3_intro_cutscene_done,
+		"ch3_receptionist_talked": ch3_receptionist_talked,
+		"ch3_interview_passed": ch3_interview_passed,
+		"ch3_has_green_badge": ch3_has_green_badge,
+		"ch3_has_blue_badge": ch3_has_blue_badge,
 	}
 	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
 		for suffix in ["retake_count", "wrong_attempts", "hints_used", "final_grade",
@@ -471,6 +489,12 @@ func from_save_dict(data: Dictionary):
 	ch2_y3mid_teaching_done = data.get("ch2_y3mid_teaching_done", false)
 	ch2_y3mid_teaching_done_at = str(data.get("ch2_y3mid_teaching_done_at", ""))
 	ch2_y3mid_current_module = int(data.get("ch2_y3mid_current_module", 0))
+	# Chapter 3 — DJQ Corp
+	ch3_intro_cutscene_done = data.get("ch3_intro_cutscene_done", false)
+	ch3_receptionist_talked = data.get("ch3_receptionist_talked", false)
+	ch3_interview_passed = data.get("ch3_interview_passed", false)
+	ch3_has_green_badge = data.get("ch3_has_green_badge", false)
+	ch3_has_blue_badge = data.get("ch3_has_blue_badge", false)
 	# Grade / Retake tracking
 	for prefix in ["y1s1", "y1s2", "y2s1", "y2s2", "y3s1", "y3s2", "y3mid"]:
 		set("ch2_%s_retake_count" % prefix, int(data.get("ch2_%s_retake_count" % prefix, 0)))

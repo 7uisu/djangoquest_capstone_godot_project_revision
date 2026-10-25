@@ -1,0 +1,30 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/npc_directory_interactable.gd" id="1_directory"]
+[ext_resource type="FontFile" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_font"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_directory"]
+radius = 24.0
+
+[node name="NPCDirectoryInteractable" type="Area2D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_directory")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_directory")
+
+[node name="Label" type="Label" parent="."]
+z_index = 5
+offset_left = -86.0
+offset_top = -34.0
+offset_right = 86.0
+offset_bottom = -14.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 13
+text = "[F] View Staff Directory"
+horizontal_alignment = 1
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

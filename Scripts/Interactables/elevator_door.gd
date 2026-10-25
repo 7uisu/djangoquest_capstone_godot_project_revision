@@ -4,6 +4,8 @@
 extends Area2D
 
 @export var interaction_text: String = "(F) Elevator"
+@export_enum("None", "Green OJT Badge", "Blue Developer Badge") var required_badge: String = "None"
+@export var lock_message: String = "A Green OJT Badge is required to use the elevator."
 
 ## Which floor is THIS elevator on? Must match one of the floor names below.
 @export var current_floor: String = "Ground Floor"
@@ -78,6 +80,9 @@ func interact():
 		return
 	if _elevator_ui_instance != null:
 		return  # UI already open
+	if not _has_badge_access():
+		_show_locked_feedback()
+		return
 
 	# Play door open animation
 	is_animating = true
@@ -162,7 +167,7 @@ func _set_player_movement(enabled: bool) -> void:
 func _show_label():
 	if not interaction_label:
 		return
-	interaction_label.text = interaction_text
+	interaction_label.text = interaction_text if _has_badge_access() else lock_message
 	interaction_label.visible = true
 	_kill_label_tween()
 	_label_tween = create_tween()
@@ -179,3 +184,22 @@ func _hide_label():
 func _kill_label_tween():
 	if _label_tween and _label_tween.is_valid():
 		_label_tween.kill()
+
+func _has_badge_access() -> bool:
+	if required_badge == "None":
+		return true
+	var data: Node = get_node_or_null("/root/CharacterData")
+	if data == null:
+		return false
+	if required_badge == "Green OJT Badge":
+		return bool(data.get("ch3_has_green_badge")) or bool(data.get("ch3_has_blue_badge"))
+	if required_badge == "Blue Developer Badge":
+		return bool(data.get("ch3_has_blue_badge"))
+	return true
+
+func _show_locked_feedback() -> void:
+	if interaction_label == null:
+		return
+	interaction_label.text = lock_message
+	interaction_label.visible = true
+	interaction_label.modulate.a = 1.0

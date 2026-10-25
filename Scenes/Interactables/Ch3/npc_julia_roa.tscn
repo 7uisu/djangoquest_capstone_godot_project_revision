@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_julia_roa"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Julia_Roa_Executive_Sponsor.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_julia"]
+radius = 12.0
+
+[node name="NPCJuliaRoa" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Julia Roa"
+dialogue_line_1 = "I'm Julia Roa, Executive Sponsor of the Student Learning Portal. I'll be evaluating your final presentation. Make it count."
+second_visit_dialogue = "Keep the presentation focused on user impact, delivery risks, and evidence that the feature works."
+reminder_dialogue = "For the board, connect your technical decisions to student and client outcomes."
+optional_choice_prompt = "Would you like a presentation tip from the client side?"
+optional_choice_a = "Yes, please."
+optional_choice_b = "I'll focus on the demo."
+optional_choice_reply_a = "Show the user problem, the outcome, and evidence that the feature works. Keep implementation details tied to that story."
+optional_choice_reply_b = "A working demo helps. Add the user impact and a clear account of the risks you handled."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_julia")

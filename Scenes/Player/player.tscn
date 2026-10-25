@@ -310,6 +310,7 @@ sprite_frames = ExtResource("2_gqjuk")
 animation = &"female_idle_down"
 
 [node name="Shadow" type="Sprite2D" parent="." unique_id=87168035]
+z_index = -1
 position = Vector2(-0.99999654, 5.9999995)
 scale = Vector2(1.8333333, 1.09375)
 texture = ExtResource("2_c4h5g")

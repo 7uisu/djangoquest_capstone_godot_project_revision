@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_ivana_gabani"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Ivana_Daniela_Gabani_Team_Lead_and_or_OJT_Mentor.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ivana"]
+radius = 12.0
+
+[node name="NPCIvanaDanielaGabani" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Ivana Daniela Gabani"
+dialogue_line_1 = "I'm Ivana, the Team Lead. We'll see if you're the right fit for the Student Learning Portal project."
+second_visit_dialogue = "When you explain a technical choice, include the reason and the trade-off—not only the syntax."
+reminder_dialogue = "Before changing code, understand the design, protect the data, and explain your reasoning."
+optional_choice_prompt = "Would you like to know what I look for in a developer's technical explanation?"
+optional_choice_a = "Yes, tell me."
+optional_choice_b = "I'll keep it in mind."
+optional_choice_reply_a = "Explain the reason behind a decision, its trade-offs, and how you will protect the data."
+optional_choice_reply_b = "Good. Be ready to explain your reasoning when the time comes."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_ivana")

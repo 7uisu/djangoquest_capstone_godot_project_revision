@@ -147,7 +147,7 @@ func _input(event):
 			return
 
 	# Interact (F) while frozen — e.g. Ch1 convenience cutscene leaves can_move false at the café door
-	if event.is_action_pressed("interact") and can_interact and not block_ui_input:
+	if event.is_action_pressed("interact") and not block_ui_input:
 		if not ((inventory_ui and inventory_ui.is_open) or (GlobalLaptopUI and GlobalLaptopUI.is_open)):
 			# Prevent interact spam when a dialogue box is actively on screen
 			var is_dialogue_active = false
@@ -157,14 +157,14 @@ func _input(event):
 					is_dialogue_active = true
 					break
 			if not is_dialogue_active:
-				for area in interaction_area.get_overlapping_areas():
-					if area.has_method("interact"):
-						print("Player: F pressed, interacting with: ", area.name)
-						# Hide the "Press [F]" label immediately
-						if area.has_method("_hide_label"):
-							area._hide_label()
-						area.interact()
-						break
+				var target := _get_nearest_interactable()
+				if target:
+					current_interactive_object = target
+					print("Player: F pressed, interacting with: ", target.name)
+					# Hide the "Press [F]" label immediately.
+					if target.has_method("_hide_label"):
+						target._hide_label()
+					target.interact()
 		return
 
 	# Block opening new UI during cutscenes / teaching / coding IDE
@@ -201,6 +201,21 @@ func _on_interaction_area_exited(area: Area2D) -> void:
 				break
 		if not still_overlapping:
 			can_interact = false
+
+
+func _get_nearest_interactable() -> Area2D:
+	if interaction_area == null:
+		return null
+	var nearest: Area2D = null
+	var nearest_distance_squared := INF
+	for area in interaction_area.get_overlapping_areas():
+		if not is_instance_valid(area) or area.is_queued_for_deletion() or not area.has_method("interact"):
+			continue
+		var distance_squared := global_position.distance_squared_to(area.global_position)
+		if distance_squared < nearest_distance_squared:
+			nearest = area
+			nearest_distance_squared = distance_squared
+	return nearest
 
 func is_player() -> bool:
 	return true

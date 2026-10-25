@@ -1,0 +1,107 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Autoload or Global/item_obtained_popup.gd" id="1_popup"]
+[ext_resource type="AudioStream" path="res://Sounds/UI SFX/UIClick_BLEEOOP_Keypad_Click.wav" id="2_fanfare"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.075, 0.09, 0.13, 0.98)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.78, 0.69, 0.35, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 12
+
+[node name="ItemObtainedPopup" type="CanvasLayer"]
+layer = 120
+script = ExtResource("1_popup")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+color = Color(0, 0, 0, 0)
+
+[node name="CenterContainer" type="CenterContainer" parent="Backdrop"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ItemCard" type="PanelContainer" parent="Backdrop/CenterContainer"]
+custom_minimum_size = Vector2(560, 430)
+layout_mode = 2
+scale = Vector2(0.92, 0.92)
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="MarginContainer" type="MarginContainer" parent="Backdrop/CenterContainer/ItemCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 22
+
+[node name="Contents" type="VBoxContainer" parent="Backdrop/CenterContainer/ItemCard/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="Label" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.78, 0.37, 1)
+theme_override_font_sizes/font_size = 22
+text = "★  ITEM OBTAINED  ★"
+horizontal_alignment = 1
+
+[node name="IconFrame" type="CenterContainer" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+
+[node name="IconTexture" type="TextureRect" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents/IconFrame"]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="IconFallback" type="Label" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents/IconFrame"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.83, 0.48, 1)
+theme_override_font_sizes/font_size = 66
+text = "★"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ItemTitle" type="Label" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "ITEM NAME OBTAINED!"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ItemDescription" type="Label" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents"]
+custom_minimum_size = Vector2(0, 74)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 17
+text = "Item description goes here."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="ContinueButton" type="Button" parent="Backdrop/CenterContainer/ItemCard/MarginContainer/Contents"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+text = "Press Space / Enter or Click to Continue"
+
+[node name="FanfarePlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_fanfare")
+volume_db = -4.0
+bus = "SFX"

@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://c6r8q5y2nx4p1"]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/server_rack_interactable.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_font"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_trigger"]
+size = Vector2(40, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_rack"]
+animations = [{
+"frames": [],
+"loop": true,
+"name": &"emergency_alert",
+"speed": 6.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"normal_idle",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"terminal_active",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_solid"]
+size = Vector2(30, 24)
+
+[node name="ServerRackInteractable" type="Area2D"]
+y_sort_enabled = true
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_trigger")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_rack")
+animation = &"normal_idle"
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(0, 4)
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Label" type="Label" parent="."]
+z_index = 5
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -65.0
+offset_top = -34.0
+offset_right = 65.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 14
+text = "[F] Access Server Console"
+horizontal_alignment = 1
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

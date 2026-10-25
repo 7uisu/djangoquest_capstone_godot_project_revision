@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_hanna_paday"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Hanna_Luisa_Paday_System_Designer_and_or_Software_Architect.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hanna"]
+radius = 12.0
+
+[node name="NPCHannaLuisaPaday" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Hanna Luisa Paday"
+dialogue_line_1 = "I'm Hanna, System Designer. Before you write a single line of code in this company, you plan the architecture first."
+second_visit_dialogue = "Sketch the data relationships and user flow before choosing where each responsibility belongs."
+reminder_dialogue = "A quick flowchart or ERD can reveal problems before they become code."
+optional_choice_prompt = "Want to hear why I insist on flowcharts before implementation?"
+optional_choice_a = "Yes, I'm curious."
+optional_choice_b = "Maybe another time."
+optional_choice_reply_a = "A clear flow exposes missing states and dependencies before they become expensive rewrites."
+optional_choice_reply_b = "No problem. A few minutes planning can still save hours of rework."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_hanna")

@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://b1qod5ycjn36f"]
+
+[ext_resource type="Texture2D" uid="uid://fbef16eticvl" path="res://Textures/Office Textures/Office Chair/Modern_Office_Singles_32x32_106.png" id="1_chair"]
+[ext_resource type="Script" uid="uid://2w6a0qrlsnr1" path="res://Scripts/Interactables/seating.gd" id="2_seating"]
+[ext_resource type="FontFile" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="3_font"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_office_chair"]
+size = Vector2(28, 30)
+
+[node name="OfficeChairFacingUp" type="Area2D" unique_id=1779571713]
+y_sort_enabled = true
+script = ExtResource("2_seating")
+sit_direction = "up"
+seat_offset = Vector2(0, -8)
+stand_offset = Vector2(-32, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=375768800]
+position = Vector2(0, 18)
+shape = SubResource("RectangleShape2D_office_chair")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1635043154]
+position = Vector2(16, -12)
+texture = ExtResource("1_chair")
+
+[node name="Label" type="Label" parent="." unique_id=1827134621]
+visible = false
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 14
+text = "(F) to Sit"
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=163535548]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=105057400]
+position = Vector2(0, 17)
+shape = SubResource("RectangleShape2D_office_chair")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

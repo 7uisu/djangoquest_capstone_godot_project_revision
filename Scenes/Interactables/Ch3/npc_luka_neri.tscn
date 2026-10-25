@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_luka_neri"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Luka_Neri_Backend_Trainee.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_luka"]
+radius = 12.0
+
+[node name="NPCLukaNeri" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Luka Neri"
+dialogue_line_1 = "Testing the responsive layouts! Don't forget that mobile screens don't have hover states."
+second_visit_dialogue = "Try the layout at narrow widths and make sure every action works without a mouse hover."
+reminder_dialogue = "On mobile, keep controls visible and usable without hover."
+optional_choice_prompt = "Want to check a responsive layout with me?"
+optional_choice_a = "Sure, what should I check?"
+optional_choice_b = "I'll test it on my phone."
+optional_choice_reply_a = "Try a narrow viewport and make sure every action is still visible without hover."
+optional_choice_reply_b = "Perfect. Also check keyboard focus and touch targets, not only how it looks."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_luka")

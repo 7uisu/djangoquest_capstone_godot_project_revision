@@ -91,15 +91,18 @@ func _give_item():
 	if CodingItems.ITEMS.has(item_id):
 		qty = CodingItems.ITEMS[item_id].get("pickup_quantity", 1)
 
-	# Add to inventory
-	var inv = get_node_or_null("/root/InventoryManager")
-	if inv:
-		inv.add_item(item_id, item_name, item_description, item_icon, qty)
-
-	# Show pickup message via player's Guide2Label
-	var players = get_tree().get_nodes_in_group("player")
-	if players.size() > 0 and players[0].has_method("show_guide2_message"):
-		players[0].show_guide2_message("Obtained: " + item_name, 2.5)
+	# The shared popup both awards the item and confirms the pickup.
+	var item_popup = get_node_or_null("/root/ItemPopup")
+	if item_popup and item_popup.has_method("show_item"):
+		await item_popup.show_item(item_id, item_name, item_description, item_icon, qty)
+	else:
+		# Keep pickups usable in isolated test scenes without the ItemPopup autoload.
+		var inv = get_node_or_null("/root/InventoryManager")
+		if inv:
+			inv.add_item(item_id, item_name, item_description, item_icon, qty)
+		var players = get_tree().get_nodes_in_group("player")
+		if players.size() > 0 and players[0].has_method("show_guide2_message"):
+			players[0].show_guide2_message("Obtained: " + item_name, 2.5)
 
 	# Remove from world
 	_hide_label()

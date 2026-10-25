@@ -6,6 +6,9 @@ extends Area2D
 @export var show_once: bool = false
 @export var is_locked: bool = false
 @export var lock_message: String = "This door is locked."
+@export_enum("None", "Green OJT Badge", "Blue Developer Badge") var required_badge: String = "None"
+@export var allow_interview_access: bool = false
+@export var temporary_access_stages: PackedInt32Array = PackedInt32Array()
 
 @onready var interaction_label: Label = $Label
 @onready var anim_sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -17,8 +20,10 @@ var player_is_inside: bool = false
 var is_door_open: bool = false
 var is_animating: bool = false
 var _label_tween: Tween = null
+var _manual_lock: bool = false
 
 func _ready():
+	_manual_lock = is_locked
 	if interaction_label:
 		interaction_label.text = interaction_text
 		interaction_label.visible = false
@@ -34,6 +39,10 @@ func _ready():
 	is_door_open = false
 	if door_collision:
 		door_collision.disabled = false
+	_sync_badge_lock()
+
+func _process(_delta: float) -> void:
+	_sync_badge_lock()
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
@@ -89,7 +98,7 @@ func _on_animation_looped():
 func _show_label():
 	if not interaction_label:
 		return
-	interaction_label.text = interaction_text
+	interaction_label.text = lock_message if is_locked else interaction_text
 	interaction_label.visible = true
 	_kill_label_tween()
 	_label_tween = create_tween()
@@ -110,10 +119,33 @@ func _kill_label_tween():
 # --- Lock mechanic ---
 
 func unlock():
-	is_locked = false
+	_manual_lock = false
+	_sync_badge_lock()
 
 func lock():
-	is_locked = true
+	_manual_lock = true
+	_sync_badge_lock()
+
+func _sync_badge_lock() -> void:
+	var should_be_locked := _manual_lock or not _has_badge_access()
+	if should_be_locked == is_locked:
+		return
+	is_locked = should_be_locked
+	if player_is_inside:
+		_show_label()
+
+func _has_badge_access() -> bool:
+	if required_badge == "None":
+		return true
+	var character_data := get_node_or_null("/root/CharacterData")
+	if required_badge == "Green OJT Badge" and character_data and (character_data.ch3_has_green_badge or character_data.ch3_has_blue_badge):
+		return true
+	if required_badge == "Blue Developer Badge" and character_data and character_data.ch3_has_blue_badge:
+		return true
+	if allow_interview_access and character_data and character_data.ch3_receptionist_talked and not character_data.ch3_interview_passed:
+		return true
+	var story_stage := int(get_tree().root.get_meta("ch3_office_story_stage", 0))
+	return temporary_access_stages.has(story_stage)
 
 func _show_locked_feedback():
 	if not interaction_label:

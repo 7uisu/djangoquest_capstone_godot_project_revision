@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_abel_abendano"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Abel_Abendano_Frontend_Developer.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_abel"]
+radius = 12.0
+
+[node name="NPCAbelAbendano" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Abel Abendaño"
+dialogue_line_1 = "I'm Abel, Frontend Developer. CSS, layout, and making things look right on every screen — that's my area."
+second_visit_dialogue = "If an API response changes, check the agreed contract before adjusting the interface."
+reminder_dialogue = "Quick reminder: keep the interface responsive and follow the API contract."
+optional_choice_prompt = "Want my quickest frontend integration check?"
+optional_choice_a = "Tell me."
+optional_choice_b = "I have my own checklist."
+optional_choice_reply_a = "Compare the response shape with the contract, then test loading, error, and mobile states."
+optional_choice_reply_b = "Great. Just make sure the actual API response and narrow screens are part of it."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_abel")

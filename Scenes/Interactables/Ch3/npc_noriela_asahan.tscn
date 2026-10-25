@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_noriela_asahan"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Noriela_Asahan_Junior_Developer.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_noriela"]
+radius = 12.0
+
+[node name="NPCNorielaAsahan" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Noriela Asahan"
+dialogue_line_1 = "Welcome to DJQ Corp! Don't stress too much on your first sprint—take coffee breaks, ask questions, and collaborate."
+second_visit_dialogue = "A good team shares context early, especially when a blocker might affect someone else's work."
+reminder_dialogue = "Take a breath, ask for help, and keep your teammates in the loop."
+optional_choice_prompt = "Need a reminder for those stressful sprint days?"
+optional_choice_a = "I do, actually."
+optional_choice_b = "I'm doing okay."
+optional_choice_reply_a = "Break the problem into one next step, and let the team know early if something is blocked."
+optional_choice_reply_b = "That's good. Keep checking in with your teammates as the work changes."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_noriela")

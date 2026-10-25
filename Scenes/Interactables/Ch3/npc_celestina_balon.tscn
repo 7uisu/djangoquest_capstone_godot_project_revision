@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_celestina_balon"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Celestina_Balon_QA_Lead.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_celestina"]
+radius = 12.0
+
+[node name="NPCCelestinaBalon" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Celestina Balon"
+dialogue_line_1 = "I'm Celestina, QA Lead. My job is to make sure what we build actually works before it reaches users."
+second_visit_dialogue = "A fix is not verified until the original bug is reproduced and tested again."
+reminder_dialogue = "Remember to verify the reported problem after the fix—not just assume it works."
+optional_choice_prompt = "Would you like to hear my favorite QA rule?"
+optional_choice_a = "Tell me."
+optional_choice_b = "I think I know it."
+optional_choice_reply_a = "A fix is not finished until the issue is reproduced, verified, and checked for regressions."
+optional_choice_reply_b = "Then you know the heart of it: verify the behavior, don't just assume the code is fine."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_celestina")

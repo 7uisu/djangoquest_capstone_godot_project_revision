@@ -5,6 +5,7 @@ extends Area2D
 @export var interaction_text: String = "(F) to Sit"
 @export var sit_direction: String = "down"  ## "up", "down", "left", "right"
 @export var seat_offset: Vector2 = Vector2(0, 0)  ## Fine-tune seated position
+@export var stand_offset: Vector2 = Vector2(0, 0)  ## Position to move the player when standing
 
 @onready var interaction_label: Label = $Label
 
@@ -33,6 +34,9 @@ func _on_body_exited(body: Node2D) -> void:
 
 ## Called by the player's _input() when pressing interact
 func interact():
+	var current_scene := get_tree().current_scene
+	if current_scene and bool(current_scene.get_meta("ch3_interactions_locked", false)):
+		return
 	var players = get_tree().get_nodes_in_group("player")
 	if players.is_empty():
 		return
@@ -69,6 +73,7 @@ func _sit_down(player):
 
 func _stand_up(player):
 	is_occupied = false
+	player.global_position = global_position + stand_offset
 	player.can_move = true
 	player.is_sitting = false
 	player.play_idle_animation(sit_direction)
@@ -93,9 +98,9 @@ func _show_label():
 	if not interaction_label:
 		return
 	if is_occupied:
-		interaction_label.text = "(F) to Stand"
-	else:
-		interaction_label.text = interaction_text
+		_hide_label()
+		return
+	interaction_label.text = interaction_text
 	interaction_label.visible = true
 	_kill_label_tween()
 	_label_tween = create_tween()

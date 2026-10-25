@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_divino_cinaon"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Divino_Cinaon_Server_and_Network_Engineer.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_divino"]
+radius = 12.0
+
+[node name="NPCDivinoCinaon" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Divino Cinaon"
+dialogue_line_1 = "I'm Divino, Server and Network Specialist. This area is restricted to authorized personnel. Do you have clearance to be here?"
+second_visit_dialogue = "The server room is quiet again, but don't skip the logs when a production issue appears."
+reminder_dialogue = "If something breaks in production, start with the logs and verify each recovery step."
+optional_choice_prompt = "Would you like a production-triage reminder?"
+optional_choice_a = "Yes, please."
+optional_choice_b = "I'll remember the logs."
+optional_choice_reply_a = "Confirm impact, inspect logs, identify the failing change, then verify the recovery—not only the deployment."
+optional_choice_reply_b = "Good. Also tell the team what you find and confirm the service is healthy afterward."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_divino")

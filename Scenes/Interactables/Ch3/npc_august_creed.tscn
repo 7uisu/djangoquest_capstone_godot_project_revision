@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ch3_august_creed"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/August_Creed_OJT_Coordinator.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_august"]
+radius = 12.0
+
+[node name="NPCAugustCreed" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "August Creed"
+dialogue_line_1 = "I'm August Creed, OJT Coordinator. You must be here for the interview."
+second_visit_dialogue = "Whenever you're feeling lost, take a breath and check what your mentors assigned you. We're all in this sprint together."
+reminder_dialogue = "One task at a time, kid. Stay focused on your current ticket, and don't forget to hydrate!"
+optional_choice_prompt = "Want a quick piece of advice before you head back to work?"
+optional_choice_a = "Yes, I could use one."
+optional_choice_b = "I'm good, thanks."
+optional_choice_reply_a = "Ask questions early. A small clarification can save the whole team an afternoon."
+optional_choice_reply_b = "Fair enough. Remember, asking for clarification is a strength, not a weakness."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_august")

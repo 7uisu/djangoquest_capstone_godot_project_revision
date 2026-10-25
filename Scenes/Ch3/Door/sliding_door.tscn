@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cjwlxjgby1fm1"]
 
 [ext_resource type="Texture2D" uid="uid://6h8f80ibssuo" path="res://Textures/3_Animated_objects/32x32/spritesheets/animated_door_glass_sliding_32x32.png" id="1_7dol3"]
-[ext_resource type="Script" uid="uid://er2uu6osgfa4" path="res://Scenes/Ch1/Interactive Objects/Door/Scripts/door.gd" id="1_ii4m4"]
+[ext_resource type="Script" uid="uid://p480akk55h7e" path="res://Scripts/Ch3/sliding_door.gd" id="1_ii4m4"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_ii4m4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ecno"]
@@ -88,17 +88,17 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_00ap6")
 }],
-"loop": true,
+"loop": 1,
 "name": &"close_animation",
-"speed": 15.0
+"speed": 30.0
 }, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_27odl")
 }],
-"loop": true,
+"loop": 1,
 "name": &"close_idle",
-"speed": 15.0
+"speed": 30.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -122,17 +122,17 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_bx6hx")
 }],
-"loop": true,
+"loop": 1,
 "name": &"open_animation",
-"speed": 15.0
+"speed": 30.0
 }, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_fh746")
 }],
-"loop": true,
+"loop": 1,
 "name": &"open_idle",
-"speed": 15.0
+"speed": 30.0
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_5nw87"]
@@ -147,7 +147,7 @@ shape = SubResource("RectangleShape2D_2ecno")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=964184063]
 sprite_frames = SubResource("SpriteFrames_4qa37")
-animation = &"close_idle"
+animation = &"open_idle"
 
 [node name="Label" type="Label" parent="." unique_id=547823888]
 z_index = 5

@@ -13,6 +13,7 @@ var _hud: CanvasLayer = null
 var current_quest_id: String = ""
 var current_quest_text: String = ""
 var target_node_names: PackedStringArray = PackedStringArray()
+var target_floor_name: String = ""
 
 # Which quest the player has chosen to actively track (defaults to current_quest_id)
 var tracked_quest_id: String = ""
@@ -26,10 +27,11 @@ func _ready() -> void:
 	add_child(_hud)
 
 
-func set_quest(quest_id: String, quest_text: String, target_names: Variant = "") -> void:
+func set_quest(quest_id: String, quest_text: String, target_names: Variant = "", floor_name: String = "") -> void:
 	current_quest_id = quest_id
 	current_quest_text = quest_text
 	target_node_names = _normalize_target_names(target_names)
+	target_floor_name = floor_name
 	_has_quest = not quest_id.is_empty() or not quest_text.is_empty()
 	# Auto-track the new main quest unless player manually chose something else
 	if tracked_quest_id.is_empty() or tracked_quest_id == current_quest_id:
@@ -44,6 +46,7 @@ func clear_quest() -> void:
 	current_quest_text = ""
 	tracked_quest_id = ""
 	target_node_names = PackedStringArray()
+	target_floor_name = ""
 	_has_quest = false
 	_suppress_depth = 0
 	quest_changed.emit("", "")
@@ -109,6 +112,10 @@ func get_arrow_target_global_position() -> Vector2:
 	var player := _get_player()
 	if player == null:
 		return Vector2.ZERO
+	if not target_floor_name.is_empty() and _is_office_scene(scene):
+		var current_floor := _get_office_floor_name(scene)
+		if current_floor != target_floor_name:
+			return _get_nearest_office_elevator(scene, player.global_position)
 	var best: Vector2 = Vector2.ZERO
 	var best_d := INF
 	for name in target_node_names:
@@ -127,6 +134,34 @@ func get_arrow_target_global_position() -> Vector2:
 			best_d = d
 			best = gp
 	return best
+
+
+func _is_office_scene(scene: Node) -> bool:
+	var path := String(scene.scene_file_path)
+	return path.ends_with("main_office_3_floor_map.tscn") or path.ends_with("main_office_3_floor_map_2nd_floor.tscn") or path.ends_with("main_office_3_floor_map_3rd_floor.tscn")
+
+
+func _get_office_floor_name(scene: Node) -> String:
+	var path := String(scene.scene_file_path)
+	if path.ends_with("main_office_3_floor_map_2nd_floor.tscn"):
+		return "2nd Floor"
+	if path.ends_with("main_office_3_floor_map_3rd_floor.tscn"):
+		return "3rd Floor"
+	return "Ground Floor"
+
+
+func _get_nearest_office_elevator(scene: Node, player_position: Vector2) -> Vector2:
+	var best_position := Vector2.ZERO
+	var best_distance := INF
+	for elevator_name in ["ElevatorDoor1", "ElevatorDoor2"]:
+		var elevator := scene.find_child(elevator_name, true, false) as Node2D
+		if elevator == null:
+			continue
+		var distance := player_position.distance_squared_to(elevator.global_position)
+		if distance < best_distance:
+			best_distance = distance
+			best_position = elevator.global_position
+	return best_position
 
 
 func refresh_ch1_school_quest() -> void:

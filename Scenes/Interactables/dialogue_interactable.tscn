@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://cbt643icj8ogk" path="res://Scripts/Interactables/dialogue_interactable.gd" id="1_script"]
 [ext_resource type="FontFile" uid="uid://hke21ckgccrf" path="res://Textures/Fonts/superstar-memesbruh03/superstar_memesbruh03.ttf" id="2_font"]
 [ext_resource type="Texture2D" uid="uid://cvqdmgishgbvg" path="res://Textures/NPC/Female Bestfriend/FemaleBestFriendNPCWorking.png" id="2_lpi83"]
+[ext_resource type="Texture2D" uid="uid://bsaim0pfqiyw" path="res://Textures/Player/Sprites/Shadow.png" id="3_shadow"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yw7oa"]
 atlas = ExtResource("2_lpi83")
@@ -610,6 +611,12 @@ vertical_alignment = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1865194984]
 shape = SubResource("CircleShape2D_lpi83")
+
+[node name="Shadow" type="Sprite2D" parent="AnimatedSprite2D"]
+z_index = -1
+position = Vector2(1.0, 18.0)
+scale = Vector2(1.8333333, 1.09375)
+texture = ExtResource("3_shadow")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="body_exited" from="." to="." method="_on_body_exited"]
