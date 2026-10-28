@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="GetHubTicket" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/gethub_ticket.gd" id="1_ticket"]
+
+[resource]
+script = ExtResource("1_ticket")
+issue_number = 104
+title = "Progress cards trust an unvalidated API response"
+reporter_name = "Abel Abendaño"
+reporter_role = "Frontend Developer"
+priority = "High"
+initial_status = "Open"
+labels = PackedStringArray("bug", "frontend", "api", "typescript", "contract")
+description = "The Student Learning Portal progress card assumes the server always sends valid data. Validate the agreed response contract before mapping fields: teacher_name must be a string and progress_percentage must be a number. Do not invent fallback data or silently render a malformed response."
+reproduction_steps = PackedStringArray("Load the progress card with a valid API response.", "Try a response where teacher_name is missing or not a string.", "Try a response where progress_percentage is missing or not numeric.", "Observe that the current client accepts malformed payloads without reporting a contract error.")
+acceptance_criteria = PackedStringArray("Accept teacher_name only when it is a string.", "Accept progress_percentage only when it is a number.", "Throw a clear Invalid progress response error if either field violates the contract.", "Keep the agreed response field names; do not substitute mock data.")
+attachment_heading = "API response contract · progress card"
+attachment_caption = "Expected fields: teacher_name: string and progress_percentage: number. Missing or malformed values must be rejected before rendering."
+challenge_title = "Validate the progress API response"
+challenge_topic = "typescript"
+challenge_type = "free_type"
+challenge_output_type = "terminal"
+file_name = "progress_contract.ts"
+starter_code = "type ProgressResponse = {\n  teacher_name: string;\n  progress_percentage: number;\n};\n\nfunction parseProgressResponse(data: Record<string, unknown>): ProgressResponse {\n  return {\n    teacher_name: data.teacher_name as string,\n    progress_percentage: data.progress_percentage as number\n  };\n}"
+project_tree = {"student_portal": {"src": {"api": {"progress.ts": ""}, "components": {"ProgressCard.tsx": "", "progress_contract.ts": ""}, "types": {"reports.ts": ""}}}}
+expected_code = "if (typeof data.teacher_name !== \"string\" || typeof data.progress_percentage !== \"number\") {\n    throw new Error(\"Invalid progress response\");\n  }"
+hint = "A TypeScript cast changes only the compiler's assumption; it does not validate runtime JSON. Check both field types before returning the typed response."
+mentor_name = "Abel"
+mentor_hint = "The payload arrives as runtime data, regardless of its TypeScript annotation. Consider what you can verify about each required value before trusting it as the response type."
+correct_output = "API contract valid — 24 progress records accepted and ready to render."
+error_output = "ContractError: Progress response is missing a required field or has an invalid field type."
+mission_steps = PackedStringArray("Read the agreed response fields: teacher_name and progress_percentage.", "Validate both values at runtime before returning ProgressResponse.", "Run the contract checks and reject malformed payloads with a clear error.")

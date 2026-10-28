@@ -2,6 +2,7 @@
 extends CanvasLayer
 
 signal fast_travel_completed(target_position: Vector2)
+signal scene_transition_finished
 
 @onready var color_rect: ColorRect = $ColorRect
 
@@ -91,6 +92,7 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 	var fade_in = create_tween()
 	fade_in.tween_property(color_rect, "color:a", 0.0, FADE_IN_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
 	await fade_in.finished
+	scene_transition_finished.emit()
 
 	# Re-enable player movement (safe wrapper to protect tutorials/dialogues)
 	_safe_enable_player_movement()

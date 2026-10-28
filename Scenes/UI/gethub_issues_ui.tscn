@@ -1,0 +1,403 @@
+[gd_scene format=3 uid="uid://b5npyuv6w57gc"]
+
+[ext_resource type="Script" uid="uid://bgiv6lmm3v4mq" path="res://Scripts/Interactables/gethub_issues_ui.gd" id="1_ui"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_101.tres" id="2_ticket101"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_window"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.19, 0.22, 0.27, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.42)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pane"]
+bg_color = Color(0.075, 0.09, 0.115, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.19, 0.22, 0.27, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_evidence"]
+bg_color = Color(0.08, 0.1, 0.13, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.26, 0.32, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="GetHubIssuesUI" type="CanvasLayer" unique_id=2008571105]
+layer = 20
+script = ExtResource("1_ui")
+tickets = Array[Resource]([ExtResource("2_ticket101")])
+
+[node name="Screen" type="Control" parent="." unique_id=936280426]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen" unique_id=1792462876]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.015, 0.02, 0.03, 0.88)
+
+[node name="AppWindow" type="PanelContainer" parent="Screen" unique_id=269538590]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.025
+anchor_top = 0.035
+anchor_right = 0.975
+anchor_bottom = 0.965
+offset_left = -25.6
+offset_top = -20.16
+offset_right = 25.599976
+offset_bottom = 20.160034
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_window")
+
+[node name="ContentMargin" type="MarginContainer" parent="Screen/AppWindow" unique_id=68272100]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 12
+
+[node name="MainVBox" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin" unique_id=38604359]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopBar" type="HBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox" unique_id=35807532]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="LogoMark" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/TopBar" unique_id=720159501]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.44, 0.69, 0.98, 1)
+theme_override_font_sizes/font_size = 19
+text = "◈"
+vertical_alignment = 1
+
+[node name="BrandLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/TopBar" unique_id=90773825]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 15
+text = "GetHub"
+vertical_alignment = 1
+
+[node name="BreadcrumbLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/TopBar" unique_id=1383282245]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.57, 0.61, 0.68, 1)
+text = "DJQ-CORP  /  STUDENT-PORTAL"
+vertical_alignment = 1
+
+[node name="ConnectionLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/TopBar" unique_id=1255753567]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.76, 0.48, 1)
+theme_override_font_sizes/font_size = 11
+text = "●  WORKSPACE ONLINE"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Screen/AppWindow/ContentMargin/MainVBox/TopBar" unique_id=1005673169]
+custom_minimum_size = Vector2(32, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.82, 1)
+text = "✕"
+
+[node name="RepoHeader" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox" unique_id=1015150558]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="RepoTitleLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/RepoHeader" unique_id=427843672]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 1)
+theme_override_font_sizes/font_size = 20
+text = "Student Learning Portal"
+
+[node name="RepoSubtitleLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/RepoHeader" unique_id=1519022064]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.61, 0.68, 1)
+theme_override_font_sizes/font_size = 11
+text = "Private repository  ·  DjangoQuest Product Team  ·  default branch: main"
+
+[node name="RepoTabs" type="HBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox" unique_id=1670594908]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="IssuesTabLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/RepoTabs" unique_id=242757810]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.87, 0.9, 0.95, 1)
+text = "◉  Issues"
+vertical_alignment = 1
+
+[node name="IssueCountLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/RepoTabs" unique_id=597289087]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.61, 0.68, 1)
+theme_override_font_sizes/font_size = 11
+text = "1 OPEN"
+vertical_alignment = 1
+
+[node name="PullRequestsLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/RepoTabs" unique_id=1108748945]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.53, 0.6, 1)
+text = "⑂  Pull requests  0"
+vertical_alignment = 1
+
+[node name="Workspace" type="HBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox" unique_id=420066597]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="IssueListPane" type="PanelContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace" unique_id=1578557712]
+custom_minimum_size = Vector2(212, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pane")
+
+[node name="ListMargin" type="MarginContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane" unique_id=1532185867]
+layout_mode = 2
+theme_override_constants/margin_left = 9
+theme_override_constants/margin_top = 9
+theme_override_constants/margin_right = 9
+theme_override_constants/margin_bottom = 9
+
+[node name="ListVBox" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin" unique_id=1445369494]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ListHeader" type="HBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin/ListVBox" unique_id=115766596]
+layout_mode = 2
+
+[node name="ListTitleLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin/ListVBox/ListHeader" unique_id=278608726]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.83, 0.86, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "ISSUES"
+
+[node name="FilterLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin/ListVBox/ListHeader" unique_id=751923579]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.61, 0.68, 1)
+text = "☷"
+
+[node name="TicketListScroll" type="ScrollContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin/ListVBox" unique_id=700713892]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="TicketList" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin/ListVBox/TicketListScroll" unique_id=694134769]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="ListFooterLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueListPane/ListMargin/ListVBox" unique_id=1097704537]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.53, 0.6, 1)
+theme_override_font_sizes/font_size = 10
+text = "Your assigned queue · QA"
+vertical_alignment = 1
+
+[node name="IssueDetailsPane" type="PanelContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace" unique_id=1563777549]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_pane")
+
+[node name="DetailsMargin" type="MarginContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane" unique_id=650850828]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 9
+
+[node name="DetailsVBox" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin" unique_id=858417030]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DetailsScroll" type="ScrollContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox" unique_id=2004464505]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="IssueContent" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll" unique_id=415363306]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="IssueMetaRow" type="HBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=1007123632]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="StatusLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/IssueMetaRow" unique_id=616096909]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "OPEN"
+
+[node name="IssueNumberLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/IssueMetaRow" unique_id=30091843]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.62, 0.67, 0.73, 1)
+theme_override_font_sizes/font_size = 11
+text = "#101"
+
+[node name="PriorityLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/IssueMetaRow" unique_id=451357898]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.48, 0.44, 1)
+theme_override_font_sizes/font_size = 10
+text = "▲ HIGH PRIORITY"
+
+[node name="IssueTitleLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=1839739409]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 19
+text = "Student portal layout collapses on mobile"
+autowrap_mode = 2
+
+[node name="ReporterLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=1700409514]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.63, 0.68, 0.74, 1)
+theme_override_font_sizes/font_size = 11
+text = "◉  Celestina Balon  ·  QA Lead  ·  opened this sprint"
+autowrap_mode = 2
+
+[node name="LabelsContainer" type="HFlowContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=2033212454]
+layout_mode = 2
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 4
+
+[node name="Divider1" type="HSeparator" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=219454950]
+layout_mode = 2
+
+[node name="DescriptionHeading" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=1823818273]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.83, 0.86, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Description"
+
+[node name="DescriptionLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=367811599]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.81, 1)
+theme_override_font_sizes/font_size = 11
+text = "The dashboard cards overflow on narrow mobile screens."
+autowrap_mode = 2
+
+[node name="ReproHeading" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=661179548]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.83, 0.86, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Steps to reproduce"
+
+[node name="ReproductionList" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=6597974]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="AttachmentPanel" type="PanelContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=1792824060]
+custom_minimum_size = Vector2(0, 91)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_evidence")
+
+[node name="AttachmentMargin" type="MarginContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/AttachmentPanel" unique_id=1103944615]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="AttachmentVBox" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/AttachmentPanel/AttachmentMargin" unique_id=291898397]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="AttachmentHeadingLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/AttachmentPanel/AttachmentMargin/AttachmentVBox" unique_id=2021632649]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.8, 0.86, 1)
+theme_override_font_sizes/font_size = 10
+text = "📎  QA attachment · 375 px mobile viewport"
+
+[node name="BrokenCardsPreview" type="PanelContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/AttachmentPanel/AttachmentMargin/AttachmentVBox" unique_id=1091059977]
+custom_minimum_size = Vector2(0, 27)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pane")
+
+[node name="BrokenCardsLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/AttachmentPanel/AttachmentMargin/AttachmentVBox/BrokenCardsPreview" unique_id=550540184]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.48, 0.44, 1)
+theme_override_font_sizes/font_size = 10
+text = "  Attendance  →  Grades  →  Assignments  →     ⚠ OVERFLOW"
+
+[node name="AttachmentCaptionLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent/AttachmentPanel/AttachmentMargin/AttachmentVBox" unique_id=2008267123]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.63, 0.7, 1)
+theme_override_font_sizes/font_size = 9
+text = "QA evidence: cards continue horizontally and clip at the edge."
+autowrap_mode = 2
+
+[node name="CriteriaHeading" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=948499831]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.83, 0.86, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Acceptance criteria"
+
+[node name="CriteriaList" type="VBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/DetailsScroll/IssueContent" unique_id=1703474748]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ActionRow" type="HBoxContainer" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox" unique_id=1484787112]
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ActionHintLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/ActionRow" unique_id=956493142]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.55, 0.6, 0.67, 1)
+theme_override_font_sizes/font_size = 10
+text = "Review the evidence before touching code."
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="StartWorkButton" type="Button" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/ActionRow" unique_id=2051939863]
+custom_minimum_size = Vector2(166, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+text = "▶  Start Work in IDE"
+
+[node name="SubmitButton" type="Button" parent="Screen/AppWindow/ContentMargin/MainVBox/Workspace/IssueDetailsPane/DetailsMargin/DetailsVBox/ActionRow" unique_id=1681287407]
+visible = false
+custom_minimum_size = Vector2(190, 34)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+text = "✓  Submit to QA / Close Ticket"
+
+[node name="FooterLabel" type="Label" parent="Screen/AppWindow/ContentMargin/MainVBox" unique_id=139054935]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.43, 0.48, 0.55, 1)
+theme_override_font_sizes/font_size = 9
+text = "GETHUB  ·  DJQ CORPORATION ISSUE TRACKER                                      ESC / ✕  Close workspace"
+horizontal_alignment = 1

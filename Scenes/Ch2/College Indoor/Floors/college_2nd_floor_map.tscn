@@ -1263,7 +1263,7 @@ dialogue_line_2 = "Don't forget to run your migrations before submitting assignm
 position = Vector2(-33, 554)
 interaction_text = "Bookshelf"
 speaker_name = "Bookshelf"
-dialogue_line_1 = "Reference manuals on Software Engineering and Database Design."
+dialogue_line_1 = "Reference manuals on Software Development and Database Design."
 
 [node name="Interactable_Whiteboard_Lower" parent="Interactables" unique_id=920000006 instance=ExtResource("25_obj_interactable")]
 position = Vector2(63, 545)

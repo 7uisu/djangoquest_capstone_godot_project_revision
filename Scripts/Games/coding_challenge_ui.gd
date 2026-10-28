@@ -5,6 +5,7 @@ extends Control
 signal challenge_completed(success: bool, challenge_id: String)
 signal challenge_failed
 signal hint_used
+signal alt_tab_to_gethub
 
 # ─── Challenge Data ──────────────────────────────────────────────────────────
 var current_challenge: Dictionary = {}
@@ -17,6 +18,7 @@ var is_terminal: bool = false   # true for terminal command challenges
 var is_dark_theme: bool = true  # light theme troll toggle
 var hide_close_button: bool = false  # when true, prevent closing (NPC challenges)
 var is_student_sequence: bool = false # explicitly for the rapid-fire NPC loop
+var office_gethub_enabled: bool = false
 var music_track_override: String = ""
 
 var _attempts: int = 0  # tracks incorrect submissions
@@ -49,6 +51,7 @@ var _is_browser_visible: bool = false
 @onready var timer_label: Label = $IDEScreen/TitleBar/TimerLabel
 @onready var close_button: Button = $IDEScreen/TitleBar/CloseButton
 @onready var gear_button: Button = $IDEScreen/TitleBar/GearButton
+@onready var gethub_button: Button = $IDEScreen/TitleBar/GetHubButton
 
 # Mission Panel
 @onready var mission_title: Label = $IDEScreen/MainContent/MissionPanel/MissionScroll/MissionVBox/MissionTitle
@@ -188,6 +191,7 @@ func _ready():
 
 	# Connect signals
 	close_button.pressed.connect(_on_close_pressed)
+	gethub_button.pressed.connect(_on_gethub_alt_tab_pressed)
 	hint_button.pressed.connect(_on_hint_pressed)
 	run_button.pressed.connect(_on_run_pressed)
 	reload_button.pressed.connect(_on_reload_pressed)
@@ -226,6 +230,7 @@ func _ready():
 	troll_dialogue.visible = false
 	item_popup.visible = false
 	browser_screen.visible = false
+	gethub_button.visible = office_gethub_enabled
 
 	# Style new UI elements
 	_style_terminal_strip()
@@ -258,6 +263,18 @@ func _process(delta):
 
 func get_attempts() -> int:
 	return _attempts
+
+
+func enable_gethub_alt_tab(enabled: bool) -> void:
+	office_gethub_enabled = enabled
+	if is_node_ready():
+		gethub_button.visible = enabled
+
+
+func _on_gethub_alt_tab_pressed() -> void:
+	if office_gethub_enabled:
+		alt_tab_to_gethub.emit()
+
 
 func get_hints_used() -> int:
 	return _free_hints_revealed + (1 if _ai_hint_used else 0)
@@ -307,6 +324,7 @@ func load_challenge(challenge: Dictionary) -> void:
 		_render_project_tree(current_challenge["project_tree"], _active_file_name)
 	elif project_tree_panel:
 		project_tree_panel.visible = false
+	_refresh_custom_browser_preview()
 
 func _play_challenge_music(challenge: Dictionary) -> void:
 	var audio_manager = get_node_or_null("/root/AudioManager")
@@ -408,9 +426,13 @@ func _setup_mission_panel():
 		steps_container.add_child(step_label)
 		step_idx += 1
 
-	# Hint button — HIDDEN (hints now live in OverflowStack)
+	# Office tickets use authored mentor guidance, not a generated AI answer.
+	var mentor_hint := str(current_challenge.get("mentor_hint", ""))
+	var mentor_name := str(current_challenge.get("mentor_name", "your mentor"))
+	hint_button.visible = office_gethub_enabled and not mentor_hint.is_empty()
+	if hint_button.visible:
+		hint_button.text = "Ask %s for a Hint" % mentor_name
 	hint_label.visible = false
-	hint_button.visible = false
 
 	# OverflowStack button — visible for any challenge with hints
 	var has_hint = current_challenge.get("hint", "") != "" or current_challenge.get("hints", []).size() > 0
@@ -857,6 +879,8 @@ func _on_file_tab_pressed(file_name: String):
 
 # Generate fake rendered website content for the browser preview
 func _get_browser_preview_content(challenge_id: String, correct_output: String) -> String:
+	if current_challenge.has("browser_preview_after"):
+		return str(current_challenge.get("browser_preview_after", correct_output))
 	# Map challenge IDs to fake website previews
 	match challenge_id:
 		# ── Professor Markup (HTML/CSS) ────────────────
@@ -1241,8 +1265,11 @@ func _update_overflow_button_label():
 	var total = min(hints_array.size(), MAX_FREE_HINTS)
 	var remaining = total - min(_free_hints_revealed, total)
 	var free_str = "[Free: %d/%d]" % [remaining, total]
-	var ai_str = "[AI: 0/1]" if _ai_hint_used else "[AI: 1/1]"
-	overflow_stack_button.text = "📚 OverflowStack %s %s" % [free_str, ai_str]
+	if office_gethub_enabled:
+		overflow_stack_button.text = "📚 OverflowStack %s" % free_str
+	else:
+		var ai_str = "[AI: 0/1]" if _ai_hint_used else "[AI: 1/1]"
+		overflow_stack_button.text = "📚 OverflowStack %s %s" % [free_str, ai_str]
 
 func _get_hints_array() -> Array:
 	var hints_array: Array = current_challenge.get("progressive_hints", [])
@@ -1255,8 +1282,12 @@ func _get_hints_array() -> Array:
 	return hints_array
 
 func _on_hint_pressed():
-	# Legacy — do nothing, hints are in OverflowStack now
-	pass
+	var mentor_hint := str(current_challenge.get("mentor_hint", ""))
+	if not office_gethub_enabled or mentor_hint.is_empty():
+		return
+	hint_label.bbcode_enabled = true
+	hint_label.text = "[b]%s’s guidance:[/b] %s" % [str(current_challenge.get("mentor_name", "Your mentor")), mentor_hint]
+	hint_label.visible = true
 
 func _on_why_btn_pressed():
 	_play_click()
@@ -1597,6 +1628,19 @@ func _on_code_edit_changed():
 		if _active_file_name != "":
 			_file_buffers[_active_file_name] = code_edit.text
 		run_button.disabled = code_edit.text.strip_edges() == ""
+		_refresh_custom_browser_preview()
+
+
+func _refresh_custom_browser_preview() -> void:
+	if not current_challenge.has("browser_preview_before") or browser_preview == null:
+		return
+	var edited_code := code_edit.text if code_edit.visible else free_type_edit.text
+	var required_code := str(current_challenge.get("preview_required_code", ""))
+	var preview_text := str(current_challenge.get("browser_preview_before", ""))
+	if not required_code.is_empty() and required_code in edited_code:
+		preview_text = str(current_challenge.get("browser_preview_after", preview_text))
+	browser_preview.bbcode_enabled = true
+	browser_preview.text = preview_text
 
 func _on_close_pressed():
 	_play_click()
@@ -2070,7 +2114,7 @@ const OVERFLOW_USERS = [
 	"django_guru_420  •  ⭐ 1,337 rep",
 	"definitely_not_AI  •  ⭐ 99,999 rep",
 	"i_hate_css  •  ⭐ 8,008 rep",
-	"copy_paste_engineer  •  ⭐ 12,345 rep",
+	"copy_paste_webdev  •  ⭐ 12,345 rep",
 	"stackoverflow_is_life  •  ⭐ 77,777 rep",
 ]
 
@@ -2109,7 +2153,7 @@ func _show_overflow_stack():
 
 	# Votes
 	var vote_count = randi_range(12, 247) + (_free_hints_revealed * 3)
-	var premium_status = "Premium AI used" if _ai_hint_used else "Premium AI available"
+	var premium_status = "Mentor guidance available" if office_gethub_enabled else ("Premium AI used" if _ai_hint_used else "Premium AI available")
 	stack_votes.text = "▲ " + str(vote_count) + " votes  •  Free hints %d/%d  •  %s" % [_free_hints_revealed, total_free_hints, premium_status]
 	stack_votes.add_theme_color_override("font_color", Color("6a9955"))
 	stack_votes.add_theme_font_size_override("font_size", 12)
@@ -2120,7 +2164,7 @@ func _show_overflow_stack():
 	stack_answer.fit_content = false
 	stack_answer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var thread_lines: Array[String] = []
-	thread_lines.append("[color=#3b4045][b]Accepted Answer[/b][/color]")
+	thread_lines.append("[color=#3b4045][b]%s[/b][/color]" % ("Community hints" if office_gethub_enabled else "Accepted Answer"))
 
 	if _free_hints_revealed <= 0:
 		thread_lines.append("[color=#5c6370]No free hints revealed yet. Click the OverflowStack button again to unlock Hint 1.[/color]")
@@ -2133,10 +2177,10 @@ func _show_overflow_stack():
 	if _free_hints_revealed >= total_free_hints and total_free_hints > 0:
 		thread_lines.append("[color=#e06c75][b]Free hints exhausted.[/b] The answer will not be shown here.[/color]")
 
-	if _ai_hint_used:
+	if _ai_hint_used and not office_gethub_enabled:
 		thread_lines.append("")
 		thread_lines.append("[color=#0077cc][b]Premium AI Hint:[/b] %s[/color]" % _ai_hint_text)
-	else:
+	elif not office_gethub_enabled:
 		thread_lines.append("")
 		if _ai_hint_text != "":
 			thread_lines.append("[color=#d19a66][b]Premium AI:[/b] %s[/color]" % _ai_hint_text)
@@ -2158,7 +2202,7 @@ func _show_overflow_stack():
 
 	var premium_button = _ensure_premium_hint_button()
 	if premium_button:
-		premium_button.visible = true
+		premium_button.visible = not office_gethub_enabled
 		premium_button.disabled = _ai_hint_used
 		premium_button.text = "Premium AI Hint Used" if _ai_hint_used else "Use Premium AI Hint (-0.5 points)"
 

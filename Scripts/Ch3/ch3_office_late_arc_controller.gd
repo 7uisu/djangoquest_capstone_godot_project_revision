@@ -5,6 +5,15 @@ signal accountability_choice_selected(choice_index: int)
 const DIALOGUE_BOX_SCENE := preload("res://Scenes/UI/dialogue_box.tscn")
 const CHAT_BUBBLE_SCENE := preload("res://Scenes/UI/chat_bubble.tscn")
 const INTERVIEW_CHOICE_SCENE := preload("res://Scenes/Ch3/interview_choice_panel.tscn")
+const GETHUB_ISSUES_SCENE := preload("res://Scenes/UI/gethub_issues_ui.tscn")
+const GETHUB_PULL_REQUEST_SCENE := preload("res://Scenes/UI/gethub_pull_request_ui.tscn")
+const SERVER_RACK_TERMINAL_SCENE := preload("res://Scenes/Interactables/server_rack_terminal_ui.tscn")
+
+signal gethub_ticket_batch_finished(success: bool, issue_number: int)
+signal pull_request_modal_result(approved: bool, pr_number: int, comment: String, dismissed: bool)
+signal server_traceback_acknowledged
+signal server_migration_requested
+signal server_terminal_continued
 
 @export_node_path("Node2D") var player_path: NodePath = ^"YSortLayer/Player"
 @export_node_path("CanvasLayer") var dialogue_box_path: NodePath = ^"DialogueBox"
@@ -14,6 +23,9 @@ const INTERVIEW_CHOICE_SCENE := preload("res://Scenes/Ch3/interview_choice_panel
 @export var graduation_reception_spawn_position := Vector2(607.0, 554.0)
 @export_file("*.tscn") var second_floor_scene_path := "res://Scenes/Ch3/Office Floors/main_office_3_floor_map_2nd_floor.tscn"
 @export var reynalda_arrival_position := Vector2(-51.0, 70.0)
+@export_group("Chapter 9 GetHub Ticket Batches")
+@export var backend_ticket_batch: Array[Resource] = []
+@export var frontend_ticket_batch: Array[Resource] = []
 
 var player: CharacterBody2D
 var dialogue_box: CanvasLayer
@@ -23,6 +35,7 @@ var overlay_title: Label
 var overlay_body: Label
 var sequence_running := false
 var server_rack: Area2D
+var server_rack_terminal_ui: CanvasLayer
 var coffee_machine: Area2D
 var backend_workstation: Area2D
 var frontend_workstation: Area2D
@@ -39,7 +52,8 @@ var npc_roles := {
 	"NPCHannaLuisaPaday": "hanna",
 	"NPCDivinoCinaon": "divino",
 	"NPCTercioMateoRamos": "tercio",
-	"NPCJuliaRoa": "julia"
+	"NPCJuliaRoa": "julia",
+	"NPCMarioEllanCruz": "mario"
 }
 
 
@@ -60,7 +74,14 @@ func _ready() -> void:
 	_create_accountability_choice_ui(scene_root)
 	_configure_scene_npcs(scene_root)
 	_sync_lead_office_roster(scene_root)
+	_sync_floor2_kenna_roster(scene_root)
 	server_rack = scene_root.find_child("ServerRackInteractable", true, false) as Area2D
+	if server_rack:
+		server_rack_terminal_ui = SERVER_RACK_TERMINAL_SCENE.instantiate() as CanvasLayer
+		scene_root.add_child(server_rack_terminal_ui)
+		server_rack_terminal_ui.connect("traceback_acknowledged", _on_server_traceback_acknowledged)
+		server_rack_terminal_ui.connect("migration_requested", _on_server_migration_requested)
+		server_rack_terminal_ui.connect("terminal_continued", _on_server_terminal_continued)
 	coffee_machine = scene_root.find_child("CoffeeMachineInteractable", true, false) as Area2D
 	backend_workstation = scene_root.find_child("BackendWorkstation", true, false) as Area2D
 	frontend_workstation = scene_root.find_child("FrontendWorkstation", true, false) as Area2D
@@ -82,7 +103,25 @@ func _ready() -> void:
 			var rack_label := server_rack.get_node_or_null("Label") as Label
 			if rack_label:
 				rack_label.text = "[F] Run python manage.py migrate"
+	var quest_manager := get_node_or_null("/root/QuestManager")
+	var restore_walk_hud_after_transition := bool(get_tree().root.get_meta("ch3_restore_walk_hud_after_transition", false))
+	if quest_manager and not restore_walk_hud_after_transition:
+		quest_manager.reset_suppression()
 	_restore_stage_quest()
+	if restore_walk_hud_after_transition:
+		var room_indicator := scene_root.get_node_or_null("RoomIndicator")
+		if room_indicator:
+			room_indicator.visible = false
+		if quest_manager:
+			quest_manager.hide_quest()
+		var scene_transition := get_node_or_null("/root/SceneTransition")
+		if scene_transition and scene_transition.has_signal("scene_transition_finished"):
+			await scene_transition.scene_transition_finished
+		get_tree().root.set_meta("ch3_restore_walk_hud_after_transition", false)
+		if room_indicator:
+			room_indicator.visible = true
+		if quest_manager:
+			quest_manager.reset_suppression()
 
 
 func _configure_scene_npcs(scene_root: Node) -> void:
@@ -95,19 +134,41 @@ func _configure_scene_npcs(scene_root: Node) -> void:
 
 
 func _sync_lead_office_roster(scene_root: Node) -> void:
-	# The Lead's Office roster is only present once Chapter 10 reaches the
-	# evaluation. Earlier in the shared-building timeline these characters are
-	# assigned to the Ground Floor Sprint Room, so hide their 3rd Floor instances.
+	# The Lead's Office is Ivana's private executive office on Floor 3.
+	# She becomes present once Chapter 10 reaches the evaluation.
+	# Earlier in the shared-building timeline she is assigned to the Ground Floor Sprint Room.
 	var quest_manager := get_node_or_null("/root/QuestManager")
 	var quest_id := String(quest_manager.current_quest_id) if quest_manager else ""
 	var is_early_office_quest := quest_id.begins_with("ch6:") or quest_id.begins_with("ch7:") or quest_id.begins_with("ch8:") or quest_id.begins_with("ch9:")
-	var roster_is_active := _stage() >= 10 and not is_early_office_quest
-	for npc_name: String in ["NPCIvanaDanielaGabani", "NPCAugustCreed", "NPCHannaLuisaPaday"]:
-		var npc := scene_root.find_child(npc_name, true, false) as Node2D
-		if npc == null:
-			continue
-		npc.visible = roster_is_active
-		_sync_npc_collision_tree(npc, roster_is_active)
+	var ivana_is_active := _stage() >= 10 and not is_early_office_quest
+	var ivana := scene_root.find_child("NPCIvanaDanielaGabani", true, false) as Node2D
+	if ivana:
+		ivana.visible = ivana_is_active
+		_sync_npc_collision_tree(ivana, ivana_is_active)
+	# August (Ground Floor HR) and Hanna (Floor 1/2) do not loiter in Ivana's private office.
+	for non_lead_name: String in ["NPCAugustCreed", "NPCHannaLuisaPaday"]:
+		var npc := scene_root.find_child(non_lead_name, true, false) as Node2D
+		if npc:
+			npc.visible = false
+			_sync_npc_collision_tree(npc, false)
+	# Mario joins the Executive Boardroom only during and after Ch13 (stage >= 13).
+	# During Ch10–12 he is not a board attendee; hide him so he doesn't appear beforehand.
+	var mario_f3 := scene_root.find_child("NPCMarioEllanCruz", true, false) as Node2D
+	if mario_f3:
+		var mario_boardroom_active := _stage() >= 13
+		mario_f3.visible = mario_boardroom_active
+		_sync_npc_collision_tree(mario_f3, mario_boardroom_active)
+
+
+func _sync_floor2_kenna_roster(scene_root: Node) -> void:
+	# Kenna appears in the Ground Floor sprint-room sequence first. Her Floor 2
+	# instance becomes active only after the 120-hour time skip advances the story.
+	var kenna := scene_root.find_child("NPCKennaLouisaArizobal", true, false) as Node2D
+	if kenna == null:
+		return
+	var floor_2_assignment_active := _stage() >= 9
+	kenna.visible = floor_2_assignment_active
+	_sync_npc_collision_tree(kenna, floor_2_assignment_active)
 
 
 func _sync_npc_collision_tree(node: Node, enabled: bool) -> void:
@@ -143,8 +204,16 @@ func _configure_workstation(workstation: Area2D, prompt: String) -> void:
 	if workstation == null:
 		return
 	workstation.set("is_locked", true)
+	workstation.call("set_interaction_enabled", false)
 	workstation.set("lock_message", "You don't need to work on this computer right now.")
 	workstation.set("interaction_text", prompt)
+
+
+func _set_workstation_active(workstation: Area2D, active: bool) -> void:
+	if workstation == null:
+		return
+	workstation.set("is_locked", not active)
+	workstation.call("set_interaction_enabled", active)
 
 
 func _create_placeholder_overlay(scene_root: Node) -> void:
@@ -198,6 +267,7 @@ func _set_stage(value: int, quest_id: String, quest_text: String, target: String
 	var quest_manager := get_node_or_null("/root/QuestManager")
 	if quest_manager:
 		quest_manager.set_quest(quest_id, "%s — %s" % [floor_name, quest_text], target, floor_name)
+		quest_manager.set_tracked_quest(quest_id)
 
 
 func _floor_for_stage(stage: int) -> String:
@@ -211,18 +281,18 @@ func _floor_for_stage(stage: int) -> String:
 
 func _restore_stage_quest() -> void:
 	var stage := _stage()
+	_set_workstation_active(backend_workstation, false)
+	_set_workstation_active(frontend_workstation, false)
 	match stage:
 		9:
 			_set_stage(9, "ch9:_supervised_development", "Meet Kenna for your supervised backend tasks in the Developer Wing.", "NPCKennaLouisaArizobal")
 		901:
-			if backend_workstation:
-				backend_workstation.set("is_locked", false)
+			_set_workstation_active(backend_workstation, true)
 			_set_stage(901, "ch9_backend_workstation", "Go to the Backend Workstation beside Kenna ([F] Use Workstation).", "BackendWorkstation")
 		91:
 			_set_stage(91, "ch9_frontend_integration", "Meet Abel in the Frontend Room to review API integration.", "NPCAbelAbendano")
 		911:
-			if frontend_workstation:
-				frontend_workstation.set("is_locked", false)
+			_set_workstation_active(frontend_workstation, true)
 			_set_stage(911, "ch9_frontend_workstation", "Go to the Frontend Workstation beside Abel ([F] Use Workstation).", "FrontendWorkstation")
 		10:
 			_set_stage(10, "ch10_ojt_evaluation", "Go to the Lead's Office for your OJT evaluation.", "NPCIvanaDanielaGabani")
@@ -236,6 +306,8 @@ func _restore_stage_quest() -> void:
 		121:
 			if not bool(get_tree().root.get_meta("ch3_server_alert_started", false)):
 				_set_stage(121, "ch12_production_incident", "Report to Divino in the Server Room.", "NPCDivinoCinaon")
+			elif not bool(get_tree().root.get_meta("ch3_divino_incident_briefed", false)):
+				_set_stage(121, "ch12_production_incident", "Find Divino in the Server Room for incident triage.", "NPCDivinoCinaon")
 			elif server_incident_phase == 0:
 				_set_stage(121, "ch12_production_incident", "Access the primary console ([F] Triage Critical Error!).", "ServerRackInteractable")
 			else:
@@ -247,10 +319,10 @@ func _restore_stage_quest() -> void:
 		13:
 			_set_stage(13, "ch13_executive_presentation", "Present the completed Student Learning Portal to Julia Roa.", "NPCJuliaRoa")
 		14:
-			_set_stage(14, "ch14_conclusion", "Spend a moment with Noriela in the Developer Wing.", "NPCNorielaAsahan")
+			_set_stage(14, "ch14_conclusion", "Spend a moment with Noriela in the Break Room.", "NPCNorielaAsahan")
 		141:
+			_set_workstation_active(backend_workstation, true)
 			if backend_workstation:
-				backend_workstation.set("is_locked", false)
 				backend_workstation.set("interaction_text", "[F] Open IDE & Start Workday")
 			_set_stage(141, "ch14_workstation", "Sit at your permanent developer workstation on Floor 2 ([F] Open IDE).", "BackendWorkstation")
 		15:
@@ -266,7 +338,19 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 	var alert_started := bool(get_tree().root.get_meta("ch3_server_alert_started", false))
 	var has_active_story_beat := _has_late_story_beat(role, current_stage)
 	if role == "divino" and current_stage == 121 and alert_started:
-		await _play_npc_repeat(npc, total_visit_number)
+		if not bool(get_tree().root.get_meta("ch3_divino_incident_briefed", false)):
+			sequence_running = true
+			await _play_bubble(npc, [
+				{"name": "Divino Cinaon", "text": "The login service is failing after the rollout."},
+				{"name": "Divino Cinaon", "text": "Go to the primary rack and inspect the traceback first."},
+				{"name": "Divino Cinaon", "text": "Then come back to the cause with me before we change production."}
+			])
+			get_tree().root.set_meta("ch3_divino_incident_briefed", true)
+			_set_stage(121, "ch12_production_incident", "Access the primary console ([F] Triage Critical Error!).", "ServerRackInteractable")
+			sequence_running = false
+			_restore_walk_hud()
+		else:
+			await _play_npc_repeat(npc, total_visit_number)
 		await _offer_optional_npc_choice(npc)
 		return
 	if not has_active_story_beat:
@@ -307,6 +391,12 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 		14:
 			if role == "noriela":
 				await _chapter_14_epilogue(npc)
+			elif role == "mario":
+				await _play_bubble(npc, [
+					{"name": "Mario Ellan Cruz", "text": "That went better than I expected. You really saved us back there."},
+					{"name": "Mario Ellan Cruz", "text": "The school division is excited for launch day."}
+				])
+			_restore_walk_hud()
 		15:
 			await _play_bubble(npc, [{"name": "Narration", "text": "The next ticket is ready. Your work as a developer continues."}])
 
@@ -362,6 +452,11 @@ func _offer_optional_npc_choice(npc: Node2D) -> void:
 	var completed_choices: Dictionary = get_tree().root.get_meta("ch3_optional_npc_choices", {})
 	if choice_data.is_empty() or bool(completed_choices.get(npc.name, false)) or dialogue_box == null:
 		return
+	var was_sequence_running := sequence_running
+	var was_player_movable: bool = bool(player.get("can_move")) if player else true
+	sequence_running = true
+	if player:
+		player.can_move = false
 	completed_choices[npc.name] = true
 	get_tree().root.set_meta("ch3_optional_npc_choices", completed_choices)
 	dialogue_box.start([{
@@ -377,6 +472,9 @@ func _offer_optional_npc_choice(npc: Node2D) -> void:
 	var reply := str(choice_data.get(reply_key, ""))
 	if not reply.is_empty():
 		await _play_bubble(npc, [{"name": str(choice_data.get("speaker", npc.name)), "text": reply}])
+	sequence_running = was_sequence_running
+	if player:
+		player.can_move = was_player_movable
 
 
 func _play_npc_initial(npc: Node2D) -> void:
@@ -418,8 +516,7 @@ func _chapter_9_backend(npc: Node2D) -> void:
 		{"name": "Nathalie Milo", "text": "Then queryset filtering and serializer fields."},
 		{"name": "Nathalie Milo", "text": "Ask why each piece belongs where it does."}
 	])
-	if backend_workstation:
-		backend_workstation.set("is_locked", false)
+	_set_workstation_active(backend_workstation, true)
 	_set_stage(901, "ch9_backend_workstation", "Go to the Backend Workstation beside Kenna ([F] Use Workstation).", "BackendWorkstation")
 	sequence_running = false
 	_restore_walk_hud()
@@ -437,12 +534,20 @@ func _on_backend_workstation_used(workstation_id: String) -> void:
 
 func _complete_backend_training_workstation() -> void:
 	sequence_running = true
-	if backend_workstation:
-		backend_workstation.set("is_locked", true)
+	_set_workstation_active(backend_workstation, false)
 	_hide_walk_hud()
-	await _show_placeholder("Chapter 9 — Supervised Backend Development", "Gameplay Placeholder\nReview the model relationship and request flow. Future gameplay: plan a flowchart, choose model fields, connect Student to Classroom and Teacher, build CRUD behavior, fix URL routing and querysets, and add missing serializer or template-context fields.")
+	if player:
+		player.can_move = false
+	await _play_dialogue([{"name": "Kenna Louisa Arizobal", "text": "Open the sprint issues and inspect each reference file before you change anything. Use my hint if you need a nudge toward the underlying relationship—I'll leave the solution for you to work out."}])
+	var ticket_succeeded := await _run_gethub_ticket_batch(backend_ticket_batch)
+	if not ticket_succeeded:
+		_set_workstation_active(backend_workstation, true)
+		sequence_running = false
+		_restore_walk_hud()
+		return
 	await _show_story_cutscene("Chapter 9 — CUT_05B: The Terminal High-Five", "Dual monitors flash green HTTP 200 OK. Kenna and the player freeze in a triumphant high-five above the keyboard while Nathalie smiles over the cubicle wall.", [
 		{"name": "Kenna Louisa Arizobal", "text": "BOOM! That's how a real Django web developer queries reverse lookups!"},
+		{"name": "Player", "text": "YES! It's returning 200 OK! All 24 classroom records serialized!"},
 		{"name": "Nathalie Milo", "text": "Keep celebrating, kids, but don't break the desk."}
 	])
 	_set_stage(91, "ch9_frontend_integration", "Meet Abel in the Frontend Room to review API integration.", "NPCAbelAbendano")
@@ -461,8 +566,7 @@ func _chapter_9_frontend(npc: Node2D) -> void:
 		{"name": "Celestina Balon", "text": "I'll verify the behavior against the ticket."},
 		{"name": "Celestina Balon", "text": "I'll make sure the frontend displays the API response correctly."}
 	])
-	if frontend_workstation:
-		frontend_workstation.set("is_locked", false)
+	_set_workstation_active(frontend_workstation, true)
 	_set_stage(911, "ch9_frontend_workstation", "Go to the Frontend Workstation beside Abel ([F] Use Workstation).", "FrontendWorkstation")
 	sequence_running = false
 	_restore_walk_hud()
@@ -472,10 +576,21 @@ func _on_frontend_workstation_used(workstation_id: String) -> void:
 	if sequence_running or workstation_id != "frontend_trainee_desk" or _stage() != 911:
 		return
 	sequence_running = true
-	if frontend_workstation:
-		frontend_workstation.set("is_locked", true)
+	_set_workstation_active(frontend_workstation, false)
 	_hide_walk_hud()
-	await _show_placeholder("Chapter 9 — Frontend Integration", "Gameplay Placeholder\nConnect UI components to the sandbox API. Display student progress, add classroom enrollment, connect a form to an endpoint, map response fields, handle loading and validation errors, and check the mobile layout.")
+	if player:
+		player.can_move = false
+	await _play_dialogue([{"name": "Abel Abendaño", "text": "Before editing, compare the response contract with the UI's assumptions. Check what the browser actually receives at runtime; the mentor hint can point you toward validation without writing it for you."}])
+	var ticket_succeeded := true
+	if frontend_ticket_batch.is_empty():
+		await _show_placeholder("Chapter 9 — Frontend Integration", "Gameplay Placeholder\nConnect UI components to the sandbox API. Display student progress, add classroom enrollment, connect a form to an endpoint, map response fields, handle loading and validation errors, and check the mobile layout.")
+	else:
+		ticket_succeeded = await _run_gethub_ticket_batch(frontend_ticket_batch)
+	if not ticket_succeeded:
+		_set_workstation_active(frontend_workstation, true)
+		sequence_running = false
+		_restore_walk_hud()
+		return
 	var abel := get_parent().find_child("NPCAbelAbendano", true, false) as Node2D
 	await _play_bubble(abel, [
 		{"name": "Abel Abendaño", "text": "Good work."},
@@ -486,13 +601,28 @@ func _on_frontend_workstation_used(workstation_id: String) -> void:
 	_restore_walk_hud()
 
 
+func _run_gethub_ticket_batch(ticket_batch: Array[Resource]) -> bool:
+	if ticket_batch.is_empty():
+		push_error("Chapter 9 GetHub ticket batch is empty; assign its ticket resources in the scene Inspector.")
+		return false
+	var gethub_ui := GETHUB_ISSUES_SCENE.instantiate() as CanvasLayer
+	gethub_ui.set("tickets", ticket_batch)
+	gethub_ui.connect("finished", _on_gethub_ticket_batch_finished)
+	get_parent().add_child(gethub_ui)
+	var result: Array = await gethub_ticket_batch_finished
+	return not result.is_empty() and bool(result[0])
+
+
+func _on_gethub_ticket_batch_finished(success: bool, issue_number: int) -> void:
+	gethub_ticket_batch_finished.emit(success, issue_number)
+
+
 func _complete_epilogue_workstation() -> void:
 	sequence_running = true
-	if backend_workstation:
-		backend_workstation.set("is_locked", true)
+	_set_workstation_active(backend_workstation, false)
 	_hide_walk_hud()
 	await _show_placeholder("The Journey Continues", "Ticket: Improve the student dashboard\nPriority: Normal\nAssigned to: You\nStatus: Ready for development\n\n[This is the ending of the current story arc. The player opens the IDE and begins another day as a web developer.]")
-	await _show_story_cutscene("Chapter 14 — Paying It Forward", "Back in the Ground Floor Lobby Atrium, a nervous new student clutches a wrinkled manila folder and looks toward reception.", [
+	await _show_story_cutscene("Chapter 14 — Paying It Forward", "Back in the Ground Floor Lobby Atrium, a nervous new student pauses near reception, checking the time before gathering the courage to approach.", [
 		{"name": "You", "text": "Hey there. Looking for the technical interview room? Come on... let me show you the way."}
 	])
 	await _play_dialogue([{"name": "Narration", "text": "This is not the end of the journey. It is the beginning of a career."}])
@@ -503,17 +633,93 @@ func _complete_epilogue_workstation() -> void:
 
 func _chapter_10_evaluation(npc: Node2D) -> void:
 	sequence_running = true
-	await _show_story_cutscene("Chapter 10 — OJT Evaluation", "Visual Novel Placeholder\nIvana Daniela Gabani reviews the completed OJT record at the evaluation table. The signed OJT Certificate and clearance form are ready.", [
-		{"name": "August Creed", "text": "Three hundred hours completed. Eighteen resolved tickets across QA, Frontend, and Backend. Zero unexcused absences. Outstanding peer reviews from Celestina, Kenna, and Abel."},
-		{"name": "Ivana Daniela Gabani", "text": "Let's see if the understanding matches the hours. Explain why you separated authentication from the student profile, how your queryset avoids N+1 queries, and what happens if an unauthenticated user submits a malicious UUID."},
-		{"name": "Ivana Daniela Gabani", "text": "When you first walked through that door, you were terrified of touching a stylesheet. Today, you defended enterprise architecture like a web developer. You didn't just fulfill your hours—you earned our trust."},
-		{"name": "Narration", "text": "Ivana signs the Certificate of Completion. August affixes the official company gold seal to the OJT clearance form."}
+	var ivana := get_parent().find_child("NPCIvanaDanielaGabani", true, false) as Node2D
+	var august_npc := get_parent().find_child("NPCAugustCreed", true, false) as Node2D
+	_hide_walk_hud()
+	if player:
+		player.can_move = false
+
+	# Ivana reviews August's HR intern record directly from her desk
+	if august_npc and august_npc.visible:
+		await _play_bubble(august_npc, [
+			{"name": "August Creed", "text": "300 hours completed. 18 resolved tickets across QA, Frontend, and Backend. Zero unexcused absences."},
+			{"name": "August Creed", "text": "Outstanding peer reviews from Celestina, Kenna, and Abel."}
+		])
+	else:
+		await _play_dialogue([
+			{"name": "Ivana Daniela Gabani", "text": "August sent up your completed file. 300 hours logged across QA, Frontend, and Backend. Zero unexcused absences. Outstanding reviews from Celestina, Kenna, and Abel."}
+		])
+
+	# Ivana opens the defense
+	await _play_dialogue([
+		{"name": "Ivana Daniela Gabani", "text": "Let's see if the understanding matches the hours."},
+		{"name": "Ivana Daniela Gabani", "text": "Six questions. Three I want answered now."}
 	])
-	await _show_placeholder("Chapter 10 — Academic Clearance", "Story Placeholder\nThe player presents the signed OJT certificate to the college adviser.")
-	await _show_story_cutscene("Chapter 10 — Fire-Escape Phone Call Home", "Warm afternoon light falls across the fire-escape landing as the player calls home after receiving the signed OJT clearances.", [
-		{"name": "Player", "text": "Ma... Pa... Nakapasa ako. Piramado na po lahat ng OJT clearance ko... Graduate na ako."},
-		{"name": "Parent", "text": "Salamat sa Diyos, anak! Sobrang proud kami sayo!"}
+
+	# — Defense Question 1: Auth separation —
+	await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Question one. Why do we separate user authentication from the student profile model? What breaks if they're in the same table?"}])
+	accountability_choice_ui.call("show_choices", [
+		"Because the auth user handles login security; the student profile holds academic data. Mixing them violates single responsibility and makes future role changes or multi-tenant schools impossible to manage cleanly.",
+		"It's just convention. Django's built-in user model has fields we don't need for student records.",
+		"So that QA can test each model independently without touching real credentials."
 	])
+	var auth_choice: int = await accountability_choice_selected
+	accountability_choice_ui.call("hide_choices")
+	if player:
+		player.can_move = false
+	if auth_choice == 0:
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Correct. Single responsibility isn't just a design philosophy—it protects every school's data when we onboard new clients."}])
+	else:
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Incorrect. The separation protects login security from academic data leaks and makes multi-tenant scaling possible. Remember that."}])
+
+	# — Defense Question 2: N+1 queries —
+	await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Question two. Our student list view was loading 200 enrollment records. How do you prevent it from hitting the database 201 times?"}])
+	accountability_choice_ui.call("show_choices", [
+		"Use select_related() for ForeignKey fields and prefetch_related() for ManyToMany—this tells Django to JOIN or batch the lookup in one query instead of one per record.",
+		"Add a database index to the foreign key column so lookups are faster.",
+		"Cache the queryset in Redis so the database is only queried once per session."
+	])
+	var nplus1_choice: int = await accountability_choice_selected
+	accountability_choice_ui.call("hide_choices")
+	if player:
+		player.can_move = false
+	if nplus1_choice == 0:
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Correct. select_related and prefetch_related are the first tools you reach for before any caching layer."}])
+	else:
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Indexes help, but they don't solve N+1. select_related and prefetch_related collapse the round trips at the ORM level first."}])
+
+	# — Defense Question 3: Malicious UUID —
+	await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Question three. An unauthenticated user sends a POST to /api/students/{uuid}/grade/ with a forged UUID. What stops them?"}])
+	accountability_choice_ui.call("show_choices", [
+		"The view must check request.user.is_authenticated and verify the requesting user owns that student record before the queryset even executes. Server-side authorization, every time.",
+		"UUIDs are hard to guess, so forged requests are statistically unlikely to match a real record.",
+		"Our HTTPS certificate ensures requests are encrypted, so outsiders cannot see the UUID format."
+	])
+	var uuid_choice: int = await accountability_choice_selected
+	accountability_choice_ui.call("hide_choices")
+	if player:
+		player.can_move = false
+	if uuid_choice == 0:
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "That is the only correct answer. Encryption protects transit. Authorization protects the data. They are not the same thing."}])
+	else:
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "UUIDs are not a security control—they are identifiers. Server-side authorization is what blocks unauthorized access, not entropy or encryption."}])
+
+	# Ivana signs off
+	await _play_dialogue([
+		{"name": "Ivana Daniela Gabani", "text": "When you walked through that door a few weeks ago, you were terrified of touching a stylesheet."},
+		{"name": "Ivana Daniela Gabani", "text": "Today, you defended enterprise architecture like a web developer."},
+		{"name": "Ivana Daniela Gabani", "text": "You didn't just fulfill hours—you earned our trust."}
+	])
+	await _show_placeholder("Chapter 10 — OJT Clearance Signed", "Ivana signs the Certificate of Completion with a flourish. August affixes the official company gold seal to the OJT clearance form.\n\n[Item: Signed OJT Clearance & Completion Certificate Obtained!]")
+
+	# Fire-escape phone call home
+	await _show_story_cutscene("Chapter 10 — Fire-Escape Phone Call Home", "Warm golden afternoon light falls across the rusty fire-escape railing. The city skyline sprawls below. A lens flare grazes the camera as the player pulls out their phone.", [
+		{"name": "Player", "text": "Ma... Pa... Nakapasa ako. Piramado na po lahat ng OJT clearance ko..."},
+		{"name": "Player", "text": "Graduate na ako."},
+		{"name": "Parent (Over Phone)", "text": "Salamat sa Diyos, anak! Ang galing-galing mo!"},
+		{"name": "Parent (Over Phone)", "text": "Umuwi ka nang maaga ha, ipagluluto kita ng paborito mong ulam... Sobrang proud kami sayo ng Papa mo!"}
+	])
+	await _show_placeholder("Chapter 10 — Academic Clearance", "Story Placeholder\nThe player presents the signed OJT certificate to the college adviser and completes the university graduation clearance.")
 	await _show_time_skip_card(
 		"TWO WEEKS LATER — GRADUATION CLEARANCE DONE",
 		"300 / 300 HOURS VERIFIED",
@@ -529,12 +735,34 @@ func _chapter_10_evaluation(npc: Node2D) -> void:
 
 func _chapter_11_offer(npc: Node2D) -> void:
 	sequence_running = true
-	await _show_story_cutscene("Chapter 11 — CUT_06: The Full-Time Contract", "Floor 3 sunset city skyline beyond the office windows. A white contract folder rests on Ivana's desk beside a shiny Blue Junior Developer Badge catching the light.", [
-		{"name": "Ivana Daniela Gabani", "text": "You came here to complete your OJT. But you learned how the system works, accepted responsibility when something went wrong, and improved after feedback."},
-		{"name": "Ivana Daniela Gabani", "text": "You think we're going to let someone who knows our architecture and takes responsibility walk out that door? That folder is a full-time contract for Junior Web Developer."},
-		{"name": "Narration", "text": "Ivana presents the Blue Junior Developer Badge. The Developer Wing and new responsibilities await."}
+	_hide_walk_hud()
+	if player:
+		player.can_move = false
+
+	# Frame 1: Player offers the green badge
+	await _show_story_cutscene("Chapter 11 — CUT_06: The Full-Time Contract", "Ivana Daniela Gabani's spacious Floor 3 corner office at sunset. Floor-to-ceiling panoramic windows show the city skyline glowing gold. Ivana sits behind a polished mahogany desk. The player stands respectfully across from her, gently placing the green intern lanyard badge on the desktop.", [
+		{"name": "Player", "text": "I brought back my temporary green badge, Ma'am Ivana. I just wanted to say thank you for giving me a chance when no one else would."}
 	])
+
+	# Frame 2: Ivana pushes the badge aside and slides the contract
+	await _show_story_cutscene("Chapter 11 — CUT_06: The Full-Time Contract", "Ivana uses one finger to slide the green badge aside. She pushes a thick, embossed white contract folder across the desk. On top of it rests a metallic Blue Junior Developer Badge on a heavy navy lanyard, catching the sunset light.", [
+		{"name": "Ivana Daniela Gabani", "text": "Keep the pastries you brought the team. But take that badge back—or rather, replace it."},
+		{"name": "Player", "text": "Ma'am...?"}
+	])
+
+	# Frame 3: Ivana's full speech
+	await _show_story_cutscene("Chapter 11 — CUT_06: The Full-Time Contract", "Close-up on the player's stunned face, eyes wide, breath caught in their throat. Ivana's expression is warm—something rarely seen. She gestures toward the contract folder with quiet authority.", [
+		{"name": "Ivana Daniela Gabani", "text": "You think we're going to let someone who knows our architecture, respects our users, and takes responsibility for their code walk out that door to work for our competitors?"},
+		{"name": "Ivana Daniela Gabani", "text": "That folder is a full-time employment contract for Junior Web Developer on the Student Learning Portal team. Competitive salary, health insurance, and your permanent desk is upstairs on Floor 2."}
+	])
+
 	await _award_blue_badge()
+
+	await _show_story_cutscene("Chapter 11 — CUT_06: Signing", "Ivana slides an expensive metal pen across the desk with a warm smirk.", [
+		{"name": "Ivana Daniela Gabani", "text": "Say it by signing the contract, developer. We have our first enterprise sprint release coming up next month."},
+		{"name": "Player", "text": "I... yes. Yes, Ma'am. Thank you."}
+	])
+
 	await _show_time_skip_card(
 		"ONE MONTH LATER — FIRST MAJOR RELEASE",
 		"ROLE: JUNIOR WEB DEVELOPER",
@@ -580,6 +808,35 @@ func _award_blue_badge() -> void:
 		)
 
 
+func _pr_42_review_data() -> Dictionary:
+	return {
+		"pr_number": 42,
+		"pr_title": "feat(enrollment): Add student enrollment tracking timestamp",
+		"author_name": "You",
+		"author_role": "Junior Developer",
+		"branch_target": "main ← feature/student-enrollment",
+		"description": "Adds enrolled_at timestamp field to track student onboarding time. Staging pipeline tests passed.",
+		"checklist": PackedStringArray(["[x] Unit tests pass in CI pipeline", "[x] Staging API smoke tests pass", "[ ] Database migrations included in release runbook: python manage.py migrate"]),
+		"diff_content": "diff --git a/student_portal/models.py b/student_portal/models.py\n@@ StudentEnrollment model @@\n+class StudentEnrollment(models.Model):\n+    student = models.ForeignKey(Student, on_delete=models.CASCADE)\n+    enrolled_at = models.DateTimeField(auto_now_add=True)\ndiff --git a/student_portal/views.py b/student_portal/views.py\n@@ enrollment view @@\n+enrollment = StudentEnrollment.objects.filter(student_id=student_id).first()\n+enrolled_date = enrollment.enrolled_at if enrollment else None",
+		"approve_action_label": "Approve & Trigger Deployment"
+	}
+
+
+func _pr_43_review_data() -> Dictionary:
+	return {
+		"pr_number": 43,
+		"pr_title": "feat(reports): Student progress detail endpoint",
+		"author_name": "Intern / Junior Dev",
+		"author_role": "Backend Developer",
+		"branch_target": "main ← feature/student-progress-detail",
+		"description": "Endpoint to return student progress records by ID.",
+		"checklist": PackedStringArray(["[x] Endpoint returns progress records", "[x] Serializer fields reviewed", "[ ] Verify request.user owns the requested student record"]),
+		"diff_content": "diff --git a/student_portal/views.py b/student_portal/views.py\n@@ student progress detail endpoint @@\n+@api_view([\"GET\"])\n+def student_progress_detail(request, student_id):\n+    progress = StudentProgress.objects.filter(student_id=student_id)\n+    serializer = StudentProgressSerializer(progress, many=True)\n+    return Response(serializer.data)\n+\n+# Missing: confirm request.user is authorized to access this student's data.",
+		"approve_action_label": "Submit Review",
+		"default_change_request_comment": "Missing authorization check. Any user can view other students' private progress data."
+	}
+
+
 func _chapter_12_sprint(npc: Node2D) -> void:
 	sequence_running = true
 	await _play_bubble(npc, [
@@ -589,10 +846,21 @@ func _chapter_12_sprint(npc: Node2D) -> void:
 		{"name": "Ivana Daniela Gabani", "text": "The feature is ready to release, but production has its own database."},
 		{"name": "Ivana Daniela Gabani", "text": "The migration must be applied and verified there too."}
 	])
-	await _show_placeholder("Chapter 12 — Release Planning", "Gameplay Placeholder\nBreak the feature into tickets, identify the frontend/backend dependency, estimate the work, and add production migration and verification steps to the release checklist.")
-	_set_stage(121, "ch12_production_incident", "A production alert is active. Report to Divino in the Server Room.", "NPCDivinoCinaon")
-	sequence_running = false
-	_restore_walk_hud()
+	await _play_dialogue([{"name": "Reynalda Patalinghug", "text": "Before we release, open PR #42 and review the changed files and deployment checklist. Pay particular attention to whether the database change has a safe production rollout step."}])
+	var review_result := await _open_pull_request_review(_pr_42_review_data())
+	if bool(review_result.get("dismissed", false)):
+		sequence_running = false
+		_restore_walk_hud()
+		return
+	while not bool(review_result.get("approved", false)):
+		await _play_bubble(npc, [{"name": "Reynalda Patalinghug", "text": "This is your pull request. Check the unchecked migration runbook item before approving a production deployment."}])
+		review_result = await _open_pull_request_review(_pr_42_review_data())
+		if bool(review_result.get("dismissed", false)):
+			sequence_running = false
+			_restore_walk_hud()
+			return
+	await _play_bubble(npc, [{"name": "Reynalda Patalinghug", "text": "PR #42 approved. I’m triggering the production rollout now."}])
+	await _chapter_12_incident(npc)
 
 
 func _chapter_12_incident(npc: Node2D) -> void:
@@ -605,7 +873,8 @@ func _chapter_12_incident(npc: Node2D) -> void:
 	await _show_story_cutscene("Chapter 12 — CUT_07: The Production 500 Alert", "Pulsing red emergency strobe beacons wash across the server room. Sirens sound as a monitor flashes CRITICAL 500 ERROR.", [
 		{"name": "System Alert", "text": "[CRITICAL ALERT]: HTTP 500 Internal Server Error on /api/v1/auth/login/. Students are blocked from signing in."}
 	])
-	_set_stage(121, "ch12_production_incident", "Rush to the Server Room and access the primary console ([F] Triage Critical Error!).", "ServerRackInteractable")
+	get_tree().root.set_meta("ch3_divino_incident_briefed", false)
+	_set_stage(121, "ch12_production_incident", "Find Divino in the Server Room for incident triage.", "NPCDivinoCinaon")
 	sequence_running = false
 	_restore_walk_hud()
 
@@ -616,20 +885,40 @@ func _on_server_console_interacted(_is_emergency: bool) -> void:
 	call_deferred("_handle_server_console_interaction")
 
 
+func _on_server_traceback_acknowledged() -> void:
+	server_traceback_acknowledged.emit()
+
+
+func _on_server_migration_requested() -> void:
+	server_migration_requested.emit()
+
+
+func _on_server_terminal_continued() -> void:
+	server_terminal_continued.emit()
+
+
 func _handle_server_console_interaction() -> void:
 	if sequence_running or server_rack == null:
 		return
 	sequence_running = true
 	_hide_walk_hud()
+	if player:
+		player.can_move = false
 	if server_incident_phase == 0:
-		await _show_placeholder("Traceback — Production Login Failure", "django.db.utils.ProgrammingError: column \"enrolled_at\" of relation \"student_enrollment\" does not exist\n\nThe production database is missing a column expected by the application.")
 		var divino := get_parent().find_child("NPCDivinoCinaon", true, false) as Node2D
+		await _play_dialogue([{"name": "Divino Cinaon", "text": "You're at the primary console. Read the traceback carefully; identify what the database says is missing before we discuss who owns the change."}])
+		if server_rack_terminal_ui:
+			server_rack_terminal_ui.call("present_traceback")
+			await server_traceback_acknowledged
 		await _play_bubble(divino, [{"name": "Divino Cinaon", "text": "Who authored PR #42?"}])
 		var accountability_choice := await _ask_accountability_choice()
-		if accountability_choice == 2:
-			await _play_dialogue([{"name": "You", "text": "It was me, Divino. I added the field but forgot the migration on the checklist. It's entirely my mistake."}])
-		else:
-			await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Let's pause and be precise about what happened. The release history points to your ticket, so bring the evidence forward and help us resolve it."}])
+		while accountability_choice != 2:
+			if accountability_choice == 0:
+				await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "The deployment automation ran the steps it was given. Check the change history and identify who owned the missing migration."}])
+			else:
+				await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "QA can only verify the migration if the change is included in the release. The author still needs to own the missed checklist item."}])
+			accountability_choice = await _ask_accountability_choice()
+		await _play_dialogue([{"name": "You", "text": "It was me, Divino. I added the field but forgot the migration on the checklist. It's entirely my mistake."}])
 		await _play_bubble(divino, [
 			{"name": "Divino Cinaon", "text": "Good. Real web developers own their code."},
 			{"name": "Divino Cinaon", "text": "Sit at console two."},
@@ -642,8 +931,13 @@ func _handle_server_console_interaction() -> void:
 		if rack_label:
 			rack_label.text = "[F] Run python manage.py migrate"
 	else:
+		if server_rack_terminal_ui:
+			server_rack_terminal_ui.call("present_migration_prompt")
+			await server_migration_requested
 		server_rack.call("resolve_emergency")
-		await _show_placeholder("Chapter 12 — Incident Triage", "Gameplay Placeholder\nRun python manage.py migrate, restart the service safely, and verify that the login endpoint returns HTTP 200.")
+		if server_rack_terminal_ui:
+			server_rack_terminal_ui.call("present_success")
+			await server_terminal_continued
 		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "The service is restored. We'll improve the release checklist so the migration and verification steps are visible next time."}])
 		_set_stage(122, "ch12_secrets_audit", "Go to IT Storage with Tercio for a configuration security check.", "NPCTercioMateoRamos")
 		server_incident_phase = 2
@@ -686,12 +980,7 @@ func _chapter_12_secrets(npc: Node2D) -> void:
 		{"name": "Divino Cinaon", "text": "Then clean the repository history."}
 	])
 	await _show_placeholder("Chapter 12 — Secrets Audit", "Gameplay Placeholder\nReplace the exposed configuration value with an environment variable. Verify the safe configuration and check that no credential remains in public project files.")
-	await _show_time_skip_card(
-		"THE NEXT MORNING — 10:00 AM",
-		"EXECUTIVE STAKEHOLDER PRESENTATION",
-		"Following a grueling night restoring production, the system is stable and passing all checks. Now, company leadership and university trustees convene in the Penthouse Boardroom to review system architecture and discuss Sprint 2.\n\nFade in: Floor 3 Executive Boardroom corridor."
-	)
-	_set_stage(13, "ch13_executive_presentation", "Report to the Executive Boardroom on Floor 3 for the stakeholder presentation.", "NPCJuliaRoa")
+	_set_stage(123, "ch12_code_review", "Meet Ivana in the Lead's Office to review a teammate's pull request.", "NPCIvanaDanielaGabani")
 	sequence_running = false
 	_restore_walk_hud()
 
@@ -704,38 +993,157 @@ func _chapter_12_code_review(npc: Node2D) -> void:
 		{"name": "Narration", "text": "The pull request queries StudentProgress by student_id."},
 		{"name": "Narration", "text": "But it never checks ownership or authorization."}
 	])
-	await _show_placeholder("Chapter 12 — Pull Request Review", "Gameplay Placeholder\nReview the endpoint, identify the missing ownership check, and leave constructive feedback explaining the data-privacy risk.")
+	await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Open the pull request and leave a review comment. Trace the access path and decide whether the endpoint proves the current user may see these records."}])
+	var review_result := await _open_pull_request_review(_pr_43_review_data())
+	if bool(review_result.get("dismissed", false)):
+		sequence_running = false
+		_restore_walk_hud()
+		return
+	while bool(review_result.get("approved", false)):
+		await _play_bubble(npc, [{"name": "Ivana Daniela Gabani", "text": "Look closer at authorization. Does this prove request.user is allowed to access the requested student's private progress data?"}])
+		review_result = await _open_pull_request_review(_pr_43_review_data())
+		if bool(review_result.get("dismissed", false)):
+			sequence_running = false
+			_restore_walk_hud()
+			return
+	await _play_bubble(npc, [{"name": "Ivana Daniela Gabani", "text": "Exactly. Require an ownership or permission check against request.user before returning these records. That is a clear, actionable review comment."}])
+	await _show_time_skip_card(
+		"THE NEXT MORNING — 10:00 AM",
+		"EXECUTIVE STAKEHOLDER PRESENTATION",
+		"Following a grueling night restoring production, the system is stable and passing all checks. Now, company leadership and university trustees convene in the Penthouse Boardroom to review system architecture and discuss Sprint 2.\n\nFade in: Floor 3 Executive Boardroom corridor."
+	)
 	_set_stage(13, "ch13_executive_presentation", "Present the completed Student Learning Portal to Julia Roa.", "NPCJuliaRoa")
 	sequence_running = false
 	_restore_walk_hud()
 
 
+func _open_pull_request_review(review_data: Dictionary) -> Dictionary:
+	var review_ui := GETHUB_PULL_REQUEST_SCENE.instantiate() as CanvasLayer
+	for property_name: String in review_data:
+		review_ui.set(property_name, review_data[property_name])
+	review_ui.connect("pr_reviewed", _on_pull_request_reviewed)
+	review_ui.connect("closed", _on_pull_request_modal_closed)
+	get_parent().add_child(review_ui)
+	if player:
+		player.can_move = false
+	var result: Array = await pull_request_modal_result
+	return {
+		"approved": bool(result[0]),
+		"pr_number": int(result[1]),
+		"comment": str(result[2]),
+		"dismissed": bool(result[3])
+	}
+
+
+func _on_pull_request_reviewed(approved: bool, pr_number: int, comment: String) -> void:
+	pull_request_modal_result.emit(approved, pr_number, comment, false)
+
+
+func _on_pull_request_modal_closed() -> void:
+	pull_request_modal_result.emit(false, -1, "", true)
+
+
 func _chapter_13_executive_meeting(npc: Node2D) -> void:
 	sequence_running = true
-	await _show_story_cutscene("Chapter 13 — CUT_08: Boardroom Presentation", "In the sunlit Floor 3 penthouse boardroom, the player presents the portal architecture. A board executive interrupts with a last-minute overnight AI grading and PDF export demand while Mario anxiously tugs his collar.", [
-		{"name": "You", "text": "Our portal combines a secure Django API, a responsive frontend, automated tests, and a verified release process."},
-		{"name": "Board Executive", "text": "Can you deliver an AI essay grader and custom PDF exports by tomorrow morning's press conference?"},
-		{"name": "Mario Ellan Cruz", "text": "W-well, sir... we could try to push an overnight patch—"}
+	_hide_walk_hud()
+	if player:
+		player.can_move = false
+
+	# — Pre-meeting: Julia alone in the boardroom. Mario and Ivana are not here yet. —
+	var julia := get_parent().find_child("NPCJuliaRoa", true, false) as Node2D
+	var mario_f3 := get_parent().find_child("NPCMarioEllanCruz", true, false) as Node2D
+	var ivana := get_parent().find_child("NPCIvanaDanielaGabani", true, false) as Node2D
+
+	# Make sure Mario and Ivana are hidden before the player speaks to Julia.
+	if mario_f3:
+		mario_f3.visible = false
+		_sync_npc_collision_tree(mario_f3, false)
+	# Ivana stays visible in her corner office at this stage—the boardroom is in the same 3rd-floor
+	# scene so we move her to the boardroom position under the black screen instead.
+
+	await _play_bubble(julia if julia else npc, [
+		{"name": "Julia Roa", "text": "You made it. The presentation is ready to go—your architecture slides look sharp."},
+		{"name": "Julia Roa", "text": "Mario and Ivana are on their way up. Give them a couple of minutes to settle in."},
+		{"name": "Julia Roa", "text": "Breathe. You have everything you need."}
 	])
+
+	# — Fade to black while the rest of the attendees arrive —
+	if overlay_layer:
+		overlay_layer.visible = true
+		overlay.color.a = 0.0
+		overlay_title.modulate.a = 0.0
+		overlay_body.modulate.a = 0.0
+	var fade_in_black := create_tween()
+	fade_in_black.tween_property(overlay, "color:a", 1.0, 1.0)
+	await fade_in_black.finished
+
+	# Under darkness: move Mario and Ivana into boardroom seats.
+	# Boardroom: Rect2(1216, -96, 481, 320). Julia at (1477, -58).
+	# Mario sits at the near side of the conference table, looking nervous.
+	if mario_f3:
+		mario_f3.global_position = Vector2(1350, 30)
+		mario_f3.visible = true
+		_sync_npc_collision_tree(mario_f3, true)
+		var mario_sprite := mario_f3.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+		if mario_sprite and mario_sprite.sprite_frames and mario_sprite.sprite_frames.has_animation("idle_up"):
+			mario_sprite.play("idle_up")
+	# Ivana moves from her corner office into the boardroom, standing along the far wall.
+	if ivana:
+		ivana.global_position = Vector2(1570, -30)
+		var ivana_sprite := ivana.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+		if ivana_sprite and ivana_sprite.sprite_frames and ivana_sprite.sprite_frames.has_animation("idle_down"):
+			ivana_sprite.play("idle_down")
+
+	# Short pause while everyone settles
+	await get_tree().create_timer(0.4).timeout
+
+	# Fade back in to the boardroom full of people
+	var fade_out_black := create_tween()
+	fade_out_black.tween_property(overlay, "color:a", 0.0, 0.8)
+	await fade_out_black.finished
+	if overlay_layer:
+		overlay_layer.visible = false
+
+	# — Main boardroom presentation —
+	await _show_story_cutscene("Chapter 13 — CUT_08: Boardroom Presentation",
+		"The sunlit Floor 3 penthouse boardroom. The player presents the portal architecture to Julia Roa and the board of trustees. A board executive interrupts with a last-minute overnight AI grading and PDF export demand. Mario anxiously tugs his collar.",
+		[
+			{"name": "You", "text": "Our portal combines a secure Django API, a responsive frontend, automated tests, and a verified release process. 50,000 simulated student logins with sub-150 millisecond response times and zero data leakage."},
+			{"name": "Board Executive", "text": "Yes, yes, the architecture is lovely. But the school superintendent just called me. They want an automated AI essay grading engine and custom PDF report exports built and deployed by tomorrow morning's press conference. Can we guarantee that goes live tomorrow?"},
+			{"name": "Mario Ellan Cruz", "text": "W-well, sir... we could try to push an overnight patch—"}
+		]
+	)
+
 	var selected := await _ask_scope_choice()
 	if selected == 2:
-		await _play_dialogue([{"name": "You", "text": "With respect, deploying unvetted AI endpoints and export scripts tomorrow bypasses QA and risks our students' data. We can protect tomorrow's launch and schedule the export features for Sprint 2 with full security testing."}])
+		await _play_dialogue([{"name": "You", "text": "With respect, sir—no. Deploying unvetted AI endpoints and export scripts on launch morning bypasses QA and risks memory leaks for 50,000 students. We guarantee a flawless launch tomorrow, and will deliver the export features in Sprint 2 with full security testing."}])
 	else:
-		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Before we commit, let's return to the requirements, estimate the impact, and agree on a safe release plan."}])
-	await _show_story_cutscene("Chapter 13 — Julia Roa's Verdict", "Julia leans back with an impressed smile as the executive settles down and Ivana nods with respect.", [
-		{"name": "Julia Roa", "text": "A web developer who protects our users and product stability instead of saying yes to catastrophic crunch. That is true technical leadership. Launch tomorrow as scheduled. Meeting adjourned."}
-	])
-	_set_stage(14, "ch14_conclusion", "Spend a moment with Noriela in the Developer Wing.", "NPCNorielaAsahan")
+		await _play_dialogue([{"name": "Ivana Daniela Gabani", "text": "Before we commit to that, we need to return to the requirements, estimate the impact carefully, and agree on a release plan that doesn't compromise our students."}])
+
+	await _show_story_cutscene("Chapter 13 — Julia Roa's Verdict",
+		"Julia Roa leans back in her tall executive chair, a radiant and deeply impressed smile breaking across her face. The aggressive board executive sits back down, chastened. Ivana gives an imperceptible nod of supreme respect to the Player.",
+		[
+			{"name": "Julia Roa", "text": "A web developer who protects our users and product stability instead of saying yes to catastrophic crunch. That is true technical leadership. Launch tomorrow as scheduled. Meeting adjourned."}
+		]
+	)
+
+	# — After the meeting: Mario and Ivana stay in the boardroom. No fade-away. —
+	# Advance stage so both remain visible via _sync_lead_office_roster (stage >= 13).
+	_set_stage(14, "ch14_conclusion", "Spend a moment with Noriela in the Break Room.", "NPCNorielaAsahan")
 	sequence_running = false
 	_restore_walk_hud()
 
 
 func _ask_scope_choice() -> int:
-	if dialogue_box == null:
+	if accountability_choice_ui == null:
 		return 2
-	dialogue_box.start([{"name": "You", "text": "How should we respond to the request?", "choices": ["Yes. We can rush it overnight.", "No. That's impossible and unreasonable.", "Protect tomorrow's launch; clarify, estimate, and schedule exports for Sprint 2 with QA and security testing."]}])
-	var selected: int = await dialogue_box.choice_selected
-	await dialogue_box.dialogue_finished
+	accountability_choice_ui.call("show_choices", [
+		"Agree to deliver both features overnight, without changing the launch plan.",
+		"Reject the request without discussing scope, risk, or alternatives.",
+		"Protect launch; estimate the work and schedule it for Sprint 2 with QA and security testing."
+	])
+	var selected: int = await accountability_choice_selected
+	accountability_choice_ui.call("hide_choices")
 	if player:
 		player.can_move = false
 	return selected
@@ -750,8 +1158,8 @@ func _chapter_14_epilogue(npc: Node2D) -> void:
 		{"name": "Narration", "text": "The montage passes through the commute to work, a stable life shared with family, team meetings, bug fixes, code reviews, and helping newer trainees find their footing."},
 		{"name": "Noriela Asahan", "text": "Ready for your first ticket as a permanent member of the team?"}
 	])
+	_set_workstation_active(backend_workstation, true)
 	if backend_workstation:
-		backend_workstation.set("is_locked", false)
 		backend_workstation.set("interaction_text", "[F] Open IDE & Start Workday")
 	_set_stage(141, "ch14_workstation", "Sit at your permanent developer workstation on Floor 2 ([F] Open IDE).", "BackendWorkstation")
 	sequence_running = false

@@ -55,7 +55,7 @@ var retake_dialogues: Array = [
 		{ "name": "Professor REST", "text": "Pay close attention this time." }
 	],
 	[
-		{ "name": "Professor REST", "text": "Systems engineering requires persistence." },
+		{ "name": "Professor REST", "text": "Software development requires persistence." },
 		{ "name": "Professor REST", "text": "Let's secure this API one more time." }
 	]
 ]

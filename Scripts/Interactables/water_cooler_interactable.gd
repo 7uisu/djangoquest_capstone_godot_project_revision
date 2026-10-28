@@ -6,7 +6,7 @@ extends Area2D
 signal water_dispensed()
 
 @export var interaction_text: String = "[F] Drink Cold Water"
-@export var hydration_message: String = "Hydrated Engineer! Focus and concentration restored."
+@export var hydration_message: String = "Hydrated web developer! Focus and concentration restored."
 
 @onready var interaction_label: Label = $Label
 @onready var anim_sprite: AnimatedSprite2D = $AnimatedSprite2D

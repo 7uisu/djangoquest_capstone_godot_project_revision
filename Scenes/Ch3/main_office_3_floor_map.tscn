@@ -32,7 +32,7 @@
 [ext_resource type="PackedScene" uid="uid://b1qod5ycjn36f" path="res://Scenes/Ch3/Office Chair/office_chair_facing_up.tscn" id="27_office_chair"]
 [ext_resource type="PackedScene" uid="uid://dm4k87r3qaq2a" path="res://Scenes/Interactables/animated_locker_interactable.tscn" id="28_locker"]
 [ext_resource type="PackedScene" uid="uid://c8m2p5q1wx7r0" path="res://Scenes/Interactables/workstation_interactable.tscn" id="29_workstation"]
-[ext_resource type="PackedScene" path="res://Scenes/Interactables/npc_directory_interactable.tscn" id="30_staff_directory"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_kenna_louisa_arizobal.tscn" id="30_kenna"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4tc6l"]
 texture = ExtResource("6_s8k8h")
@@ -48,10 +48,15 @@ texture_region_size = Vector2i(32, 32)
 8:0/0 = 0
 9:0/0 = 0
 10:0/0 = 0
+10:0/0/y_sort_origin = 16
 11:0/0 = 0
+11:0/0/y_sort_origin = 16
 12:0/0 = 0
+12:0/0/y_sort_origin = 16
 13:0/0 = 0
+13:0/0/y_sort_origin = 16
 14:0/0 = 0
+14:0/0/y_sort_origin = 16
 15:0/0 = 0
 0:1/0 = 0
 1:1/0 = 0
@@ -65,8 +70,11 @@ texture_region_size = Vector2i(32, 32)
 9:1/0 = 0
 10:1/0 = 0
 11:1/0 = 0
+11:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.751202, -16, 16, -16, 16, 16, -16, 16, -12.751202, 16)
 12:1/0 = 0
+12:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
 13:1/0 = 0
+13:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(12.751202, -16, -16, -16, -16, 16, 16, 16, 12.751202, 16)
 14:1/0 = 0
 15:1/0 = 0
 0:2/0 = 0
@@ -81,8 +89,11 @@ texture_region_size = Vector2i(32, 32)
 9:2/0 = 0
 10:2/0 = 0
 11:2/0 = 0
+11:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.751202, -16, 16, -16, 16, 16, -16, 16, -12.751202, 16)
 12:2/0 = 0
+12:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
 13:2/0 = 0
+13:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(12.751202, -16, -16, -16, -16, 16, 16, 16, 12.751202, 16)
 14:2/0 = 0
 15:2/0 = 0
 0:3/0 = 0
@@ -162,11 +173,17 @@ texture_region_size = Vector2i(32, 32)
 14:8/0 = 0
 15:8/0 = 0
 0:9/0 = 0
+0:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373207, -16, -12.440193, -16, -11.196175, 11.196175, 11.196175, 10.88517)
 1:9/0 = 0
+1:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373207, -16, -12.440193, -16, -11.196175, 11.196175, 11.196175, 10.88517)
 2:9/0 = 0
+2:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373207, -16, -12.440193, -16, -11.196175, 11.196175, 11.196175, 10.88517)
 3:9/0 = 0
+3:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373207, -16, -12.440193, -16, -11.196175, 11.196175, 11.196175, 10.88517)
 4:9/0 = 0
+4:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373207, -16, -12.440193, -16, -11.196175, 11.196175, 11.196175, 10.88517)
 5:9/0 = 0
+5:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373207, -16, -12.440193, -16, -11.196175, 11.196175, 11.196175, 10.88517)
 6:9/0 = 0
 7:9/0 = 0
 8:9/0 = 0
@@ -724,6 +741,8 @@ texture_region_size = Vector2i(32, 32)
 
 [sub_resource type="TileSet" id="TileSet_01vuh"]
 tile_size = Vector2i(32, 32)
+physics_layer_0/collision_layer = 16
+physics_layer_0/collision_mask = 0
 sources/0 = SubResource("TileSetAtlasSource_4tc6l")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4tc6l"]
@@ -737,8 +756,8 @@ position = Vector2(974, 56)
 
 [node name="QASidewayRightGlassDoor1" parent="." unique_id=405148352 instance=ExtResource("1_gwhsw")]
 position = Vector2(242, 49)
-required_badge = "Green OJT Badge"
 lock_message = "The QA & Design area requires a Green OJT Badge."
+required_badge = "Green OJT Badge"
 
 [node name="RoomIndicator" type="Node2D" parent="." unique_id=914519014]
 script = ExtResource("18_room_indicator")
@@ -805,11 +824,11 @@ y_sort_enabled = true
 tile_map_data = PackedByteArray("AAALAAUAAAAHADgAAAALAAYAAAAHADkAAAALAAcAAAAHADoAAAAPAAYAAAAGADkAAAAPAAcAAAAGADoAAAAEAPn/AAAIACsAAAAEAPr/AAAIACwAAAAFAPn/AAAJACsAAAAFAPr/AAAJACwAAAAAAPn/AAAIACsAAAAAAPr/AAAIACwAAAABAPn/AAAJACsAAAABAPr/AAAJACwAAAADAP3/AAAFABQAAAADAP7/AAAFABUAAAADAPr/AAAFABQAAAADAPv/AAAFABUAAAA=")
 
 [node name="OfficeObjects1" parent="." unique_id=1252109316 instance=ExtResource("5_4tc6l")]
-tile_map_data = PackedByteArray("AAAEAP3/AAAEAB4AAAAEAP7/AAAEAB8AAAAFAP3/AAAFAB4AAAAFAP7/AAAFAB8AAAAGAP3/AAAGAB4AAAAGAP7/AAAGAB8AAAD6//n/AAAJAAoAAAD6//r/AAAJAAsAAAD7//n/AAAKAAoAAAD7//r/AAAKAAsAAAD+//n/AAAJAAoAAAD+//r/AAAJAAsAAAD///n/AAAKAAoAAAD///r/AAAKAAsAAAAEAPr/AAAKABwAAAAEAPv/AAAKAB0AAAAFAPr/AAALABwAAAAFAPv/AAALAB0AAAAGAPr/AAAMABwAAAAGAPv/AAAMAB0AAAAAAPr/AAACABQAAAAAAPv/AAACABUAAAAAAPz/AAACABYAAAABAPr/AAADABQAAAABAPv/AAADABUAAAABAPz/AAADABYAAAACAPr/AAAEABQAAAACAPv/AAAEABUAAAD+//3/AAADAAYAAAD9//3/AAACAAYAAAD8//3/AAACAAYAAAD7//3/AAABAAYAAAD7//z/AAABAAQAAAD8//z/AAACAAQAAAD9//z/AAACAAQAAAD+//z/AAADAAQAAAD5//n/AAAGAAwAAAD5//r/AAAGAA0AAAD5//v/AAAGAA4AAAAoAP7/AAAMAAAAAAAiAAEAAAAMAAIAAAAjAAEAAAAMAAIAAAAkAAEAAAAMAAIAAAAlAAEAAAAMAAIAAAAmAAEAAAAMAAIAAAAnAAEAAAAMAAIAAAAoAAEAAAAMAAIAAAAhAP7/AAALAAAAAAApAP7/AAANAAAAAAApAP//AAANAAEAAAApAAAAAAANAAEAAAApAAEAAAANAAIAAAAhAAEAAAALAAIAAAAhAAAAAAALAAEAAAAhAP//AAALAAEAAAAiAP7/AAAMAAAAAAAjAP7/AAANAAAAAAAiAP//AAAMAAEAAAAiAAAAAAAMAAEAAAAjAAAAAAAMAAEAAAAkAAAAAAAMAAEAAAAlAAAAAAAMAAEAAAAmAAAAAAAMAAEAAAAnAAAAAAAMAAEAAAAoAAAAAAAMAAEAAAAoAP//AAAMAAEAAAAnAP7/AAALAAAAAAAjAP//AAANAAEAAAAnAP//AAALAAEAAAAfAPr/AAAGAAwAAAAfAPv/AAAGAA0AAAAfAPz/AAAGAA4AAAAqAPr/AAAHAAwAAAAqAPv/AAAHAA0AAAAqAPz/AAAHAA4AAAArAPr/AAAIAAwAAAArAPv/AAAIAA0AAAArAPz/AAAIAA4AAAAiAPr/AAAJAAwAAAAiAPv/AAAJAA0AAAAoAPr/AAAKAA4AAAAoAPv/AAAKAA8AAAAjAPr/AAAKAAwAAAAjAPv/AAAKAA0AAAAnAPr/AAAJAA4AAAAnAPv/AAAJAA8AAAA=")
+tile_map_data = PackedByteArray("AAAEAP3/AAAEAB4AAAAEAP7/AAAEAB8AAAAFAP3/AAAFAB4AAAAFAP7/AAAFAB8AAAAGAP3/AAAGAB4AAAAGAP7/AAAGAB8AAAD6//n/AAAJAAoAAAD6//r/AAAJAAsAAAD7//n/AAAKAAoAAAD7//r/AAAKAAsAAAD+//n/AAAJAAoAAAD+//r/AAAJAAsAAAD///n/AAAKAAoAAAD///r/AAAKAAsAAAAEAPr/AAAKABwAAAAEAPv/AAAKAB0AAAAFAPr/AAALABwAAAAFAPv/AAALAB0AAAAGAPr/AAAMABwAAAAGAPv/AAAMAB0AAAAAAPr/AAACABQAAAAAAPv/AAACABUAAAAAAPz/AAACABYAAAABAPr/AAADABQAAAABAPv/AAADABUAAAABAPz/AAADABYAAAACAPr/AAAEABQAAAACAPv/AAAEABUAAAD+//3/AAADAAYAAAD9//3/AAACAAYAAAD8//3/AAACAAYAAAD7//3/AAABAAYAAAD7//z/AAABAAQAAAD8//z/AAACAAQAAAD9//z/AAACAAQAAAD+//z/AAADAAQAAAD5//n/AAAGAAwAAAD5//r/AAAGAA0AAAD5//v/AAAGAA4AAAAfAPr/AAAGAAwAAAAfAPv/AAAGAA0AAAAfAPz/AAAGAA4AAAAqAPr/AAAHAAwAAAAqAPv/AAAHAA0AAAAqAPz/AAAHAA4AAAArAPr/AAAIAAwAAAArAPv/AAAIAA0AAAArAPz/AAAIAA4AAAAiAPr/AAAJAAwAAAAiAPv/AAAJAA0AAAAjAPr/AAAKAAwAAAAjAPv/AAAKAA0AAAAoAPr/AAAJAA4AAAAoAPv/AAAJAA8AAAApAPr/AAAKAA4AAAApAPv/AAAKAA8AAAAhAP7/AAALAAAAAAAhAAEAAAALAAIAAAApAAEAAAANAAIAAAApAP7/AAANAAAAAAApAP//AAANAAEAAAApAAAAAAANAAEAAAAhAP//AAALAAEAAAAhAAAAAAALAAEAAAAiAAEAAAAMAAIAAAAjAAEAAAAMAAIAAAAkAAEAAAAMAAIAAAAlAAEAAAAMAAIAAAAmAAEAAAAMAAIAAAAnAAEAAAAMAAIAAAAoAAEAAAAMAAIAAAAiAP7/AAAMAAAAAAAjAP7/AAAMAAAAAAAkAP7/AAAMAAAAAAAlAP7/AAAMAAAAAAAmAP7/AAAMAAAAAAAnAP7/AAAMAAAAAAAoAP7/AAAMAAAAAAAiAP//AAAMAAEAAAAjAP//AAAMAAEAAAAkAP//AAAMAAEAAAAlAP//AAAMAAEAAAAmAP//AAAMAAEAAAAnAP//AAAMAAEAAAAoAP//AAAMAAEAAAAoAAAAAAAMAAEAAAAnAAAAAAAMAAEAAAAmAAAAAAAMAAEAAAAlAAAAAAAMAAEAAAAkAAAAAAAMAAEAAAAjAAAAAAAMAAEAAAAiAAAAAAAMAAEAAAA=")
 tile_set = SubResource("TileSet_01vuh")
 
 [node name="OfficeObjects2" parent="." unique_id=1467283332 instance=ExtResource("5_4tc6l")]
-tile_map_data = PackedByteArray("AAAFAPr/AAAOABEAAAAFAPv/AAAOABIAAAAEAP3/AAAKABoAAAAEAP7/AAAKABsAAAAFAP3/AAALABoAAAAFAP7/AAALABsAAAAgAP7/AAAFAAgAAAAgAP//AAAFAAkAAAAgAAAAAAAFAAgAAAAgAAEAAAAFAAkAAAAiAAEAAAABAAgAAAAiAAIAAAABAAkAAAAmAAEAAAABAAgAAAAmAAIAAAABAAkAAAAoAAEAAAABAAgAAAAoAAIAAAABAAkAAAAqAAAAAAAEAAgAAAAqAAEAAAAEAAkAAAAqAP7/AAAEAAgAAAAqAP//AAAEAAkAAAA=")
+tile_map_data = PackedByteArray("AAAFAPr/AAAOABEAAAAFAPv/AAAOABIAAAAEAP3/AAAKABoAAAAEAP7/AAAKABsAAAAFAP3/AAALABoAAAAFAP7/AAALABsAAAAgAAAAAAAFAAgAAAAgAAEAAAAFAAkAAAAiAAEAAAABAAgAAAAiAAIAAAABAAkAAAAmAAEAAAABAAgAAAAmAAIAAAABAAkAAAAoAAEAAAABAAgAAAAoAAIAAAABAAkAAAAqAAAAAAAEAAgAAAAqAAEAAAAEAAkAAAA=")
 tile_set = SubResource("TileSet_01vuh")
 
 [node name="OfficeObjects3" parent="." unique_id=1649220688 instance=ExtResource("5_4tc6l")]
@@ -831,7 +850,7 @@ tile_map_data = PackedByteArray("AAAIAAkAAAAAAAEAAAAIAAoAAAAAAAIAAAAJAAgAAAABAAA
 
 [node name="BasementObjects3" parent="." unique_id=2036980616 instance=ExtResource("10_k4ws1")]
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAAIAAkAAAAAAAEAAAAIAAoAAAAAAAIAAAAJAAgAAAABAAAAAAAJAAkAAAABAAEAAAAJAAoAAAABAAIAAAAKAAkAAAACAAEAAAAKAAoAAAACAAIAAAAMAAkAAAAAAAEAAAAMAAoAAAAAAAIAAAANAAgAAAABAAAAAAANAAkAAAABAAEAAAANAAoAAAABAAIAAAAOAAkAAAACAAEAAAAOAAoAAAACAAIAAAAYAAgAAAAEAC0AAAAYAAkAAAAEAC4AAAAZAAgAAAAFAC0AAAAZAAkAAAAFAC4AAAAaAAgAAAAGAC0AAAAaAAkAAAAGAC4AAAAcAAgAAAAIACsAAAAcAAkAAAAIACwAAAAXAAUAAAAHAC0AAAAXAAYAAAAHAC4AAAAbAAUAAAAGACsAAAAbAAYAAAAGACwAAAAZAAUAAAAEACsAAAAZAAYAAAAEACwAAAAaAAUAAAAFACsAAAAaAAYAAAAFACwAAAD7/wAAAAAGACIAAAD8/wAAAAAHACIAAAD7////AAAGACEAAAD8////AAAHACEAAAA=")
+tile_map_data = PackedByteArray("AAAIAAkAAAAAAAEAAAAIAAoAAAAAAAIAAAAJAAgAAAABAAAAAAAJAAkAAAABAAEAAAAJAAoAAAABAAIAAAAKAAkAAAACAAEAAAAKAAoAAAACAAIAAAAMAAkAAAAAAAEAAAAMAAoAAAAAAAIAAAANAAgAAAABAAAAAAANAAkAAAABAAEAAAANAAoAAAABAAIAAAAOAAkAAAACAAEAAAAOAAoAAAACAAIAAAAYAAgAAAAEAC0AAAAYAAkAAAAEAC4AAAAZAAgAAAAFAC0AAAAZAAkAAAAFAC4AAAAaAAgAAAAGAC0AAAAaAAkAAAAGAC4AAAAcAAgAAAAIACsAAAAcAAkAAAAIACwAAAAXAAUAAAAHAC0AAAAXAAYAAAAHAC4AAAAbAAUAAAAGACsAAAAbAAYAAAAGACwAAAAZAAUAAAAEACsAAAAZAAYAAAAEACwAAAAaAAUAAAAFACsAAAAaAAYAAAAFACwAAAD7/wAAAAAGACIAAAD8/wAAAAAHACIAAAD7////AAAGACEAAAD8////AAAHACEAAAAMAP7/AAAIAC0AAAAMAP//AAAIAC4AAAA=")
 
 [node name="HospitalObjects1" parent="." unique_id=1792420426 instance=ExtResource("11_1hf5q")]
 tile_map_data = PackedByteArray("AAARAAgAAAAFAAMAAAARAAkAAAAFAAQAAAASAAkAAAAGAAMAAAATAAkAAAAHAAMAAAAUAAgAAAAIAAMAAAAUAAkAAAAIAAQAAAARAAoAAAAFAAUAAAASAAoAAAAGAAUAAAATAAoAAAAHAAUAAAAUAAoAAAAIAAUAAAD8//n/AAACAAAAAAD8//r/AAACAAEAAAD9//n/AAADAAAAAAD9//r/AAADAAEAAAA=")
@@ -850,8 +869,8 @@ position = Vector2(-208, 296)
 
 [node name="LockerRoomFrontDoor3" parent="." unique_id=2102608614 instance=ExtResource("15_dqpyt")]
 position = Vector2(1072, 295)
-required_badge = "Green OJT Badge"
 lock_message = "The Locker Room requires a Green OJT Badge."
+required_badge = "Green OJT Badge"
 
 [node name="BathroomObjects" parent="." unique_id=2139095340 instance=ExtResource("16_dqpyt")]
 y_sort_enabled = true
@@ -932,6 +951,10 @@ position = Vector2(1196, -77)
 [node name="NPCHannaLuisaPaday" parent="YSortLayer" unique_id=962676650 instance=ExtResource("23_hanna")]
 position = Vector2(1307, -76)
 
+[node name="NPCKennaLouisaArizobal" parent="YSortLayer" unique_id=1629444154 instance=ExtResource("30_kenna")]
+visible = false
+position = Vector2(1140, -77)
+
 [node name="NPCCelestinaBalon" parent="YSortLayer" unique_id=900896776 instance=ExtResource("24_celestina")]
 position = Vector2(40, -40)
 
@@ -941,20 +964,20 @@ position = Vector2(78, -109)
 [node name="NPCMarioEllanCruz" parent="YSortLayer" unique_id=1010118860 instance=ExtResource("25_mario")]
 position = Vector2(793, 53)
 
-[node name="MarioPacingLeftPoint" type="Marker2D" parent="YSortLayer"]
+[node name="MarioPacingLeftPoint" type="Marker2D" parent="YSortLayer" unique_id=1750583302]
 position = Vector2(752, 53)
 
-[node name="MarioPacingRightPoint" type="Marker2D" parent="YSortLayer"]
+[node name="MarioPacingRightPoint" type="Marker2D" parent="YSortLayer" unique_id=791148439]
 position = Vector2(834, 53)
 
-[node name="MarioSprintDoorPoint" type="Marker2D" parent="YSortLayer"]
-position = Vector2(974, 56)
+[node name="MarioSprintDeparturePoint" type="Marker2D" parent="YSortLayer" unique_id=971101133]
+position = Vector2(793, 77)
 
-[node name="MarioSprintInsidePoint" type="Marker2D" parent="YSortLayer"]
-position = Vector2(1030, 56)
+[node name="MarioSprintDoorPoint" type="Marker2D" parent="YSortLayer" unique_id=434118523]
+position = Vector2(927, 77)
 
-[node name="NPCDirectoryInteractable" parent="YSortLayer" instance=ExtResource("30_staff_directory")]
-position = Vector2(280, 246)
+[node name="MarioSprintInsidePoint" type="Marker2D" parent="YSortLayer" unique_id=148801337]
+position = Vector2(1041, 77)
 
 [node name="Ch7TraineeDeskMarker" type="Marker2D" parent="YSortLayer" unique_id=1762708777]
 position = Vector2(-32, 40)

@@ -1,0 +1,298 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/gethub_pull_request_ui.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_color = Color(0.19, 0.22, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.42)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="PaneStyle"]
+bg_color = Color(0.075, 0.09, 0.115, 1)
+border_color = Color(0.19, 0.22, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="DiffStyle"]
+bg_color = Color(0.035, 0.045, 0.06, 1)
+border_color = Color(0.19, 0.22, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="GetHubPullRequestUI" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_script")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.01, 0.015, 0.025, 0.88)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Window" type="PanelContainer" parent="Screen/CenterContainer"]
+custom_minimum_size = Vector2(1050, 590)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="Screen/CenterContainer/Window"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="MainVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopBar" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Logo" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.44, 0.69, 0.98, 1)
+theme_override_font_sizes/font_size = 18
+text = "◈  GetHub"
+
+[node name="RepositoryLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/TopBar"]
+size_flags_horizontal = 3
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.82, 1)
+text = "DjangoQuest Product Team  ·  default branch: main"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/TopBar"]
+custom_minimum_size = Vector2(34, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.76, 0.82, 1)
+text = "✕"
+
+[node name="PRHeader" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PRTitleRow" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/PRHeader"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OpenBadge" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/PRHeader/PRTitleRow"]
+custom_minimum_size = Vector2(54, 26)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.87, 0.67, 1)
+theme_override_font_sizes/font_size = 12
+text = "Open"
+vertical_alignment = 1
+
+[node name="PRTitle" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/PRHeader/PRTitleRow"]
+size_flags_horizontal = 3
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.94, 0.97, 1)
+theme_override_font_sizes/font_size = 20
+text = "#42  feat(enrollment): Add student enrollment tracking timestamp"
+vertical_alignment = 1
+
+[node name="AuthorLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/PRHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.67, 0.74, 1)
+theme_override_font_sizes/font_size = 12
+text = "◉  You (Junior Developer) · opened this sprint"
+
+[node name="BranchLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/PRHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.75, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+text = "main ← feature/student-enrollment"
+
+[node name="TabRow" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OverviewTab" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/TabRow"]
+custom_minimum_size = Vector2(190, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.96, 0.99, 1)
+text = "Overview & Checklist"
+
+[node name="DiffTab" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/TabRow"]
+custom_minimum_size = Vector2(150, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.59, 0.65, 1)
+text = "Files Changed"
+
+[node name="ReviewContent" type="Control" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 300)
+size_flags_vertical = 3
+layout_mode = 2
+
+[node name="OverviewPane" type="ScrollContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OverviewMargin" type="MarginContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_right = 10
+
+[node name="OverviewVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 9
+
+[node name="DescriptionLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.86, 0.91, 1)
+theme_override_font_sizes/font_size = 14
+text = "Adds enrolled_at timestamp field to track student onboarding time. Staging pipeline tests passed."
+autowrap_mode = 3
+
+[node name="ChecklistPanel" type="PanelContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("PaneStyle")
+
+[node name="ChecklistMargin" type="MarginContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ChecklistPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="ChecklistVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ChecklistPanel/ChecklistMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ChecklistTitle" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ChecklistPanel/ChecklistMargin/ChecklistVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+theme_override_font_sizes/font_size = 14
+text = "Merge checklist"
+
+[node name="ChecklistItems" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ChecklistPanel/ChecklistMargin/ChecklistVBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ReviewPanel" type="PanelContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("PaneStyle")
+
+[node name="ReviewMargin" type="MarginContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ReviewPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="ReviewVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ReviewPanel/ReviewMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="VerdictLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ReviewPanel/ReviewMargin/ReviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.93, 0.96, 1)
+text = "Your review"
+
+[node name="VerdictOption" type="OptionButton" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ReviewPanel/ReviewMargin/ReviewVBox"]
+custom_minimum_size = Vector2(220, 34)
+layout_mode = 2
+
+[node name="CommentEdit" type="TextEdit" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/OverviewPane/OverviewMargin/OverviewVBox/ReviewPanel/ReviewMargin/ReviewVBox"]
+custom_minimum_size = Vector2(0, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.87, 0.91, 1)
+theme_override_font_sizes/font_size = 13
+placeholder_text = "Add a review comment (optional unless requesting changes)..."
+wrap_mode = 1
+
+[node name="DiffPane" type="ScrollContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DiffMargin" type="MarginContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/DiffPane"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="DiffLabel" type="RichTextLabel" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ReviewContent/DiffPane/DiffMargin"]
+custom_minimum_size = Vector2(980, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/default_color = Color(0.82, 0.86, 0.91, 1)
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="ActionRow" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ReviewHint" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ActionRow"]
+size_flags_horizontal = 3
+layout_mode = 2
+theme_override_colors/font_color = Color(0.58, 0.63, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "Review the diff and checklist before submitting your verdict."
+vertical_alignment = 1
+
+[node name="SubmitReviewButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ActionRow"]
+custom_minimum_size = Vector2(260, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.97, 0.95, 1)
+theme_override_font_sizes/font_size = 14
+text = "Approve & Trigger Deployment"

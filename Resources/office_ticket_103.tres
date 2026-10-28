@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="GetHubTicket" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/gethub_ticket.gd" id="1_ticket"]
+
+[resource]
+script = ExtResource("1_ticket")
+issue_number = 103
+title = "Classroom roster endpoint needs a complete DRF view"
+reporter_name = "Kenna Louisa Arizobal"
+reporter_role = "Backend Developer"
+priority = "High"
+initial_status = "Open"
+labels = PackedStringArray("feature", "backend", "django-rest-framework", "serializer")
+description = "Continue Ticket #102 by building the complete classroom roster endpoint. Inspect models.py and serializers.py, then implement the view in views.py using the StudentProfile reverse relation and the provided serializer."
+reproduction_steps = PackedStringArray("Open models.py and trace Student through its OneToOne StudentProfile relationship to Classroom.", "Inspect serializers.py to see the expected StudentRosterSerializer fields.", "Complete the DRF endpoint in views.py and return serialized records in a Response.")
+acceptance_criteria = PackedStringArray("Import the model and serializer used by the view.", "Filter students through profile__classroom and serialize the queryset with many=True.", "Return serializer.data in a DRF Response.", "Keep the endpoint implementation in views.py; the model and serializer tabs are reference files.")
+attachment_heading = "Backend sprint · three-file project"
+attachment_caption = "Read models.py and serializers.py first. Complete the classroom_roster API view in views.py."
+challenge_title = "Build the classroom roster DRF view"
+challenge_topic = "django"
+challenge_type = "free_type"
+challenge_output_type = "terminal"
+file_name = "views.py"
+starter_code = "# Build the classroom roster API endpoint here.\n# Use Classroom, StudentRosterSerializer, and Student.\n\n@api_view([\"GET\"])\ndef classroom_roster(request, classroom_id):\n    classroom = Classroom.objects.get(id=classroom_id)\n    students = Student.objects.filter(classroom=classroom)\n    serializer = StudentRosterSerializer(students, many=True)\n    return Response(serializer.data)"
+project_tree = {"student_portal": {"manage.py": "", "portal": {"models.py": "", "serializers.py": "", "views.py": "", "urls.py": ""}}}
+expected_code = "Student.objects.filter(profile__classroom=classroom)"
+hint = "Use the model and serializer reference tabs to trace the data path. The endpoint needs a queryset, a serializer configured for multiple records, and a response."
+mentor_name = "Kenna"
+mentor_hint = "Read the reference tabs first: identify the model that connects students to classrooms, then check what shape the serializer expects. Build the view in small steps and verify the returned collection."
+correct_output = "HTTP 200 OK — 24 records serialized in 12ms. Classroom roster endpoint passed."
+error_output = "FAIL — Review models.py and serializers.py, then complete the queryset and response in views.py."
+mission_steps = PackedStringArray("Inspect the Student and StudentProfile relationship in models.py.", "Read the roster fields in serializers.py.", "Complete the DRF view in views.py, run the checks, and confirm the 24-record response.")
+is_multi_file = true
+active_file = "views.py"
+multi_files = {"models.py": "from django.db import models\n\nclass Classroom(models.Model):\n    name = models.CharField(max_length=120)\n\nclass Student(models.Model):\n    full_name = models.CharField(max_length=160)\n\nclass StudentProfile(models.Model):\n    student = models.OneToOneField(Student, related_name=\"profile\", on_delete=models.CASCADE)\n    classroom = models.ForeignKey(Classroom, related_name=\"student_profiles\", on_delete=models.CASCADE)\n", "serializers.py": "from rest_framework import serializers\nfrom .models import Student\n\nclass StudentRosterSerializer(serializers.ModelSerializer):\n    classroom_name = serializers.CharField(source=\"profile.classroom.name\", read_only=True)\n\n    class Meta:\n        model = Student\n        fields = [\"id\", \"full_name\", \"classroom_name\"]\n", "views.py": "# Build the classroom roster API endpoint here.\n# Reference files: models.py and serializers.py.\n\n@api_view([\"GET\"])\ndef classroom_roster(request, classroom_id):\n    classroom = Classroom.objects.get(id=classroom_id)\n    students = Student.objects.filter(classroom=classroom)\n    serializer = StudentRosterSerializer(students, many=True)\n    return Response(serializer.data)"}
+multi_expected_answers = {"views.py": PackedStringArray("from rest_framework.decorators import api_view\nfrom rest_framework.response import Response\nfrom .models import Classroom, Student\nfrom .serializers import StudentRosterSerializer\n\n@api_view([\"GET\"])\ndef classroom_roster(request, classroom_id):\n    classroom = Classroom.objects.get(id=classroom_id)\n    students = Student.objects.filter(profile__classroom=classroom)\n    serializer = StudentRosterSerializer(students, many=True)\n    return Response(serializer.data)", "from rest_framework.decorators import api_view\nfrom rest_framework.response import Response\nfrom .models import Classroom, Student\nfrom .serializers import StudentRosterSerializer\n\n@api_view([\"GET\"])\ndef classroom_roster(request, classroom_id):\n    classroom = Classroom.objects.get(id=classroom_id)\n    queryset = Student.objects.filter(profile__classroom=classroom)\n    serializer = StudentRosterSerializer(queryset, many=True)\n    return Response(serializer.data)")}

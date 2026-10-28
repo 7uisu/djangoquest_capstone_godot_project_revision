@@ -73,6 +73,12 @@ custom_minimum_size = Vector2(90, 0)
 layout_mode = 2
 text = "🎒 Use Item"
 
+[node name="GetHubButton" type="Button" parent="IDEScreen/TitleBar"]
+visible = false
+custom_minimum_size = Vector2(142, 0)
+layout_mode = 2
+text = "↔  Alt-Tab: GetHub"
+
 [node name="MainContent" type="HBoxContainer" parent="IDEScreen" unique_id=1943070014]
 layout_mode = 1
 anchors_preset = -1

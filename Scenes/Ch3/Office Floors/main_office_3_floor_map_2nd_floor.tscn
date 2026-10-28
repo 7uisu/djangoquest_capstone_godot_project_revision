@@ -34,6 +34,9 @@
 [ext_resource type="PackedScene" uid="uid://d2p1q4x8m7y3a" path="res://Scenes/Interactables/coffee_machine_interactable.tscn" id="32_coffee_machine"]
 [ext_resource type="PackedScene" uid="uid://c8m2p5q1wx7r0" path="res://Scenes/Interactables/workstation_interactable.tscn" id="33_workstation"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/npc_directory_interactable.tscn" id="34_staff_directory"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_102.tres" id="35_ticket102"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_103.tres" id="36_ticket103"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_104.tres" id="37_ticket104"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_map0q"]
 texture = ExtResource("6_dtbib")
@@ -890,13 +893,13 @@ drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
 [node name="ElevatorDoor1" parent="." unique_id=314165112 instance=ExtResource("17_kk28r")]
-required_badge = "Green OJT Badge"
 position = Vector2(544, -32)
+required_badge = "Green OJT Badge"
 current_floor = "2nd Floor"
 
 [node name="ElevatorDoor2" parent="." unique_id=176639908 instance=ExtResource("17_kk28r")]
-required_badge = "Green OJT Badge"
 position = Vector2(672, -32)
+required_badge = "Green OJT Badge"
 current_floor = "2nd Floor"
 
 [node name="YSortLayer" type="Node2D" parent="." unique_id=1019581831]
@@ -922,9 +925,10 @@ position = Vector2(1258, -224)
 position = Vector2(1127, -319)
 
 [node name="NPCKennaLouisaArizobal" parent="YSortLayer" unique_id=1102020524 instance=ExtResource("24_kenna")]
+visible = false
 position = Vector2(1562, 86)
 
-[node name="NPCDirectoryInteractable" parent="YSortLayer" instance=ExtResource("34_staff_directory")]
+[node name="NPCDirectoryInteractable" parent="YSortLayer" unique_id=1277848164 instance=ExtResource("34_staff_directory")]
 position = Vector2(270, 245)
 
 [node name="NPCNathalieMilo" parent="YSortLayer" unique_id=1014040585 instance=ExtResource("25_nathalie")]
@@ -1269,3 +1273,5 @@ required_badge = "Blue Developer Badge"
 
 [node name="Ch3OfficeLateArcController" type="Node" parent="." unique_id=871335726]
 script = ExtResource("31_late_arc")
+backend_ticket_batch = Array[Resource]([ExtResource("35_ticket102"), ExtResource("36_ticket103")])
+frontend_ticket_batch = Array[Resource]([ExtResource("37_ticket104")])

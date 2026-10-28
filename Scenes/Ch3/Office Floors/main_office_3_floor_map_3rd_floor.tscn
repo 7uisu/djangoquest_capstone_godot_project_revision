@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://b22jpy3t0njd3" path="res://Scripts/Ch3/office_room_indicator.gd" id="18_room_indicator"]
 [ext_resource type="Script" uid="uid://dig6igiytbga3" path="res://Scripts/Ch3/office_room_zone.gd" id="19_room_zone"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_julia_roa.tscn" id="20_julia"]
+[ext_resource type="PackedScene" uid="uid://ch3_mario_cruz" path="res://Scenes/Interactables/Ch3/npc_mario_ellan_cruz.tscn" id="31_mario"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_divino_cinaon.tscn" id="21_divino"]
 [ext_resource type="PackedScene" uid="uid://6tukyi1p4n2a" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_left_glass_door_1.tscn" id="22_t8xhq"]
 [ext_resource type="PackedScene" uid="uid://b22uic5ghd30u" path="res://Scenes/Interactables/Ch3/npc_tercio_mateo_ramos.tscn" id="22_tercio"]
@@ -45,10 +46,15 @@ texture_region_size = Vector2i(32, 32)
 8:0/0 = 0
 9:0/0 = 0
 10:0/0 = 0
+10:0/0/y_sort_origin = 16
 11:0/0 = 0
+11:0/0/y_sort_origin = 16
 12:0/0 = 0
+12:0/0/y_sort_origin = 16
 13:0/0 = 0
+13:0/0/y_sort_origin = 16
 14:0/0 = 0
+14:0/0/y_sort_origin = 16
 15:0/0 = 0
 0:1/0 = 0
 1:1/0 = 0
@@ -62,8 +68,11 @@ texture_region_size = Vector2i(32, 32)
 9:1/0 = 0
 10:1/0 = 0
 11:1/0 = 0
+11:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-13.373211, -16, 16, -16, 16, 16, -13.062206, 16)
 12:1/0 = 0
+12:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
 13:1/0 = 0
+13:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373211, -16, -16, -16, -16, 16, 13.062206, 16)
 14:1/0 = 0
 15:1/0 = 0
 0:2/0 = 0
@@ -78,8 +87,11 @@ texture_region_size = Vector2i(32, 32)
 9:2/0 = 0
 10:2/0 = 0
 11:2/0 = 0
+11:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-13.373211, -16, 16, -16, 16, 16, -13.062206, 16)
 12:2/0 = 0
+12:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
 13:2/0 = 0
+13:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(13.373211, -16, -16, -16, -16, 16, 13.062206, 16)
 14:2/0 = 0
 15:2/0 = 0
 0:3/0 = 0
@@ -133,19 +145,29 @@ texture_region_size = Vector2i(32, 32)
 4:7/0 = 0
 5:7/0 = 0
 6:7/0 = 0
+6:7/0/y_sort_origin = 16
 9:7/0 = 0
 10:7/0 = 0
 11:7/0 = 0
 0:8/0 = 0
+0:8/0/y_sort_origin = 16
 1:8/0 = 0
+1:8/0/y_sort_origin = 16
 2:8/0 = 0
+2:8/0/y_sort_origin = 16
 3:8/0 = 0
+3:8/0/y_sort_origin = 16
 4:8/0 = 0
+4:8/0/y_sort_origin = 16
 5:8/0 = 0
+5:8/0/y_sort_origin = 16
 6:8/0 = 0
 7:8/0 = 0
+7:8/0/y_sort_origin = 16
 8:8/0 = 0
+8:8/0/y_sort_origin = 16
 9:8/0 = 0
+9:8/0/y_sort_origin = 16
 10:8/0 = 0
 11:8/0 = 0
 12:8/0 = 0
@@ -153,11 +175,17 @@ texture_region_size = Vector2i(32, 32)
 14:8/0 = 0
 15:8/0 = 0
 0:9/0 = 0
+0:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.440193, -16, 12.440193, -16, 12.751198, 9.641151, -11.507179, 9.330147)
 1:9/0 = 0
+1:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.440193, -16, 12.440193, -16, 12.751198, 9.641151, -11.507179, 9.330147)
 2:9/0 = 0
+2:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.440193, -16, 12.440193, -16, 12.751198, 9.641151, -11.507179, 9.330147)
 3:9/0 = 0
+3:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.440193, -16, 12.440193, -16, 12.751198, 9.641151, -11.507179, 9.330147)
 4:9/0 = 0
+4:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.440193, -16, 12.440193, -16, 12.751198, 9.641151, -11.507179, 9.330147)
 5:9/0 = 0
+5:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-12.440193, -16, 12.440193, -16, 12.751198, 9.641151, -11.507179, 9.330147)
 6:9/0 = 0
 7:9/0 = 0
 8:9/0 = 0
@@ -174,7 +202,9 @@ texture_region_size = Vector2i(32, 32)
 5:10/0 = 0
 6:10/0 = 0
 7:10/0 = 0
+7:10/0/y_sort_origin = 16
 8:10/0 = 0
+8:10/0/y_sort_origin = 16
 9:10/0 = 0
 9:10/0/y_sort_origin = 16
 10:10/0 = 0
@@ -696,6 +726,8 @@ texture_region_size = Vector2i(32, 32)
 
 [sub_resource type="TileSet" id="TileSet_otljy"]
 tile_size = Vector2i(32, 32)
+physics_layer_0/collision_layer = 16
+physics_layer_0/collision_mask = 0
 sources/0 = SubResource("TileSetAtlasSource_map0q")
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_44l0n"]
@@ -776,7 +808,7 @@ tile_set = SubResource("TileSet_otljy")
 
 [node name="OfficeObjects5" parent="." unique_id=392049088 instance=ExtResource("5_vjlw0")]
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAAoAPv/AAAGAAwAAAAoAPz/AAAGAA0AAAAoAP3/AAAGAA4AAAAqAP//AAALAAAAAAAqAAAAAAALAAEAAAAqAAEAAAALAAEAAAAqAAIAAAALAAIAAAArAPv/AAAJAAwAAAArAPz/AAAJAA0AAAArAP//AAAMAAAAAAArAAAAAAAMAAEAAAArAAEAAAAMAAEAAAArAAIAAAAMAAIAAAAsAPv/AAAKAAwAAAAsAPz/AAAKAA0AAAAsAP//AAANAAAAAAAsAAAAAAANAAEAAAAsAAEAAAAMAAEAAAAsAAIAAAAMAAIAAAAtAAEAAAAMAAEAAAAtAAIAAAAMAAIAAAAuAAEAAAAMAAEAAAAuAAIAAAAMAAIAAAAvAAEAAAAMAAEAAAAvAAIAAAAMAAIAAAAwAPv/AAAJAA4AAAAwAPz/AAAJAA8AAAAwAP//AAALAAAAAAAwAAAAAAALAAEAAAAwAAEAAAAMAAEAAAAwAAIAAAAMAAIAAAAxAPv/AAAKAA4AAAAxAPz/AAAKAA8AAAAxAP//AAAMAAAAAAAxAAAAAAAMAAEAAAAxAAEAAAAMAAEAAAAxAAIAAAAMAAIAAAAyAP//AAANAAAAAAAyAAAAAAANAAEAAAAyAAEAAAANAAEAAAAyAAIAAAANAAIAAAAzAPv/AAAHAAwAAAAzAPz/AAAHAA0AAAAzAP3/AAAHAA4AAAA0APv/AAAIAAwAAAA0APz/AAAIAA0AAAA0AP3/AAAIAA4AAAAcAPL/AAABACkAAAAcAPP/AAABACoAAAAdAPL/AAACACkAAAAdAPP/AAACACoAAAAdAPH/AAADACgAAAAbAPb/AAAKABwAAAAbAPf/AAAKAB0AAAAcAPb/AAALABwAAAAcAPf/AAALAB0AAAAdAPb/AAAMABwAAAAdAPf/AAAMAB0AAAAAAPb/AAAOAAgAAAAAAPf/AAAOAAkAAAABAPb/AAAOAAgAAAABAPf/AAAOAAkAAAD///j/AAAIABYAAAD///n/AAAIABcAAAAAAPj/AAAJABYAAAAAAPn/AAAJABcAAAD+//j/AAAOAAgAAAD+//n/AAAOAAkAAAABAPj/AAAOAAgAAAABAPn/AAAOAAkAAAACAPj/AAAPAAgAAAACAPn/AAAPAAkAAAADAPj/AAAPAAgAAAADAPn/AAAPAAkAAAADAPr/AAACAAgAAAADAPv/AAACAAkAAAA=")
+tile_map_data = PackedByteArray("AAAoAPv/AAAGAAwAAAAoAPz/AAAGAA0AAAAoAP3/AAAGAA4AAAArAPv/AAAJAAwAAAArAPz/AAAJAA0AAAAsAPv/AAAKAAwAAAAsAPz/AAAKAA0AAAAwAPv/AAAJAA4AAAAwAPz/AAAJAA8AAAAxAPv/AAAKAA4AAAAxAPz/AAAKAA8AAAAzAPv/AAAHAAwAAAAzAPz/AAAHAA0AAAAzAP3/AAAHAA4AAAA0APv/AAAIAAwAAAA0APz/AAAIAA0AAAA0AP3/AAAIAA4AAAAcAPL/AAABACkAAAAcAPP/AAABACoAAAAdAPL/AAACACkAAAAdAPP/AAACACoAAAAdAPH/AAADACgAAAAbAPb/AAAKABwAAAAbAPf/AAAKAB0AAAAcAPb/AAALABwAAAAcAPf/AAALAB0AAAAdAPb/AAAMABwAAAAdAPf/AAAMAB0AAAAAAPb/AAAOAAgAAAAAAPf/AAAOAAkAAAABAPb/AAAOAAgAAAABAPf/AAAOAAkAAAD///j/AAAIABYAAAD///n/AAAIABcAAAAAAPj/AAAJABYAAAAAAPn/AAAJABcAAAD+//j/AAAOAAgAAAD+//n/AAAOAAkAAAABAPj/AAAOAAgAAAABAPn/AAAOAAkAAAACAPj/AAAPAAgAAAACAPn/AAAPAAkAAAADAPj/AAAPAAgAAAADAPn/AAAPAAkAAAADAPr/AAACAAgAAAADAPv/AAACAAkAAAAJAP7/AAAIAAgAAAAJAP//AAAIAAkAAAAKAP7/AAAJAAgAAAAKAP//AAAJAAkAAAAqAAIAAAALAAIAAAAqAP//AAALAAAAAAAyAP//AAANAAAAAAAyAAIAAAANAAIAAAArAAIAAAAMAAIAAAAsAAIAAAAMAAIAAAAtAAIAAAAMAAIAAAAuAAIAAAAMAAIAAAAvAAIAAAAMAAIAAAAwAAIAAAAMAAIAAAAxAAIAAAAMAAIAAAAqAAAAAAALAAEAAAAqAAEAAAALAAEAAAArAAAAAAAMAAEAAAArAAEAAAAMAAEAAAAsAAEAAAAMAAEAAAAtAAEAAAAMAAEAAAAuAAEAAAAMAAEAAAAvAAEAAAAMAAEAAAAwAAEAAAAMAAEAAAAxAAEAAAAMAAEAAAAxAAAAAAAMAAEAAAAwAAAAAAAMAAEAAAAvAAAAAAAMAAEAAAAuAAAAAAAMAAEAAAAtAAAAAAAMAAEAAAAsAAAAAAAMAAEAAAArAP//AAAMAAAAAAAsAP//AAAMAAAAAAAtAP//AAAMAAAAAAAuAP//AAAMAAAAAAAvAP//AAAMAAAAAAAwAP//AAAMAAAAAAAxAP//AAAMAAAAAAAyAAAAAAANAAEAAAAyAAEAAAANAAEAAAA=")
 tile_set = SubResource("TileSet_otljy")
 
 [node name="OfficeObjects2" parent="." unique_id=141379402 instance=ExtResource("5_vjlw0")]
@@ -790,7 +822,7 @@ tile_set = SubResource("TileSet_otljy")
 
 [node name="OfficeObjects4" parent="." unique_id=400077215 instance=ExtResource("5_vjlw0")]
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAApAP//AAAFAAgAAAApAAAAAAAFAAkAAAApAAEAAAAFAAgAAAApAAIAAAAFAAkAAAArAAIAAAABAAgAAAArAAMAAAABAAkAAAAtAAIAAAABAAgAAAAtAAMAAAABAAkAAAAvAAIAAAABAAgAAAAvAAMAAAABAAkAAAAxAAIAAAABAAgAAAAxAAMAAAABAAkAAAAzAP//AAAEAAgAAAAzAAAAAAAEAAkAAAAzAAEAAAAEAAgAAAAzAAIAAAAEAAkAAAA=")
+tile_map_data = PackedByteArray("AAApAAEAAAAFAAgAAAApAAIAAAAFAAkAAAArAAIAAAABAAgAAAArAAMAAAABAAkAAAAtAAIAAAABAAgAAAAtAAMAAAABAAkAAAAvAAIAAAABAAgAAAAvAAMAAAABAAkAAAAxAAIAAAABAAgAAAAxAAMAAAABAAkAAAAzAAEAAAAEAAgAAAAzAAIAAAAEAAkAAAA=")
 tile_set = SubResource("TileSet_otljy")
 
 [node name="SchoolFloor" parent="." unique_id=1504739295 instance=ExtResource("7_t8xhq")]
@@ -869,23 +901,23 @@ drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
 [node name="ElevatorDoor1" parent="." unique_id=314165112 instance=ExtResource("17_cshx6")]
-required_badge = "Green OJT Badge"
 position = Vector2(544, -32)
+required_badge = "Green OJT Badge"
 current_floor = "3rd Floor"
 
 [node name="ElevatorDoor2" parent="." unique_id=176639908 instance=ExtResource("17_cshx6")]
-required_badge = "Green OJT Badge"
 position = Vector2(672, -32)
+required_badge = "Green OJT Badge"
 current_floor = "3rd Floor"
 
 [node name="Player" parent="." unique_id=833241429 instance=ExtResource("16_8x4mv")]
 position = Vector2(525, 41)
 
 [node name="NPCJuliaRoa" parent="." unique_id=2020715843 instance=ExtResource("20_julia")]
-position = Vector2(1490, -27)
+position = Vector2(1477, -58)
 
-[node name="NPCDirectoryInteractable" parent="." instance=ExtResource("30_staff_directory")]
-position = Vector2(352, 240)
+[node name="NPCDirectoryInteractable" parent="." unique_id=668945232 instance=ExtResource("30_staff_directory")]
+position = Vector2(320, -9)
 
 [node name="NPCDivinoCinaon" parent="." unique_id=1259402462 instance=ExtResource("21_divino")]
 position = Vector2(-242, 75)
@@ -896,14 +928,16 @@ second_visit_dialogue = ""
 reminder_dialogue = ""
 
 [node name="NPCIvanaDanielaGabani" parent="." unique_id=996419510 instance=ExtResource("25_ivana")]
-position = Vector2(1040, -320)
+position = Vector2(912, -438)
 
 [node name="NPCAugustCreed" parent="." unique_id=1672338157 instance=ExtResource("26_august")]
+visible = false
 position = Vector2(1110, -320)
 second_visit_dialogue = ""
 reminder_dialogue = ""
 
 [node name="NPCHannaLuisaPaday" parent="." unique_id=119777835 instance=ExtResource("27_hanna")]
+visible = false
 position = Vector2(1180, -320)
 
 [node name="ExecutiveMeetingRoomSidewayLeftGlassDoor1" parent="." unique_id=772612451 instance=ExtResource("22_t8xhq")]
@@ -934,3 +968,7 @@ position = Vector2(-460, 16)
 
 [node name="Ch3OfficeLateArcController" type="Node" parent="." unique_id=1515776808]
 script = ExtResource("28_late_arc")
+
+[node name="NPCMarioEllanCruz" parent="." unique_id=3827491056 instance=ExtResource("31_mario")]
+visible = false
+position = Vector2(1350, 30)

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GetHubTicket" format=3 uid="uid://n7vrs7sfs2km"]
+
+[ext_resource type="Script" uid="uid://dyrc6me25lxav" path="res://Scripts/Interactables/gethub_ticket.gd" id="1_ticket"]
+
+[resource]
+script = ExtResource("1_ticket")
+labels = PackedStringArray("bug", "frontend", "css", "high-priority")
+description = "The Student Learning Portal dashboard cards overflow the viewport on narrow mobile screens. The desktop layout is fine; please make a targeted responsive fix without rewriting unrelated navigation styles."
+reproduction_steps = PackedStringArray("Open the dashboard at a desktop width.", "Resize the preview to 375 px wide.", "Observe the cards extend beyond the viewport instead of wrapping.")
+acceptance_criteria = PackedStringArray("Cards remain inside the mobile viewport.", "Desktop layout remains a flexible row.", "Use a targeted CSS change; do not rewrite the navbar.")
+hint = "At a narrow width, the container runs out of horizontal room. Think about which behavior lets its existing children use another line without changing the desktop layout."
+mentor_name = "Celestina"
+mentor_hint = "At a narrow width, the container runs out of horizontal room. Think about which behavior lets its existing children use another line without changing the desktop layout."

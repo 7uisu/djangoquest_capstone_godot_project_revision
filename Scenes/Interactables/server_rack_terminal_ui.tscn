@@ -1,0 +1,176 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/server_rack_terminal_ui.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.035, 0.055, 0.075, 1)
+border_color = Color(0.2, 0.32, 0.42, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="OutputStyle"]
+bg_color = Color(0.012, 0.024, 0.032, 1)
+border_color = Color(0.1, 0.16, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="CommandStyle"]
+bg_color = Color(0.025, 0.075, 0.055, 1)
+border_color = Color(0.12, 0.3, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="ServerRackTerminalUI" type="CanvasLayer"]
+layer = 120
+script = ExtResource("1_script")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.008, 0.016, 0.024, 0.86)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TerminalWindow" type="PanelContainer" parent="Screen/CenterContainer"]
+custom_minimum_size = Vector2(820, 510)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="WindowVBox" type="VBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="TerminalHeader" type="HBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BrandLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/TerminalHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.56, 0.72, 0.91, 1)
+theme_override_font_sizes/font_size = 15
+text = "DJQ  /  PRODUCTION CONTROL"
+
+[node name="Spacer" type="Control" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/TerminalHeader"]
+size_flags_horizontal = 3
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/TerminalHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.42, 0.42, 1)
+theme_override_font_sizes/font_size = 13
+text = "●  CRITICAL · PRODUCTION DATABASE"
+
+[node name="Divider" type="HSeparator" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.94, 0.98, 1)
+theme_override_font_sizes/font_size = 25
+text = "Login API · Migration Failure"
+
+[node name="OutputPanel" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("OutputStyle")
+
+[node name="OutputMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="OutputLabel" type="RichTextLabel" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.87, 0.92, 1)
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+scroll_active = true
+text = "$ tail -f /var/log/django/production.log\n\n django.db.utils.ProgrammingError: column \"enrolled_at\" of relation \"student_enrollment\" does not exist\n\nThe production database schema is behind the application release. The login endpoint is returning HTTP 500."
+
+[node name="CommandRow" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("CommandStyle")
+
+[node name="CommandMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/CommandRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 10
+
+[node name="CommandRowContents" type="HBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/CommandRow/CommandMargin"]
+layout_mode = 2
+
+[node name="CommandPrefixLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/CommandRow/CommandMargin/CommandRowContents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.61, 0.8, 0.68, 1)
+theme_override_font_sizes/font_size = 15
+text = "console 2  ·  incident diagnostics"
+
+[node name="CommandLineEdit" type="LineEdit" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/CommandRow/CommandMargin/CommandRowContents"]
+custom_minimum_size = Vector2(550, 34)
+size_flags_horizontal = 3
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.91, 0.81, 1)
+theme_override_colors/font_placeholder_color = Color(0.42, 0.51, 0.47, 1)
+theme_override_font_sizes/font_size = 15
+placeholder_text = "Type the migration command..."
+
+[node name="HintLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.62, 0.69, 1)
+theme_override_font_sizes/font_size = 13
+text = "Review the failing column, then answer Divino's accountability question."
+
+[node name="ActionButton" type="Button" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Acknowledge Traceback"
+

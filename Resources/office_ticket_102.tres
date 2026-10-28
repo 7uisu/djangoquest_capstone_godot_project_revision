@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="GetHubTicket" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/gethub_ticket.gd" id="1_ticket"]
+
+[resource]
+script = ExtResource("1_ticket")
+issue_number = 102
+title = "Classroom report query cannot follow the profile relationship"
+reporter_name = "Kenna Louisa Arizobal"
+reporter_role = "Backend Developer"
+priority = "High"
+initial_status = "Open"
+labels = PackedStringArray("bug", "backend", "django-orm", "queryset")
+description = "The trainee endpoint filters Student directly by classroom, but Classroom is related through StudentProfile. The current query returns no matching classroom records. Fix the reverse lookup so the endpoint can serialize the classroom roster."
+reproduction_steps = PackedStringArray("Call the classroom roster endpoint with a valid classroom.", "Inspect the queryset in get_classroom_students().", "Observe that filtering by classroom directly returns no matching students.")
+acceptance_criteria = PackedStringArray("Follow the StudentProfile relationship using the correct ORM reverse lookup.", "Keep the result as a queryset for the serializer.", "The endpoint returns HTTP 200 OK with 24 records serialized in 12ms.")
+attachment_heading = "Backend trace · classroom roster queryset"
+attachment_caption = "The route resolves, but the queryset is empty because the classroom relation belongs to StudentProfile rather than Student."
+challenge_title = "Fix the classroom reverse lookup"
+challenge_topic = "django"
+challenge_type = "free_type"
+challenge_output_type = "terminal"
+file_name = "views.py"
+starter_code = "def get_classroom_students(classroom):\n    return Student.objects.filter(classroom=classroom)"
+project_tree = {"student_portal": {"manage.py": "", "portal": {"models.py": "", "serializers.py": "", "views.py": "", "urls.py": ""}}}
+expected_code = "Student.objects.filter(profile__classroom=classroom)"
+hint = "The field is one relationship away from Student. Trace the model relationship in the reference files and use Django's relationship lookup syntax."
+mentor_name = "Kenna"
+mentor_hint = "The classroom field lives on the related profile, not the student row itself. Trace the relation from the model definitions and think about how Django follows a relationship backwards."
+correct_output = "HTTP 200 OK — 24 records serialized in 12ms."
+error_output = "ProgrammingError: Cannot resolve keyword 'classroom' into field. Follow the StudentProfile reverse relation."
+mission_steps = PackedStringArray("Inspect how StudentProfile relates Student to Classroom.", "Replace the invalid direct lookup with the reverse relation lookup.", "Run the queryset check and confirm all 24 classroom records serialize.")

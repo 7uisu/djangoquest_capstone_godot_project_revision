@@ -1,39 +1,79 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://b5ojsyhr40qel"]
 
-[ext_resource type="Script" path="res://Scripts/Ch3/interview_choice_panel.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://b50ul0eltvo61" path="res://Scripts/Ch3/interview_choice_panel.gd" id="1_script"]
 
-[node name="InterviewChoicePanel" type="CanvasLayer"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.06, 0.08, 0.12, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.24, 0.52, 0.95, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.75)
+shadow_size = 18
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_question"]
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+bg_color = Color(0.1, 0.13, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.36, 0.58, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="InterviewChoicePanel" type="CanvasLayer" unique_id=1693968772]
 layer = 30
 script = ExtResource("1_script")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1212521094]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ChoicePanel" type="PanelContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(700, 250)
+[node name="ChoicePanel" type="PanelContainer" parent="CenterContainer" unique_id=1403575412]
+custom_minimum_size = Vector2(780, 260)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/ChoicePanel"]
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/ChoicePanel" unique_id=264850773]
 layout_mode = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 18
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
 
-[node name="ChoicesBox" type="VBoxContainer" parent="CenterContainer/ChoicePanel/MarginContainer"]
+[node name="ChoicesBox" type="VBoxContainer" parent="CenterContainer/ChoicePanel/MarginContainer" unique_id=1354977709]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
-[node name="TimerLabel" type="Label" parent="CenterContainer/ChoicePanel/MarginContainer/ChoicesBox"]
+[node name="QuestionLabel" type="Label" parent="CenterContainer/ChoicePanel/MarginContainer/ChoicesBox" unique_id=2030951388]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_question")
+text = "Interview question"
+autowrap_mode = 3
+
+[node name="TimerLabel" type="Label" parent="CenterContainer/ChoicePanel/MarginContainer/ChoicesBox" unique_id=456104586]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.72, 1, 1)
+theme_override_font_sizes/font_size = 16
 text = "Choose an answer • 15 seconds"
 horizontal_alignment = 1
 
-[node name="Buttons" type="VBoxContainer" parent="CenterContainer/ChoicePanel/MarginContainer/ChoicesBox"]
+[node name="Buttons" type="VBoxContainer" parent="CenterContainer/ChoicePanel/MarginContainer/ChoicesBox" unique_id=1533346400]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 10

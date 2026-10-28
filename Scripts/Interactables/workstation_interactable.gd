@@ -1,12 +1,13 @@
 extends Area2D
 
 ## Workstation / Desk Interactable
-## Interacting opens the developer tools (Fake IDE, Fake Browser, GetHub Issues, or target UI scene).
+## Interacting opens the developer tools (IDE, browser, GetHub Issues, or target UI scene).
 
 signal workstation_used(workstation_id: String)
 
 @export var workstation_id: String = "trainee_desk"
 @export var interaction_text: String = "[F] Use Workstation"
+@export var interaction_enabled: bool = true
 @export var is_locked: bool = false
 @export var lock_message: String = "You don't need to use this computer right now."
 @export var target_scene: PackedScene = null
@@ -36,7 +37,8 @@ func _ready() -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player"):
 		player_is_inside = true
-		_show_label()
+		if interaction_enabled:
+			_show_label()
 
 
 func _on_body_exited(body: Node2D) -> void:
@@ -47,6 +49,8 @@ func _on_body_exited(body: Node2D) -> void:
 
 ## Called by the player's interaction check
 func interact() -> void:
+	if not interaction_enabled:
+		return
 	if is_locked:
 		_show_locked_feedback()
 		return
@@ -59,7 +63,7 @@ func interact() -> void:
 
 	workstation_used.emit(workstation_id)
 
-	# Transition to target scene or Fake IDE if assigned
+	# Transition to target scene or IDE if assigned
 	if target_scene:
 		_transition_to_scene()
 
@@ -122,3 +126,13 @@ func set_locked(locked: bool, message: String = "") -> void:
 	is_locked = locked
 	if not message.is_empty():
 		lock_message = message
+
+
+func set_interaction_enabled(enabled: bool) -> void:
+	if interaction_enabled == enabled:
+		return
+	interaction_enabled = enabled
+	if not interaction_enabled:
+		_hide_label()
+	elif player_is_inside:
+		_show_label()
