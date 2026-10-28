@@ -4,14 +4,14 @@
 
 [resource]
 script = ExtResource("1_ticket")
-issue_number = 102
+issue_number = 151
 title = "Classroom report query cannot follow the profile relationship"
 reporter_name = "Kenna Louisa Arizobal"
 reporter_role = "Backend Developer"
 priority = "High"
 initial_status = "Open"
 labels = PackedStringArray("bug", "backend", "django-orm", "queryset")
-description = "The trainee endpoint filters Student directly by classroom, but Classroom is related through StudentProfile. The current query returns no matching classroom records. Fix the reverse lookup so the endpoint can serialize the classroom roster."
+description = "Week 7 supervised sprint — the trainee endpoint filters Student directly by classroom, but Classroom is related through StudentProfile. The current query returns no matching classroom records. Ticket #151 is your first major backend feature: fix the reverse lookup so the endpoint can serialize the classroom roster."
 reproduction_steps = PackedStringArray("Call the classroom roster endpoint with a valid classroom.", "Inspect the queryset in get_classroom_students().", "Observe that filtering by classroom directly returns no matching students.")
 acceptance_criteria = PackedStringArray("Follow the StudentProfile relationship using the correct ORM reverse lookup.", "Keep the result as a queryset for the serializer.", "The endpoint returns HTTP 200 OK with 24 records serialized in 12ms.")
 attachment_heading = "Backend trace · classroom roster queryset"

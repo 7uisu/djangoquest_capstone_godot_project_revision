@@ -34,9 +34,9 @@
 [ext_resource type="PackedScene" uid="uid://d2p1q4x8m7y3a" path="res://Scenes/Interactables/coffee_machine_interactable.tscn" id="32_coffee_machine"]
 [ext_resource type="PackedScene" uid="uid://c8m2p5q1wx7r0" path="res://Scenes/Interactables/workstation_interactable.tscn" id="33_workstation"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/npc_directory_interactable.tscn" id="34_staff_directory"]
-[ext_resource type="Resource" path="res://Resources/office_ticket_102.tres" id="35_ticket102"]
-[ext_resource type="Resource" path="res://Resources/office_ticket_103.tres" id="36_ticket103"]
-[ext_resource type="Resource" path="res://Resources/office_ticket_104.tres" id="37_ticket104"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_151.tres" id="35_ticket151"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_152.tres" id="36_ticket152"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_153.tres" id="37_ticket153"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_map0q"]
 texture = ExtResource("6_dtbib")
@@ -1273,5 +1273,5 @@ required_badge = "Blue Developer Badge"
 
 [node name="Ch3OfficeLateArcController" type="Node" parent="." unique_id=871335726]
 script = ExtResource("31_late_arc")
-backend_ticket_batch = Array[Resource]([ExtResource("35_ticket102"), ExtResource("36_ticket103")])
-frontend_ticket_batch = Array[Resource]([ExtResource("37_ticket104")])
+backend_ticket_batch = Array[Resource]([ExtResource("35_ticket151"), ExtResource("36_ticket152")])
+frontend_ticket_batch = Array[Resource]([ExtResource("37_ticket153")])

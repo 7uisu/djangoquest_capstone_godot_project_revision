@@ -4,14 +4,14 @@
 
 [resource]
 script = ExtResource("1_ticket")
-issue_number = 103
+issue_number = 152
 title = "Classroom roster endpoint needs a complete DRF view"
 reporter_name = "Kenna Louisa Arizobal"
 reporter_role = "Backend Developer"
 priority = "High"
 initial_status = "Open"
 labels = PackedStringArray("feature", "backend", "django-rest-framework", "serializer")
-description = "Continue Ticket #102 by building the complete classroom roster endpoint. Inspect models.py and serializers.py, then implement the view in views.py using the StudentProfile reverse relation and the provided serializer."
+description = "Continue Ticket #151 by building the complete classroom roster endpoint. Inspect models.py and serializers.py, then implement the view in views.py using the StudentProfile reverse relation and the provided serializer."
 reproduction_steps = PackedStringArray("Open models.py and trace Student through its OneToOne StudentProfile relationship to Classroom.", "Inspect serializers.py to see the expected StudentRosterSerializer fields.", "Complete the DRF endpoint in views.py and return serialized records in a Response.")
 acceptance_criteria = PackedStringArray("Import the model and serializer used by the view.", "Filter students through profile__classroom and serialize the queryset with many=True.", "Return serializer.data in a DRF Response.", "Keep the endpoint implementation in views.py; the model and serializer tabs are reference files.")
 attachment_heading = "Backend sprint · three-file project"

@@ -470,7 +470,7 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 	if role == "kendra" and bool(get_tree().root.get_meta("ch3_graduation_return", false)):
 		await _run_graduation_return_conversation(npc)
 		return
-	if not character_data.ch3_interview_passed or not character_data.ch3_has_green_badge:
+	if not character_data.ch3_interview_passed or (not character_data.ch3_has_green_badge and not character_data.ch3_has_blue_badge):
 		if npc == kendra:
 			await _on_professor_interacted()
 		else:
@@ -509,10 +509,16 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 			elif ch8_stage == 1:
 				await _run_ch8_sprint_meeting()
 			elif ch8_stage >= 2:
-				await _run_story_bubble(npc, [
-					{"name": "August Creed", "text": "Good work in the sprint meeting."},
-					{"name": "August Creed", "text": "Next, the team will turn that plan into supervised development tasks."}
-				])
+				if character_data.ch3_has_blue_badge:
+					await _run_story_bubble(npc, [
+						{"name": "August Creed", "text": "Look at you with the blue badge — congratulations, junior developer."},
+						{"name": "August Creed", "text": "You earned that desk on Floor 2. Come find me if you have questions."}
+					])
+				else:
+					await _run_story_bubble(npc, [
+						{"name": "August Creed", "text": "Good work in the sprint meeting."},
+						{"name": "August Creed", "text": "Next, the team will turn that plan into supervised development tasks."}
+					])
 		"ivana":
 			await _run_orientation_role_intro(npc, "ivana")
 		"hanna":
@@ -530,10 +536,16 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 					{"name": "Celestina Balon", "text": "Open GetHub and review Ticket #101 there."}
 				])
 			elif ch7_stage >= 2:
-				await _run_story_bubble(npc, [
-					{"name": "Celestina Balon", "text": "I have sent your verified onboarding update to August."},
-					{"name": "Celestina Balon", "text": "We will build on this during supervised development."}
-				])
+				if character_data.ch3_has_blue_badge:
+					await _run_story_bubble(npc, [
+						{"name": "Celestina Balon", "text": "The intern who fixed Ticket #101 is now a junior web developer."},
+						{"name": "Celestina Balon", "text": "I need sharp eyes on the team. Good to have you official."}
+					])
+				else:
+					await _run_story_bubble(npc, [
+						{"name": "Celestina Balon", "text": "I have sent your verified onboarding update to August."},
+						{"name": "Celestina Balon", "text": "We will build on this during supervised development."}
+					])
 		"mario":
 			if ch7_stage >= 2 and ch8_stage == 0:
 				await _run_ch8_client_handoff()
@@ -1072,7 +1084,7 @@ func _run_ch8_sprint_meeting() -> void:
 			{"name": "Abel Abendaño", "text": "Mario, I can't build the teacher report cards if I don't know what fields the backend returns! I need mock data! Give me an endpoint or give me peace!"},
 			{"name": "Kenna Louisa Arizobal", "text": "If you build on mock data, you'll guess the field names wrong and we'll spend forty hours refactoring when my endpoints land! Be patient, Abel!"},
 			{"name": "You", "text": "Excuse me... Abel is right, but so is Kenna."},
-			{"name": "You", "text": "Ticket #3 on the frontend has a hard dependency on Ticket #1 on the backend. Kenna needs to define the serializer schema first—specifying teacher_name and progress_percentage."},
+			{"name": "You", "text": "The frontend progress-card work depends on the backend roster endpoint. Kenna needs to define the serializer schema first—specifying teacher_name and progress_percentage."},
 			{"name": "You", "text": "Once that contract is locked in GetHub, Abel can build against the exact structure without guessing."},
 			{"name": "Kenna Louisa Arizobal", "text": "Agreed. I'll publish those response fields with the endpoint details today."},
 			{"name": "Abel Abendaño", "text": "Perfect! Then I can build against the real contract instead of mocking data."},
@@ -1091,7 +1103,7 @@ func _run_ch8_sprint_meeting() -> void:
 	await _show_time_skip_card(
 		"WEEKS 2 TO 7 — THE OJT SPRINT ROTATION",
 		"120 / 300 HOURS LOGGED",
-		"Over the next six weeks, morning standups become second nature. You learn the codebase, log hours, fix bug tickets, and coordinate endpoints with Abel. Today, you are pairing with Kenna on your final backend feature ticket before evaluation.",
+		"Weeks 2 through 7 fill with morning standups, workstation and hardware setup, minor IT troubleshooting, broken-link fixes, test cases, small styling and validation tickets, and sprint retrospectives. Across those six weeks, you close about a dozen small issues from the off-screen #102–#150 queue and learn the team's codebase and routines. Today is different: Kenna has assigned Ticket #151, your first major backend feature and reverse-lookup challenge.",
 		true,
 		func():
 			# Advance stage and remove Kenna from the 1st floor Sprint Room under total darkness.
@@ -1237,6 +1249,11 @@ func _on_kendra_day_one_followup() -> void:
 			next_lines = [
 				{"name": "Kendra Barba", "text": "Your first onboarding task is reviewed."},
 				{"name": "Kendra Barba", "text": "Mario is in the hallway with the team's next project request."}
+			]
+		if character_data.ch3_has_blue_badge:
+			next_lines = [
+				{"name": "Kendra Barba", "text": "A junior web developer — still using the front entrance, I see."},
+				{"name": "Kendra Barba", "text": "You could probably skip the check-in line now. Congratulations."}
 			]
 		await _play_bubble(kendra, next_lines)
 		await _offer_optional_npc_choice(kendra)

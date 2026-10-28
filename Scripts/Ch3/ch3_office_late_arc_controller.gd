@@ -285,15 +285,15 @@ func _restore_stage_quest() -> void:
 	_set_workstation_active(frontend_workstation, false)
 	match stage:
 		9:
-			_set_stage(9, "ch9:_supervised_development", "Meet Kenna for your supervised backend tasks in the Developer Wing.", "NPCKennaLouisaArizobal")
+			_set_stage(9, "ch9:_supervised_development", "Week 7 — meet Kenna in the Backend Room on Floor 2 to begin Ticket #151.", "NPCKennaLouisaArizobal", "2nd Floor")
 		901:
 			_set_workstation_active(backend_workstation, true)
-			_set_stage(901, "ch9_backend_workstation", "Go to the Backend Workstation beside Kenna ([F] Use Workstation).", "BackendWorkstation")
+			_set_stage(901, "ch9_backend_workstation", "Work with Kenna on Ticket #151 at the Backend Workstation ([F] Use Workstation).", "BackendWorkstation", "2nd Floor")
 		91:
-			_set_stage(91, "ch9_frontend_integration", "Meet Abel in the Frontend Room to review API integration.", "NPCAbelAbendano")
+			_set_stage(91, "ch9_frontend_integration", "Tickets #151 and #152 are complete. Meet Abel on Floor 2 to review the frontend API contract for Ticket #153.", "NPCAbelAbendano", "2nd Floor")
 		911:
 			_set_workstation_active(frontend_workstation, true)
-			_set_stage(911, "ch9_frontend_workstation", "Go to the Frontend Workstation beside Abel ([F] Use Workstation).", "FrontendWorkstation")
+			_set_stage(911, "ch9_frontend_workstation", "Complete Ticket #153 at the Frontend Workstation beside Abel ([F] Use Workstation).", "FrontendWorkstation", "2nd Floor")
 		10:
 			_set_stage(10, "ch10_ojt_evaluation", "Go to the Lead's Office for your OJT evaluation.", "NPCIvanaDanielaGabani")
 		11:
@@ -499,6 +499,8 @@ func _chapter_9_backend(npc: Node2D) -> void:
 		{"name": "Kenna Louisa Arizobal", "text": "Hands off the keyboard, kiddo."},
 		{"name": "Kenna Louisa Arizobal", "text": "Breathe."},
 		{"name": "Kenna Louisa Arizobal", "text": "Take a bite of the muffin..."},
+		{"name": "Kenna Louisa Arizobal", "text": "You've been cruising through small bug tickets for six weeks."},
+		{"name": "Kenna Louisa Arizobal", "text": "Ticket #151 is your first real reverse lookup."},
 		{"name": "Kenna Louisa Arizobal", "text": "A terminal error isn't calling you stupid."},
 		{"name": "Kenna Louisa Arizobal", "text": "It's a compiler telling you where the map is wrong."},
 		{"name": "Player", "text": "I feel like an idiot, Kenna."},
@@ -506,10 +508,10 @@ func _chapter_9_backend(npc: Node2D) -> void:
 		{"name": "Kenna Louisa Arizobal", "text": "My second week here, I accidentally ran an update query without a where clause on staging."},
 		{"name": "Kenna Louisa Arizobal", "text": "I renamed all 500 test students to John Doe."},
 		{"name": "Kenna Louisa Arizobal", "text": "I cried in the bathroom stall for an hour."},
-		{"name": "Kenna Louisa Arizobal", "text": "Look at line 18: how is StudentProfile related to Classroom?"}
+		{"name": "Kenna Louisa Arizobal", "text": "Look at the model relationships: how is StudentProfile related to Classroom?"}
 	])
 	await _play_bubble(player, [
-		{"name": "Player", "text": "It's a reverse relation through student__profile, not direct!"}
+		{"name": "Player", "text": "It's a reverse relation through profile__classroom, not a direct classroom field!"}
 	])
 	await _play_bubble(nathalie if nathalie else npc, [
 		{"name": "Nathalie Milo", "text": "We'll start small: model relationships, CRUD behavior, and URL routing."},
@@ -517,7 +519,7 @@ func _chapter_9_backend(npc: Node2D) -> void:
 		{"name": "Nathalie Milo", "text": "Ask why each piece belongs where it does."}
 	])
 	_set_workstation_active(backend_workstation, true)
-	_set_stage(901, "ch9_backend_workstation", "Go to the Backend Workstation beside Kenna ([F] Use Workstation).", "BackendWorkstation")
+	_set_stage(901, "ch9_backend_workstation", "Work with Kenna on Ticket #151 at the Backend Workstation ([F] Use Workstation).", "BackendWorkstation", "2nd Floor")
 	sequence_running = false
 	_restore_walk_hud()
 
@@ -538,7 +540,7 @@ func _complete_backend_training_workstation() -> void:
 	_hide_walk_hud()
 	if player:
 		player.can_move = false
-	await _play_dialogue([{"name": "Kenna Louisa Arizobal", "text": "Open the sprint issues and inspect each reference file before you change anything. Use my hint if you need a nudge toward the underlying relationship—I'll leave the solution for you to work out."}])
+	await _play_dialogue([{"name": "Kenna Louisa Arizobal", "text": "Open the sprint issues and start with Ticket #151. Inspect each reference file before changing anything. Use my hint if you need a nudge toward the underlying relationship—I'll leave the solution for you to work out."}])
 	var ticket_succeeded := await _run_gethub_ticket_batch(backend_ticket_batch)
 	if not ticket_succeeded:
 		_set_workstation_active(backend_workstation, true)
@@ -550,7 +552,7 @@ func _complete_backend_training_workstation() -> void:
 		{"name": "Player", "text": "YES! It's returning 200 OK! All 24 classroom records serialized!"},
 		{"name": "Nathalie Milo", "text": "Keep celebrating, kids, but don't break the desk."}
 	])
-	_set_stage(91, "ch9_frontend_integration", "Meet Abel in the Frontend Room to review API integration.", "NPCAbelAbendano")
+	_set_stage(91, "ch9_frontend_integration", "Tickets #151 and #152 are complete. Meet Abel on Floor 2 to review the frontend API contract for Ticket #153.", "NPCAbelAbendano", "2nd Floor")
 	sequence_running = false
 	_restore_walk_hud()
 
@@ -567,7 +569,7 @@ func _chapter_9_frontend(npc: Node2D) -> void:
 		{"name": "Celestina Balon", "text": "I'll make sure the frontend displays the API response correctly."}
 	])
 	_set_workstation_active(frontend_workstation, true)
-	_set_stage(911, "ch9_frontend_workstation", "Go to the Frontend Workstation beside Abel ([F] Use Workstation).", "FrontendWorkstation")
+	_set_stage(911, "ch9_frontend_workstation", "Complete Ticket #153 at the Frontend Workstation beside Abel ([F] Use Workstation).", "FrontendWorkstation", "2nd Floor")
 	sequence_running = false
 	_restore_walk_hud()
 

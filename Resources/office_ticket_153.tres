@@ -4,14 +4,14 @@
 
 [resource]
 script = ExtResource("1_ticket")
-issue_number = 104
+issue_number = 153
 title = "Progress cards trust an unvalidated API response"
 reporter_name = "Abel Abendaño"
 reporter_role = "Frontend Developer"
 priority = "High"
 initial_status = "Open"
 labels = PackedStringArray("bug", "frontend", "api", "typescript", "contract")
-description = "The Student Learning Portal progress card assumes the server always sends valid data. Validate the agreed response contract before mapping fields: teacher_name must be a string and progress_percentage must be a number. Do not invent fallback data or silently render a malformed response."
+description = "Week 7 frontend follow-up to Tickets #151 and #152. The Student Learning Portal progress card assumes the server always sends valid data. Validate the agreed response contract before mapping fields: teacher_name must be a string and progress_percentage must be a number. Do not invent fallback data or silently render a malformed response."
 reproduction_steps = PackedStringArray("Load the progress card with a valid API response.", "Try a response where teacher_name is missing or not a string.", "Try a response where progress_percentage is missing or not numeric.", "Observe that the current client accepts malformed payloads without reporting a contract error.")
 acceptance_criteria = PackedStringArray("Accept teacher_name only when it is a string.", "Accept progress_percentage only when it is a number.", "Throw a clear Invalid progress response error if either field violates the contract.", "Keep the agreed response field names; do not substitute mock data.")
 attachment_heading = "API response contract · progress card"
