@@ -3,11 +3,12 @@
 extends Node
 
 # ─── Configuration ───────────────────────────────────────────────────────────
-# In Editor → connect to local Django dev server (localhost:8000)
+# In Editor → can connect to local or live server (controlled by FORCE_PRODUCTION)
 # In Exported Build → connect to live production server (Render)
 const PRODUCTION_URL: String = "https://djangoquest-backend.onrender.com"
 const DEV_URL: String = "http://127.0.0.1:8000"
-var BASE_URL: String = DEV_URL if OS.has_feature("editor") else PRODUCTION_URL
+const FORCE_PRODUCTION: bool = true
+var BASE_URL: String = PRODUCTION_URL if (FORCE_PRODUCTION or not OS.has_feature("editor")) else DEV_URL
 const AUTH_FILE: String = "user://auth.cfg"
 
 # ─── Signals ─────────────────────────────────────────────────────────────────
@@ -214,14 +215,14 @@ func upload_save(save_data: Dictionary, allow_refresh: bool = true):
 
 	var http = HTTPRequest.new()
 	http.process_mode = Node.PROCESS_MODE_ALWAYS
-	http.timeout = 30.0
+	http.timeout = 60.0
 	add_child(http)
 	_active_upload_http = http
 
 	var timeout_timer = Timer.new()
 	timeout_timer.process_mode = Node.PROCESS_MODE_ALWAYS
 	timeout_timer.one_shot = true
-	timeout_timer.wait_time = 35.0
+	timeout_timer.wait_time = 65.0
 	add_child(timeout_timer)
 	_active_upload_timer = timeout_timer
 

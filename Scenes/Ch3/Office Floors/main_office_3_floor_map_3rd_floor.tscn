@@ -19,7 +19,6 @@
 [ext_resource type="Script" uid="uid://b22jpy3t0njd3" path="res://Scripts/Ch3/office_room_indicator.gd" id="18_room_indicator"]
 [ext_resource type="Script" uid="uid://dig6igiytbga3" path="res://Scripts/Ch3/office_room_zone.gd" id="19_room_zone"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_julia_roa.tscn" id="20_julia"]
-[ext_resource type="PackedScene" uid="uid://ch3_mario_cruz" path="res://Scenes/Interactables/Ch3/npc_mario_ellan_cruz.tscn" id="31_mario"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_divino_cinaon.tscn" id="21_divino"]
 [ext_resource type="PackedScene" uid="uid://6tukyi1p4n2a" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_left_glass_door_1.tscn" id="22_t8xhq"]
 [ext_resource type="PackedScene" uid="uid://b22uic5ghd30u" path="res://Scenes/Interactables/Ch3/npc_tercio_mateo_ramos.tscn" id="22_tercio"]
@@ -31,6 +30,7 @@
 [ext_resource type="Script" uid="uid://6jvdwv7jhmob" path="res://Scripts/Ch3/ch3_office_late_arc_controller.gd" id="28_late_arc"]
 [ext_resource type="PackedScene" uid="uid://c6r8q5y2nx4p1" path="res://Scenes/Interactables/server_rack_interactable.tscn" id="29_server_rack"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/npc_directory_interactable.tscn" id="30_staff_directory"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_mario_ellan_cruz.tscn" id="31_mario"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_map0q"]
 texture = ExtResource("6_01ejm")
@@ -969,6 +969,6 @@ position = Vector2(-460, 16)
 [node name="Ch3OfficeLateArcController" type="Node" parent="." unique_id=1515776808]
 script = ExtResource("28_late_arc")
 
-[node name="NPCMarioEllanCruz" parent="." unique_id=3827491056 instance=ExtResource("31_mario")]
+[node name="NPCMarioEllanCruz" parent="." unique_id=-467476240 instance=ExtResource("31_mario")]
 visible = false
 position = Vector2(1350, 30)

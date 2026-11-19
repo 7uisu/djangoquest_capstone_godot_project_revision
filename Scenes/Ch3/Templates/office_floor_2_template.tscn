@@ -1,5 +1,6 @@
 [gd_scene format=4 uid="uid://wvg5f2ggnatm"]
 
+[ext_resource type="Script" uid="uid://pohdhtfxj5q2" path="res://Scripts/Ch3/template_scene_init.gd" id="99_template_init"]
 [ext_resource type="PackedScene" uid="uid://b47i252ka3lom" path="res://Scenes/Ch3/Tiles/office_floors.tscn" id="1_08k2e"]
 [ext_resource type="PackedScene" uid="uid://doc5obrbfjlur" path="res://Scenes/Ch1/Tiles/school_walls.tscn" id="2_6ygk6"]
 [ext_resource type="PackedScene" uid="uid://d3x6wgx4xqtlq" path="res://Scenes/Ch3/Tiles/office_walls.tscn" id="3_ogr0e"]
@@ -21,28 +22,57 @@
 [ext_resource type="PackedScene" uid="uid://yns64c5mdqsh" path="res://Scenes/UI/dialogue_box.tscn" id="19_dialogue_box"]
 [ext_resource type="Script" uid="uid://b22jpy3t0njd3" path="res://Scripts/Ch3/office_room_indicator.gd" id="20_room_indicator"]
 [ext_resource type="Script" uid="uid://dig6igiytbga3" path="res://Scripts/Ch3/office_room_zone.gd" id="21_room_zone"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_abel_abendano.tscn" id="22_abel"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_luka_neri.tscn" id="23_luka"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_kenna_louisa_arizobal.tscn" id="24_kenna"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_nathalie_milo.tscn" id="25_nathalie"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_patricio_mateo.tscn" id="26_patricio"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_reynalda_patalinghug.tscn" id="27_reynalda"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_noriela_asahan.tscn" id="28_noriela"]
 [ext_resource type="PackedScene" uid="uid://6tukyi1p4n2a" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_left_glass_door_1.tscn" id="29_b5a3s"]
 [ext_resource type="PackedScene" uid="uid://lgsqoqvx86wr" path="res://Scenes/Ch1/Interactive Objects/Door/sideway_right_glass_door_1.tscn" id="30_gj337"]
+[ext_resource type="PackedScene" uid="uid://d2p1q4x8m7y3a" path="res://Scenes/Interactables/coffee_machine_interactable.tscn" id="32_coffee_machine"]
+[ext_resource type="PackedScene" uid="uid://c8m2p5q1wx7r0" path="res://Scenes/Interactables/workstation_interactable.tscn" id="33_workstation"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/npc_directory_interactable.tscn" id="34_staff_directory"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_151.tres" id="35_ticket151"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_152.tres" id="36_ticket152"]
+[ext_resource type="Resource" path="res://Resources/office_ticket_153.tres" id="37_ticket153"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_map0q"]
 texture = ExtResource("6_dtbib")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
+0:0/0/y_sort_origin = 16
 1:0/0 = 0
+1:0/0/y_sort_origin = 16
 2:0/0 = 0
+2:0/0/y_sort_origin = 16
 3:0/0 = 0
+3:0/0/y_sort_origin = 16
 4:0/0 = 0
+4:0/0/y_sort_origin = 16
 5:0/0 = 0
+5:0/0/y_sort_origin = 16
 6:0/0 = 0
+6:0/0/y_sort_origin = 16
 7:0/0 = 0
+7:0/0/y_sort_origin = 16
 8:0/0 = 0
+8:0/0/y_sort_origin = 16
 9:0/0 = 0
+9:0/0/y_sort_origin = 16
 10:0/0 = 0
+10:0/0/y_sort_origin = 16
 11:0/0 = 0
+11:0/0/y_sort_origin = 16
 12:0/0 = 0
+12:0/0/y_sort_origin = 16
 13:0/0 = 0
+13:0/0/y_sort_origin = 16
 14:0/0 = 0
+14:0/0/y_sort_origin = 16
 15:0/0 = 0
+15:0/0/y_sort_origin = 16
 0:1/0 = 0
 1:1/0 = 0
 2:1/0 = 0
@@ -75,6 +105,7 @@ texture_region_size = Vector2i(32, 32)
 13:2/0 = 0
 14:2/0 = 0
 15:2/0 = 0
+15:2/0/y_sort_origin = 16
 0:3/0 = 0
 4:3/0 = 0
 5:3/0 = 0
@@ -83,15 +114,25 @@ texture_region_size = Vector2i(32, 32)
 14:3/0 = 0
 15:3/0 = 0
 0:4/0 = 0
+0:4/0/y_sort_origin = 16
 1:4/0 = 0
+1:4/0/y_sort_origin = 16
 2:4/0 = 0
+2:4/0/y_sort_origin = 16
 3:4/0 = 0
+3:4/0/y_sort_origin = 16
 4:4/0 = 0
+4:4/0/y_sort_origin = 16
 5:4/0 = 0
+5:4/0/y_sort_origin = 16
 6:4/0 = 0
+6:4/0/y_sort_origin = 16
 7:4/0 = 0
+7:4/0/y_sort_origin = 16
 8:4/0 = 0
+8:4/0/y_sort_origin = 16
 9:4/0 = 0
+9:4/0/y_sort_origin = 16
 10:4/0 = 0
 11:4/0 = 0
 12:4/0 = 0
@@ -126,19 +167,29 @@ texture_region_size = Vector2i(32, 32)
 4:7/0 = 0
 5:7/0 = 0
 6:7/0 = 0
+6:7/0/y_sort_origin = 16
 9:7/0 = 0
 10:7/0 = 0
 11:7/0 = 0
 0:8/0 = 0
+0:8/0/y_sort_origin = 16
 1:8/0 = 0
+1:8/0/y_sort_origin = 16
 2:8/0 = 0
+2:8/0/y_sort_origin = 16
 3:8/0 = 0
+3:8/0/y_sort_origin = 16
 4:8/0 = 0
+4:8/0/y_sort_origin = 16
 5:8/0 = 0
+5:8/0/y_sort_origin = 16
 6:8/0 = 0
 7:8/0 = 0
+7:8/0/y_sort_origin = 16
 8:8/0 = 0
+8:8/0/y_sort_origin = 16
 9:8/0 = 0
+9:8/0/y_sort_origin = 16
 10:8/0 = 0
 11:8/0 = 0
 12:8/0 = 0
@@ -160,14 +211,22 @@ texture_region_size = Vector2i(32, 32)
 14:9/0 = 0
 15:9/0 = 0
 0:10/0 = 0
+0:10/0/y_sort_origin = 16
 1:10/0 = 0
+1:10/0/y_sort_origin = 16
 2:10/0 = 0
+2:10/0/y_sort_origin = 16
 3:10/0 = 0
+3:10/0/y_sort_origin = 16
 4:10/0 = 0
+4:10/0/y_sort_origin = 16
 5:10/0 = 0
+5:10/0/y_sort_origin = 16
 6:10/0 = 0
 7:10/0 = 0
+7:10/0/y_sort_origin = 16
 8:10/0 = 0
+8:10/0/y_sort_origin = 16
 9:10/0 = 0
 9:10/0/y_sort_origin = 16
 10:10/0 = 0
@@ -879,14 +938,20 @@ drag_horizontal_enabled = true
 drag_vertical_enabled = true
 
 [node name="ElevatorDoor1" parent="." unique_id=314165112 instance=ExtResource("17_kk28r")]
-required_badge = "Green OJT Badge"
 position = Vector2(544, -32)
 current_floor = "2nd Floor"
+current_floor = "2nd Floor"
+override_ground_floor_scene = "res://Scenes/Ch3/Templates/office_floor_ground_template.tscn"
+override_2nd_floor_scene = "res://Scenes/Ch3/Templates/office_floor_2_template.tscn"
+override_3rd_floor_scene = "res://Scenes/Ch3/Templates/office_floor_3_template.tscn"
 
 [node name="ElevatorDoor2" parent="." unique_id=176639908 instance=ExtResource("17_kk28r")]
-required_badge = "Green OJT Badge"
 position = Vector2(672, -32)
 current_floor = "2nd Floor"
+current_floor = "2nd Floor"
+override_ground_floor_scene = "res://Scenes/Ch3/Templates/office_floor_ground_template.tscn"
+override_2nd_floor_scene = "res://Scenes/Ch3/Templates/office_floor_2_template.tscn"
+override_3rd_floor_scene = "res://Scenes/Ch3/Templates/office_floor_3_template.tscn"
 
 [node name="YSortLayer" type="Node2D" parent="." unique_id=1019581831]
 y_sort_enabled = true
@@ -894,15 +959,38 @@ y_sort_enabled = true
 [node name="BreakRoomandHallwaySlidingDoor" parent="YSortLayer" unique_id=186882951 instance=ExtResource("13_tsjvr")]
 y_sort_enabled = true
 position = Vector2(608, 193)
-required_badge = "Green OJT Badge"
 
 [node name="FrontendSlidingDoor2" parent="YSortLayer" unique_id=1618620930 instance=ExtResource("13_tsjvr")]
 y_sort_enabled = true
 position = Vector2(1216, -30)
-required_badge = "Green OJT Badge"
 
 [node name="Player" parent="YSortLayer" unique_id=833241429 instance=ExtResource("16_d33mj")]
 position = Vector2(602, 45)
+
+[node name="NPCAbelAbendano" parent="YSortLayer" unique_id=1011935869 instance=ExtResource("22_abel")]
+position = Vector2(1258, -224)
+
+[node name="NPCLukaNeri" parent="YSortLayer" unique_id=5632295 instance=ExtResource("23_luka")]
+position = Vector2(1127, -319)
+
+[node name="NPCKennaLouisaArizobal" parent="YSortLayer" unique_id=1102020524 instance=ExtResource("24_kenna")]
+visible = false
+position = Vector2(1562, 86)
+
+[node name="NPCDirectoryInteractable" parent="YSortLayer" unique_id=1277848164 instance=ExtResource("34_staff_directory")]
+position = Vector2(270, 245)
+
+[node name="NPCNathalieMilo" parent="YSortLayer" unique_id=1014040585 instance=ExtResource("25_nathalie")]
+position = Vector2(1749, -66)
+
+[node name="NPCPatricioMateo" parent="YSortLayer" unique_id=1729383902 instance=ExtResource("26_patricio")]
+position = Vector2(1740, 113)
+
+[node name="NPCReynaldaPatalinghug" parent="YSortLayer" unique_id=657702062 instance=ExtResource("27_reynalda")]
+position = Vector2(51, -81)
+
+[node name="NPCNorielaAsahan" parent="YSortLayer" unique_id=733469771 instance=ExtResource("28_noriela")]
+position = Vector2(638, 318)
 
 [node name="FurnitureOfficeDesk" parent="YSortLayer" unique_id=690671878 instance=ExtResource("18_obj_interactable")]
 position = Vector2(207, -12)
@@ -1210,14 +1298,27 @@ speaker_name = "White Board"
 dialogue_line_1 = "Sales seems going up."
 dialogue_line_2 = "Oh wait nevermind its going down."
 
+[node name="CoffeeMachineInteractable" parent="YSortLayer" unique_id=2029290697 instance=ExtResource("32_coffee_machine")]
+position = Vector2(1216, 348)
+
+[node name="BackendWorkstation" parent="YSortLayer" unique_id=82179953 instance=ExtResource("33_workstation")]
+position = Vector2(1552, -4)
+workstation_id = "backend_trainee_desk"
+
+[node name="FrontendWorkstation" parent="YSortLayer" unique_id=621859453 instance=ExtResource("33_workstation")]
+position = Vector2(1071, -164)
+workstation_id = "frontend_trainee_desk"
+
 [node name="DialogueBox" parent="." unique_id=473414334 instance=ExtResource("19_dialogue_box")]
 visible = false
 
 [node name="BackendSidewayLeftGlassDoor1" parent="." unique_id=772612451 instance=ExtResource("29_b5a3s")]
 position = Vector2(1454, 49)
-required_badge = "Green OJT Badge"
 
 [node name="DevOpsSidewayRightGlassDoor1" parent="." unique_id=216538257 instance=ExtResource("30_gj337")]
 position = Vector2(242, 49)
-required_badge = "Blue Developer Badge"
 
+[node name="Ch3OfficeLateArcController" type="Node" parent="." unique_id=871335726]
+
+[node name="TemplateInit" type="Node" parent="."]
+script = ExtResource("99_template_init")

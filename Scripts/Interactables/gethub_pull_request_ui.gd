@@ -8,7 +8,7 @@ signal closed
 @export var author_name: String = "You"
 @export var author_role: String = "Junior Developer"
 @export var branch_target: String = "main ← feature/student-enrollment"
-@export_multiline var description: String = "Adds enrolled_at timestamp field to track student onboarding time. Staging pipeline tests passed."
+@export_multiline var description: String = "Completes and rebases the student enrollment tracking feature originally started on feature/student-enrollment by a previous intern who withdrew from the project. Adds enrolled_at timestamp field to StudentEnrollment. Staging pipeline tests passed."
 @export var checklist: PackedStringArray = ["[x] Unit tests pass in CI pipeline", "[x] Staging API smoke tests pass", "[ ] Database migrations included in release runbook: python manage.py migrate"]
 @export_multiline var diff_content: String = "diff --git a/student_portal/models.py b/student_portal/models.py\n@@ StudentEnrollment model @@\n+class StudentEnrollment(models.Model):\n+    student = models.ForeignKey(Student, on_delete=models.CASCADE)\n+    enrolled_at = models.DateTimeField(auto_now_add=True)\ndiff --git a/student_portal/views.py b/student_portal/views.py\n@@ enrollment view @@\n+enrollment = StudentEnrollment.objects.filter(student_id=student_id).first()\n+enrolled_date = enrollment.enrolled_at if enrollment else None"
 @export var approve_action_label: String = "Approve & Trigger Deployment"

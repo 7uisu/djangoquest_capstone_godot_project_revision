@@ -116,6 +116,11 @@ func interact():
 		return  # Already playing dialogue
 	_ordinary_interaction_count += 1
 
+	# Face toward the interacting player
+	var players := get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		_face_toward_position(players[0].global_position)
+
 	# External controller override (e.g. professor lesson controllers)
 	if has_meta("lesson_controller"):
 		print("dialogue_interactable: has lesson_controller meta!")
@@ -370,3 +375,19 @@ func _build_sprite_frames(texture: Texture2D) -> SpriteFrames:
 			frames.add_frame(anim_name, atlas)
 
 	return frames
+
+
+## Face this NPC sprite toward a world position (player position).
+func _face_toward_position(target_pos: Vector2) -> void:
+	var sprite := get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if sprite == null or sprite.sprite_frames == null:
+		return
+	var offset := target_pos - global_position
+	var direction := "down"
+	if absf(offset.x) > absf(offset.y):
+		direction = "right" if offset.x > 0.0 else "left"
+	else:
+		direction = "down" if offset.y >= 0.0 else "up"
+	var anim := "idle_" + direction
+	if sprite.sprite_frames.has_animation(anim):
+		sprite.play(anim)

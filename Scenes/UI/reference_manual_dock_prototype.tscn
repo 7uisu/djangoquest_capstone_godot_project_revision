@@ -1,0 +1,189 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/reference_manual_dock_prototype.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="DockStyle"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_color = Color(0.24, 0.27, 0.31, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="PreviewCardStyle"]
+bg_color = Color(0.086, 0.105, 0.133, 1)
+border_color = Color(0.22, 0.25, 0.29, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="BadStyle"]
+bg_color = Color(0.23, 0.12, 0.15, 1)
+border_color = Color(0.72, 0.25, 0.29, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="GoodStyle"]
+bg_color = Color(0.09, 0.22, 0.15, 1)
+border_color = Color(0.19, 0.55, 0.31, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="ReferenceManualDockPrototype" type="PanelContainer"]
+custom_minimum_size = Vector2(380, 520)
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("DockStyle")
+script = ExtResource("1_script")
+
+[node name="ManualMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ManualVBox" type="VBoxContainer" parent="ManualMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="ManualMargin/ManualVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ManualTitle" type="Label" parent="ManualMargin/ManualVBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.89, 0.7, 0.31, 1)
+theme_override_font_sizes/font_size = 16
+text = "DJQ Corp Engineering Reference"
+autowrap_mode = 3
+
+[node name="ToggleButton" type="Button" parent="ManualMargin/ManualVBox/Header"]
+custom_minimum_size = Vector2(42, 34)
+layout_mode = 2
+text = "◀"
+tooltip_text = "Collapse manual"
+
+[node name="Subtitle" type="Label" parent="ManualMargin/ManualVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.62, 0.67, 0.74, 1)
+theme_override_font_sizes/font_size = 12
+text = "Internal Development Guidelines & Incident Runbooks"
+autowrap_mode = 3
+
+[node name="CategoryRow" type="HBoxContainer" parent="ManualMargin/ManualVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CategoryLabel" type="Label" parent="ManualMargin/ManualVBox/CategoryRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "TOPIC"
+
+[node name="CategoryTabs" type="OptionButton" parent="ManualMargin/ManualVBox/CategoryRow"]
+custom_minimum_size = Vector2(0, 32)
+size_flags_horizontal = 3
+layout_mode = 2
+
+[node name="RulesScroll" type="ScrollContainer" parent="ManualMargin/ManualVBox"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RulesContainer" type="VBoxContainer" parent="ManualMargin/ManualVBox/RulesScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="PreviewCard" type="PanelContainer" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("PreviewCardStyle")
+
+[node name="PreviewMargin" type="MarginContainer" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="PreviewVBox" type="VBoxContainer" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PreviewHeader" type="HBoxContainer" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+
+[node name="PreviewTitle" type="Label" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox/PreviewHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.89, 0.7, 0.31, 1)
+text = "SEC-01 · Private Resource Ownership"
+
+[node name="PreviewBadge" type="Label" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox/PreviewHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.89, 0.7, 0.31, 1)
+text = "[ SECURITY ]"
+
+[node name="PreviewDescription" type="Label" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "Always check that a private record belongs to the signed-in user."
+autowrap_mode = 3
+
+[node name="BadPanel" type="PanelContainer" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("BadStyle")
+
+[node name="BadCode" type="Label" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox/BadPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.48, 0.45, 1)
+text = "BAD | Vulnerable example\nStudent.objects.filter(student_id=id)"
+
+[node name="GoodPanel" type="PanelContainer" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("GoodStyle")
+
+[node name="GoodCode" type="Label" parent="ManualMargin/ManualVBox/RulesScroll/RulesContainer/PreviewCard/PreviewMargin/PreviewVBox/GoodPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.91, 0.62, 1)
+text = "GOOD | Compliant example\nStudent.objects.filter(student_id=id, user=request.user)"
+
+[node name="FooterPanel" type="PanelContainer" parent="ManualMargin/ManualVBox"]
+layout_mode = 2
+
+[node name="FooterMargin" type="MarginContainer" parent="ManualMargin/ManualVBox/FooterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 7
+
+[node name="FooterLabel" type="Label" parent="ManualMargin/ManualVBox/FooterPanel/FooterMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.89, 0.7, 0.31, 1)
+theme_override_font_sizes/font_size = 12
+text = "Compare this standard against the open change before submitting."
+autowrap_mode = 3

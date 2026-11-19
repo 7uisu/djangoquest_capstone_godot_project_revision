@@ -1,0 +1,172 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/api_tester_ui_prototype.gd" id="1"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/reference_manual_dock_prototype.tscn" id="manual_scene"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_color = Color(0.19, 0.22, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="ApiTesterUIPrototype" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Window" type="PanelContainer" parent="Screen/CenterContainer"]
+custom_minimum_size = Vector2(960, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="Screen/CenterContainer/Window"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="MainVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.94, 0.96, 0.99, 1)
+theme_override_font_sizes/font_size = 21
+text = "GetHub API Console"
+
+[node name="ReferenceButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+text = "Engineering Manual"
+
+[node name="CloseButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+text = "Close"
+
+[node name="MissionBrief" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "Security audit: request another student's progress with your own valid token."
+autowrap_mode = 3
+
+[node name="RequestPanel" type="PanelContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="RequestBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="RequestRow" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MethodSelect" type="OptionButton" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox/RequestRow"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+
+[node name="EndpointInput" type="LineEdit" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox/RequestRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "/api/v1/endpoint/"
+
+[node name="SendButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox/RequestRow"]
+custom_minimum_size = Vector2(130, 34)
+layout_mode = 2
+text = "Send Request"
+
+[node name="LoadingIndicator" type="ProgressBar" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox/RequestRow"]
+custom_minimum_size = Vector2(100, 18)
+layout_mode = 2
+indeterminate = true
+visible = false
+
+[node name="AuthToggle" type="CheckBox" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox"]
+layout_mode = 2
+text = "Attach Authorization: Bearer token"
+button_pressed = true
+
+[node name="TokenInput" type="LineEdit" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/RequestPanel/RequestBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+placeholder_text = "Paste bearer token"
+secret = true
+
+[node name="ResponseHeader" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="ResponseTitle" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ResponseHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.94, 0.96, 0.99, 1)
+text = "Response"
+
+[node name="StatusBadge" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/ResponseHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.59, 0.65, 1)
+text = "No response"
+
+[node name="ResponseText" type="RichTextLabel" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.86, 0.91, 1)
+text = "Send a request to inspect the mock API response."
+scroll_active = true
+
+[node name="ResultLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.59, 0.65, 1)
+text = "Configure a request and send it to the mock endpoint."
+autowrap_mode = 3
+[node name="ManualDockHost" type="HBoxContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 2
+z_index = 20
+
+[node name="ReferenceManualDockPrototype" parent="Screen/ManualDockHost" instance=ExtResource("manual_scene")]
+custom_minimum_size = Vector2(72, 520)
+start_opened = false
+manual_title = "API Security Reference"
+rule_entries = [{"id":"SEC-04","title":"A valid token does not grant access to every record","badge":"SECURITY","description":"The endpoint must verify that the authenticated user is allowed to access the student ID in the URL.","bad_code":"Student.objects.get(id=student_id)","good_code":"Student.objects.get(id=student_id, user=request.user)"}]

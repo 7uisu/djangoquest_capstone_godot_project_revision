@@ -1,0 +1,165 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/pipeline_sequencer_ui_prototype.gd" id="1"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/reference_manual_dock_prototype.tscn" id="manual_scene"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_color = Color(0.19, 0.22, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="PipelineSequencerUIPrototype" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Window" type="PanelContainer" parent="Screen/CenterContainer"]
+custom_minimum_size = Vector2(984, 536)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="Screen/CenterContainer/Window"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 18
+
+[node name="MainVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.96, 0.99, 1)
+theme_override_font_sizes/font_size = 22
+size_flags_horizontal = 3
+text = "Django Request-Response Lifecycle"
+
+[node name="ReferenceButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+text = "Engineering Manual"
+
+[node name="Content" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 320)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="ReferencePanel" type="PanelContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+
+[node name="ReferenceMargin" type="MarginContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/ReferencePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="ReferenceLabel" type="RichTextLabel" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/ReferencePanel/ReferenceMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.86, 0.91, 1)
+theme_override_font_sizes/normal_font_size = 14
+scroll_active = true
+text = "REFERENCE GUIDE\n\nFollow the request from routing through data work to the response."
+
+[node name="Workspace" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="SlotHeading" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/Workspace"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "PIPELINE SLOTS  ·  Select a stage card to place it, then reorder with ↑ / ↓."
+
+[node name="SlotScroll" type="ScrollContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/Workspace"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SlotList" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/Workspace/SlotScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="CardHeading" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/Workspace"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "STAGE CARDS  ·  Add each step to the pipeline."
+
+[node name="CardScroll" type="ScrollContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/Workspace"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CardList" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Content/Workspace/CardScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="FeedbackLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.62, 0.69, 1)
+text = "Use the guide and organize each stage before verifying."
+autowrap_mode = 3
+
+[node name="VerifyButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Verify Pipeline"
+[node name="ManualDockHost" type="HBoxContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 2
+z_index = 20
+
+[node name="ReferenceManualDockPrototype" parent="Screen/ManualDockHost" instance=ExtResource("manual_scene")]
+custom_minimum_size = Vector2(72, 520)
+start_opened = false
+manual_title = "Django Architecture Reference"
+rule_entries = [{"id":"ARCH-01","title":"Route before handling view logic","badge":"ARCHITECTURE","description":"Django resolves a URL pattern before running the matching view. The view then uses models to work with data.","bad_code":"views.py handles the request before urls.py routes it","good_code":"urls.py routes to views.py, which uses models.py"}]

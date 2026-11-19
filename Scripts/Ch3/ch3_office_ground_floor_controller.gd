@@ -26,11 +26,11 @@ extends Node
 @export_group("Chapter 9 Time-Skip Arrival")
 @export_file("*.tscn") var ch9_arrival_scene_path: String = "res://Scenes/Ch3/Office Floors/main_office_3_floor_map_2nd_floor.tscn"
 @export var ch9_arrival_position: Vector2 = Vector2(608.0, 8.0)
-
 const DIALOGUE_BOX_SCENE := preload("res://Scenes/UI/dialogue_box.tscn")
 const CHAT_BUBBLE_SCENE := preload("res://Scenes/UI/chat_bubble.tscn")
 const INTERVIEW_CHOICE_SCENE := preload("res://Scenes/Ch3/interview_choice_panel.tscn")
 const GETHUB_ISSUES_SCENE := preload("res://Scenes/UI/gethub_issues_ui.tscn")
+const FAILURE_SCREEN_SCENE := preload("res://Scenes/UI/failure_screen_ui.tscn")
 const AUGUST_INTERVIEW_POSITION := Vector2(1077.0, -76.0)
 const MEETING_ROOM_RETRY_POSITION := Vector2(944.0, 160.0)
 const KENNA_SPRINT_ROOM_POSITION := Vector2(1140.0, -77.0)
@@ -105,6 +105,7 @@ func _ready() -> void:
 		locker_interactable.set("item_id", "ojt_kit")
 		locker_interactable.set("item_name", "Internship Kit")
 		locker_interactable.set("item_description", "Your company intern uniform, OJT ID, laptop access, developer notebook, and internship checklist.")
+		locker_interactable.set("item_icon", load("res://Textures/Items/internship_kit.png"))
 		locker_interactable.set("auto_add_to_inventory", true)
 		locker_interactable.set("is_locked", true)
 		if locker_interactable.has_signal("locker_opened"):
@@ -137,7 +138,7 @@ func _ready() -> void:
 		trainee_workstation.call("set_interaction_enabled", workstation_available)
 	if ch8_stage >= 1 and mario and mario_sprint_inside_point:
 		mario.global_position = mario_sprint_inside_point.global_position
-		_set_mario_idle("left")
+		_set_mario_idle("right")
 	if ch7_stage >= 2 and ch8_stage == 0 and mario:
 		_start_mario_pacing()
 	# The Ground Floor controller is loaded whenever the player uses the elevator.
@@ -147,6 +148,9 @@ func _ready() -> void:
 	var quest_manager := get_node_or_null("/root/QuestManager")
 	if quest_manager and _is_active_act3_quest(String(quest_manager.current_quest_id)):
 		return
+	# Clear any stacked suppress from previous scene before showing the HUD
+	if quest_manager and quest_manager.has_method("reset_suppression"):
+		quest_manager.reset_suppression()
 	if character_data.ch3_intro_cutscene_done:
 		if character_data.ch3_interview_passed:
 			if character_data.ch3_has_green_badge:
@@ -190,9 +194,7 @@ func _sync_kenna_visibility() -> void:
 	var should_show := ch7_stage >= 2 and ch8_stage < 2 and story_stage < 9
 	if should_show:
 		kenna.global_position = KENNA_SPRINT_ROOM_POSITION
-		var sprite := kenna.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
-		if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation("idle_down"):
-			sprite.play("idle_down")
+		_set_npc_facing(kenna, "down")
 	if kenna_visibility_initialized and kenna.visible == should_show:
 		return
 	kenna_visibility_initialized = true
@@ -331,6 +333,10 @@ func _play_intro_cutscene() -> void:
 	if sequence_running or character_data == null or character_data.ch3_intro_cutscene_done:
 		return
 	sequence_running = true
+	# Reset any stacked hide_quest() suppression from the previous scene (college map)
+	var _qm_reset := get_node_or_null("/root/QuestManager")
+	if _qm_reset and _qm_reset.has_method("reset_suppression"):
+		_qm_reset.reset_suppression()
 	_set_room_indicator_visible(false)
 	_set_quest_hud_visible(false)
 	intro_layer.visible = true
@@ -340,22 +346,10 @@ func _play_intro_cutscene() -> void:
 
 	var pname: String = character_data.player_name if (character_data and character_data.player_name != "") else "You"
 
-	# CUT_01 — Chapter 1: The Faculty Send-Off (University office after defending thesis)
-	await _play_frame("CUT_01", 1, "Chapter 1 — CUT_01: The Faculty Send-Off", "University faculty office at sunset. Dusty venetian blinds cast warm orange light across the thesis manuscript on the desk. Professor Markup leans back in his chair with a tired, proud sigh.", [
-		{"name": "Professor Markup", "text": "Take a breath, anak. The panel just signed the final defense sheet. You passed."},
-		{"name": pname, "text": "I... I can't believe it, sir. Four months of debugging that model... it feels surreal."},
-		{"name": "Professor Markup", "text": "It's a milestone. Be proud of it. But the hardest part starts tomorrow."},
-		{"name": pname, "text": "The OJT requirement?"},
-	])
-	await _play_frame("CUT_01", 2, "Chapter 1 — CUT_01: The Faculty Send-Off", "Professor Markup reaches across the cluttered desk, resting a hand gently on the thesis cover. His expression turns serious as he holds forward an official university endorsement envelope.", [
-		{"name": "Professor Markup", "text": "In here is your official endorsement letter and your 300-hour checklist. In this faculty room, if your code threw an unhandled exception, we deducted five points and gave you partial credit. Out there, in the tech district... no one curves your grade."},
-		{"name": "Professor Markup", "text": "If your backend leaks student records, real families get compromised. If your database crashes on exam day, thousands of students suffer."},
-		{"name": "Professor Markup", "text": "I've seen top-of-the-class students get fired in their first week because they were too proud to ask questions. And I've seen average students get hired because they knew how to listen, admit mistakes, and read the documentation."}
-	])
-	await _play_frame("CUT_01", 3, "Chapter 1 — CUT_01: The Faculty Send-Off", "The player accepts the heavy envelope with trembling fingers as the adviser smiles warmly, gesturing toward the open door.", [
-		{"name": pname, "text": "I'll remember that, sir. I won't let you down."},
-		{"name": "Professor Markup", "text": "Go. Find a company that will challenge you. Go make our department proud."}
-	])
+	# CUT_01 is now told entirely at the end of the college map (Professor Markup's
+	# OJT send-off dialogue). By the time the player arrives here, they already
+	# received the endorsement letter and the adviser's speech. Skip straight to
+	# the midnight job-hunt and arrival sequence.
 
 	# CUT_02 — Chapter 2: Midnight Impostor Syndrome (Player's bedroom job hunt)
 	await _play_frame("CUT_02", 1, "Chapter 2 — CUT_02: Midnight Impostor Syndrome", "Player's dark bedroom at 1:42 AM. Harsh blue monitor glow on tired face. Empty instant noodle cup, crossed-out company lists. Fingers typing rapidly, screen flickering, shoulders sagging in defeat.", [
@@ -475,6 +469,10 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 			await _on_professor_interacted()
 		else:
 			await _play_unassigned_npc_dialogue(npc, total_visit_number)
+			if not character_data.ch3_interview_passed:
+				_set_npc_facing(ivana, "down")
+				_set_npc_facing(hanna, "down")
+				_set_august_facing("down")
 		return
 	if npc == mario:
 		_face_npc_toward_player(mario)
@@ -526,7 +524,14 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 		"alexa":
 			await _run_orientation_role_intro(npc, "alexa")
 		"celestina":
-			if ch6_stage == 1 or ch6_stage == 11:
+			if ch6_stage == 0:
+				# Player hasn't spoken to August yet — Celestina is busy in QA, redirects politely.
+				await _run_story_bubble(npc, [
+					{"name": "Celestina Balon", "text": "Oh — you must be the new intern."},
+					{"name": "Celestina Balon", "text": "Talk to August first. He handles orientation."},
+					{"name": "Celestina Balon", "text": "I'll be here when he sends you my way."}
+				])
+			elif ch6_stage == 1 or ch6_stage == 11:
 				await _run_orientation_role_intro(npc, "celestina")
 			elif ch6_stage == 2 and ch7_stage == 0:
 				await _run_ch7_ticket_briefing()
@@ -558,6 +563,14 @@ func _on_ch3_narrative_interacted(npc: Node2D) -> void:
 			])
 		_:
 			await _play_unassigned_npc_dialogue(npc, total_visit_number)
+
+	if ch7_stage >= 2 and ch8_stage < 2:
+		_set_npc_facing(kenna, "down")
+		_set_august_facing("down")
+		_set_npc_facing(ivana, "down")
+		_set_npc_facing(hanna, "down")
+		if ch8_stage >= 1:
+			_set_mario_idle("right")
 
 
 func _ground_repeat_context() -> String:
@@ -746,7 +759,8 @@ func _run_locker_room_placeholder() -> void:
 			await item_popup.show_item(
 				"ojt_kit",
 				"Internship Kit",
-				"Your OJT ID, laptop access, developer notebook, and internship checklist."
+				"Your OJT ID, laptop access, developer notebook, and internship checklist.",
+				load("res://Textures/Items/internship_kit.png")
 			)
 	await _play_bubble(player, [
 		{"name": "You", "text": "No more test simulations. I'm a web developer now."}
@@ -798,6 +812,9 @@ func _run_ticket_101_placeholder() -> void:
 	_set_quest_hud_visible(false)
 	if player:
 		player.can_move = false
+	# Suppress dialogue_box's built-in player unlock for the entire cutscene.
+	if dialogue_box:
+		dialogue_box.suppress_player_unlock = true
 	if dialogue_box:
 		dialogue_box.start([
 			{"name": "Celestina Balon", "text": "Before you start, read the reproduction notes and inspect the narrow-screen evidence."},
@@ -810,11 +827,17 @@ func _run_ticket_101_placeholder() -> void:
 	gethub_ui.connect("finished", Callable(self, "_on_ticket_101_ui_finished"))
 	get_parent().add_child(gethub_ui)
 	var ticket_result: Array = await ticket_101_finished
+	# Re-lock immediately — gethub_issues_ui re-enables player movement when it closes.
+	sequence_running = true
+	if player:
+		player.can_move = false
 	var ticket_succeeded: bool = not ticket_result.is_empty() and bool(ticket_result[0])
 	if not ticket_succeeded:
 		ch7_stage = 1
 		_persist_local_story_progress()
 		sequence_running = false
+		if dialogue_box:
+			dialogue_box.suppress_player_unlock = false
 		_set_room_indicator_visible(true)
 		_set_quest_hud_visible(true)
 		if player:
@@ -834,7 +857,14 @@ func _run_ticket_101_placeholder() -> void:
 	ch7_stage = 2
 	_persist_local_story_progress()
 	_sync_kenna_visibility()
+	if player:
+		player.can_move = false
 	await _stage_august_for_desk_checkin()
+	if player:
+		if "current_dir" in player:
+			player.current_dir = "down"
+		if player.has_method("play_idle_animation"):
+			player.play_idle_animation("down")
 	await _play_bubble(august, [
 		{"name": "August Creed", "text": "Celestina just messaged the general channel that you fixed a ticket with zero regressions!"},
 		{"name": "August Creed", "text": "Do you know how hard it is to get her to say something nice?"},
@@ -845,6 +875,9 @@ func _run_ticket_101_placeholder() -> void:
 	await _return_august_to_meeting_room()
 	_set_story_quest("ch8:_meet_mario", "Meet Mario in the hallway outside the Sprint Room.", "NPCMarioEllanCruz")
 	sequence_running = false
+	# Restore dialogue_box to normal unlock behaviour now that the cutscene is done.
+	if dialogue_box:
+		dialogue_box.suppress_player_unlock = false
 	_set_room_indicator_visible(true)
 	_set_quest_hud_visible(true)
 	if player:
@@ -953,6 +986,7 @@ func _walk_mario_into_sprint_room() -> void:
 			while bool(door.get("is_animating")):
 				await get_tree().process_frame
 	await _walk_mario_to(mario_sprint_inside_point.global_position)
+	_set_mario_idle("right")
 
 
 func _offer_optional_npc_choice(npc: Node2D) -> void:
@@ -963,7 +997,8 @@ func _offer_optional_npc_choice(npc: Node2D) -> void:
 	if choice_data.is_empty() or bool(completed_choices.get(npc.name, false)) or dialogue_box == null:
 		return
 	var was_sequence_running := sequence_running
-	var was_player_movable: bool = bool(player.get("can_move")) if player else true
+	# Never restore player movement — this is only called inside scripted cutscenes.
+	# The cutscene caller (_run_ticket_101_placeholder, etc.) unlocks movement when done.
 	sequence_running = true
 	if player:
 		player.can_move = false
@@ -983,8 +1018,7 @@ func _offer_optional_npc_choice(npc: Node2D) -> void:
 	if not reply.is_empty():
 		await _play_bubble(npc, [{"name": str(choice_data.get("speaker", npc.name)), "text": reply}])
 	sequence_running = was_sequence_running
-	if player:
-		player.can_move = was_player_movable
+	# Player movement deliberately NOT restored here; caller handles unlock.
 
 
 func _on_trainee_workstation_used(workstation_id: String) -> void:
@@ -1000,6 +1034,8 @@ func _on_trainee_workstation_used(workstation_id: String) -> void:
 func _stage_august_for_desk_checkin() -> void:
 	if august == null:
 		return
+	if player:
+		player.can_move = false
 	august.global_position = august_qa_checkin_start
 	var august_collision_layer := august.collision_layer
 	august.collision_layer = 0
@@ -1026,6 +1062,10 @@ func _stage_august_for_desk_checkin() -> void:
 func _return_august_to_meeting_room() -> void:
 	if august == null:
 		return
+	# Keep player locked while August exits — prevents following him into the hallway
+	# and seeing the teleport to AUGUST_INTERVIEW_POSITION.
+	if player:
+		player.can_move = false
 	var august_collision_layer := august.collision_layer
 	august.collision_layer = 0
 	await _walk_august_to(august_qa_checkin_start)
@@ -1033,6 +1073,9 @@ func _return_august_to_meeting_room() -> void:
 	if is_instance_valid(august):
 		august.collision_layer = august_collision_layer
 	_set_august_facing("down")
+	_set_npc_facing(kenna, "down")
+	_set_npc_facing(ivana, "down")
+	_set_npc_facing(hanna, "down")
 
 
 func _run_ch8_client_handoff() -> void:
@@ -1055,6 +1098,9 @@ func _run_ch8_client_handoff() -> void:
 		august.global_position = AUGUST_INTERVIEW_POSITION
 		august.collision_layer = 1
 		_set_august_facing("down")
+	_set_npc_facing(kenna, "down")
+	_set_npc_facing(ivana, "down")
+	_set_npc_facing(hanna, "down")
 	_set_story_quest("ch8:_sprint_meeting", "Ground Floor — Enter the Sprint / Meeting Room and speak with August to plan the teacher reports feature.", "NPCAugustCreed", "Ground Floor")
 	sequence_running = false
 	_set_room_indicator_visible(true)
@@ -1066,6 +1112,11 @@ func _run_ch8_client_handoff() -> void:
 func _run_ch8_sprint_meeting() -> void:
 	sequence_running = true
 	_sync_kenna_visibility()
+	_set_npc_facing(kenna, "down")
+	_set_august_facing("down")
+	_set_npc_facing(ivana, "down")
+	_set_npc_facing(hanna, "down")
+	_set_mario_idle("right")
 	_set_room_indicator_visible(false)
 	_set_quest_hud_visible(false)
 	if player:
@@ -1079,19 +1130,18 @@ func _run_ch8_sprint_meeting() -> void:
 	scene_header.text = "Chapter 8 — Sprint Planning"
 	frame_placeholder.text = "DJQ Corp • Student Learning Portal\nSprint Conference Room • Client Request: Teacher Progress Reports"
 	if dialogue_box:
+		dialogue_box.suppress_player_unlock = true
 		dialogue_box.start([
 			{"name": "Mario Ellan Cruz", "text": "The school division heads are demanding progress reports by next week! If we don't show working progress charts, they'll freeze our deployment grant!"},
 			{"name": "Abel Abendaño", "text": "Mario, I can't build the teacher report cards if I don't know what fields the backend returns! I need mock data! Give me an endpoint or give me peace!"},
 			{"name": "Kenna Louisa Arizobal", "text": "If you build on mock data, you'll guess the field names wrong and we'll spend forty hours refactoring when my endpoints land! Be patient, Abel!"},
-			{"name": "You", "text": "Excuse me... Abel is right, but so is Kenna."},
-			{"name": "You", "text": "The frontend progress-card work depends on the backend roster endpoint. Kenna needs to define the serializer schema first—specifying teacher_name and progress_percentage."},
-			{"name": "You", "text": "Once that contract is locked in GetHub, Abel can build against the exact structure without guessing."},
 			{"name": "Kenna Louisa Arizobal", "text": "Agreed. I'll publish those response fields with the endpoint details today."},
 			{"name": "Abel Abendaño", "text": "Perfect! Then I can build against the real contract instead of mocking data."},
-			{"name": "Ivana Daniela Gabani", "text": "The intern just saved this team an entire week of wasted refactoring. Kenna, write the serializer contract today. Abel, hold frontend development until the contract is merged. Meeting adjourned."},
-			{"name": "August Creed", "text": "That wraps up Day 1 orientation, kid! You survived Ivana's grilling and saved sprint planning. Go home, celebrate with your family, and get some rest. Next Monday, your real sprint rotation begins upstairs on Floor 2 with Kenna and Abel."}
+			{"name": "Ivana Daniela Gabani", "text": "Kenna, write the serializer contract today. Abel, hold frontend development until the contract is merged. Meeting adjourned."},
+			{"name": "August Creed", "text": "Good first sprint meeting. Take some time to review the codebase tonight — your rotation on Floor 2 starts Monday with Kenna and Abel."}
 		])
 		await dialogue_box.dialogue_finished
+		dialogue_box.suppress_player_unlock = false
 	if player:
 		player.can_move = false
 	var fade := create_tween().set_parallel(true)
@@ -1174,14 +1224,12 @@ func _show_time_skip_card(title: String, hours_or_role: String, description: Str
 
 func _run_graduation_return_conversation(npc: Node2D) -> void:
 	await _run_story_bubble(npc, [
-		{"name": "Kendra Barba", "text": "Hey, graduate! Congratulations on passing college!"},
-		{"name": "Kendra Barba", "text": "Before you turn in your green badge, don't leave yet—Ivana asked to see you in her corner office on Floor 3 immediately."},
-		{"name": "You", "text": "Ma'am Ivana wants to see me? Did I forget to file an exit document?"},
-		{"name": "Kendra Barba", "text": "Just go upstairs, web developer."},
-		{"name": "Kendra Barba", "text": "Take the elevator."}
+		{"name": "Kendra Barba", "text": "Morning! Don't head down to the trainee wing just yet—Ivana asked to see you in her corner office on Floor 3 right now."},
+		{"name": "You", "text": "Ma'am Ivana? Is this about the rollout?"},
+		{"name": "Kendra Barba", "text": "Exactly. Take the elevator up. She'll brief you before you join the release crew."}
 	])
 	get_tree().root.set_meta("ch3_graduation_return", false)
-	_set_story_quest("ch11_absorption", "Report to Ivana's Office before surrendering your badge.", "NPCIvanaDanielaGabani", "3rd Floor")
+	_set_story_quest("ch11_absorption", "Report to Ivana's Office on Floor 3.", "NPCIvanaDanielaGabani", "3rd Floor")
 
 
 func _show_gameplay_placeholder(title: String, description: String) -> void:
@@ -1305,8 +1353,8 @@ func _on_professor_interacted() -> void:
 				player.current_dir = "right"
 				player.play_idle_animation("right")
 			await _play_bubble(august, [
-				{"name": "August Creed", "text": "The trainee assigned to the Student Learning Portal just backed out from the airport!"},
-				{"name": "August Creed", "text": "Family got a visa to Canada!"},
+				{"name": "August Creed", "text": "The trainee assigned to the Student Learning Portal just ghosted us! Panicked over real-world delivery and disappeared!"},
+				{"name": "August Creed", "text": "They left an unverified prototype branch on the student enrollment feature and just vanished without a word!"},
 				{"name": "August Creed", "text": "The project lead is going to skin me alive if we start this sprint down one developer!"}
 			])
 			await _play_bubble(kendra, [
@@ -1326,8 +1374,8 @@ func _on_professor_interacted() -> void:
 		else:
 			# Keep the dialogue usable if the temporary August NPC has not been placed.
 			await _play_bubble(kendra, [
-				{"name": "August Creed", "text": "The trainee assigned to the Student Learning Portal just backed out from the airport!"},
-				{"name": "August Creed", "text": "Family got a visa to Canada!"},
+				{"name": "August Creed", "text": "The trainee assigned to the Student Learning Portal just ghosted us! Panicked over real-world delivery and disappeared!"},
+				{"name": "August Creed", "text": "They left an unverified prototype branch on the student enrollment feature and just vanished without a word!"},
 				{"name": "August Creed", "text": "The project lead is going to skin me alive if we start this sprint down one developer!"},
 				{"name": "Kendra Barba", "text": "August, the portal team's technical bar is impossible."},
 				{"name": "Kendra Barba", "text": "Even senior computer science students fail the screening."}
@@ -1440,6 +1488,9 @@ func _start_interview() -> void:
 		if player:
 			player.can_move = true
 		return
+	_set_npc_facing(ivana, "down")
+	_set_npc_facing(hanna, "down")
+	_set_august_facing("down")
 	await _fade_into_interview_seat()
 	intro_layer.visible = true
 	intro_overlay.color.a = 0.95
@@ -1458,21 +1509,15 @@ func _start_interview() -> void:
 	while should_retry:
 		var score: int = await _run_interview_questions()
 		if score >= 2:
-			await _complete_interview_success()
+			await _complete_interview_success(score)
 			should_retry = false
 		else:
 			await _complete_interview_failure()
-			var retry_choice := await _ask_retry_interview()
-			if retry_choice == 0:
-				_seat_player_for_interview()
-				await _play_bubble(august, [
-					{"name": "August Creed", "text": "Alright"},
-					{"name": "August Creed", "text": "Let's begin."}
-				])
-			else:
-				_stand_player_after_interview()
-				_set_meeting_room_quest()
-				should_retry = false
+			_seat_player_for_interview()
+			await _play_bubble(august, [
+				{"name": "August Creed", "text": "Alright."},
+				{"name": "August Creed", "text": "Let's begin."}
+			])
 
 	sequence_running = false
 	_set_scene_interaction_lock(false)
@@ -1541,25 +1586,21 @@ func _run_interview_questions() -> int:
 		])
 
 	var score := int(architecture_good) + int(privacy_good) + int(accountability_good)
+	# Ivana's closing line reflects how the interview went.
+	var closing_line: String
+	match score:
+		3:
+			closing_line = "Thank you. That was one of the most technically grounded answers I have heard from an applicant at your level. You will receive our decision tonight."
+		2:
+			closing_line = "Thank you for your time. You answered most of the panel's criteria correctly. We have several files to evaluate. Expect our email tonight."
+		1:
+			closing_line = "You have potential, but your answers revealed some critical gaps in security and accountability thinking. We will be in touch."
+		_:
+			closing_line = "I have serious concerns about your technical judgment today. We expect more from developers who handle student data. You will hear from us."
 	await _play_bubble(_get_panel_npc("NPCIvanaDanielaGabani"), [
-		{"name": "Ivana Daniela Gabani", "text": "Thank you for your time. We have several files to evaluate. You will receive our decision via email tonight."}
+		{"name": "Ivana Daniela Gabani", "text": closing_line}
 	])
 	return score
-
-
-func _ask_retry_interview() -> int:
-	if dialogue_box == null:
-		return 0
-	dialogue_box.start([{
-		"name": "Interview Evaluation",
-		"text": "You did not pass this attempt. Review the feedback and try the interview again?",
-		"choices": ["Yes, retry the interview", "Not right now"]
-	}])
-	var selected_index: int = await dialogue_box.choice_selected
-	await dialogue_box.dialogue_finished
-	if player:
-		player.can_move = false
-	return selected_index
 
 
 func _ask_interview_question(speaker: String, question: String, choices: Array) -> int:
@@ -1628,6 +1669,9 @@ func _seat_player_for_interview() -> void:
 	player.is_sitting = true
 	player.current_dir = "up"
 	player.play_sitting_animation("up")
+	_set_npc_facing(ivana, "down")
+	_set_npc_facing(hanna, "down")
+	_set_august_facing("down")
 	var shadow := player.get_node_or_null("Shadow")
 	if shadow:
 		shadow.visible = false
@@ -1671,42 +1715,51 @@ func _complete_interview_failure() -> void:
 	if player:
 		player.can_move = false
 	await _show_interview_wait()
-	await _show_interview_card(
-		"Interview Result — You Did Not Pass",
-		"The panel did not move forward this time. Review the feedback, then choose whether to retry.\n\nIdentified flaws:\n• Architecture was treated as optional.\n• Data privacy must be enforced by the backend, not only hidden in the interface.\n• Web developers must own errors, inspect logs, and communicate blockers."
+	intro_layer.visible = false
+
+	# Souls-Style Failure Banner
+	var fail_ui := FAILURE_SCREEN_SCENE.instantiate() as CanvasLayer
+	get_parent().add_child(fail_ui)
+	fail_ui.call(
+		"show_failure",
+		"APPLICATION REJECTED",
+		"Engineering cannot be faked on the whiteboard.",
+		"You did not pass the technical panel interview.\nWeb systems require precise foundational knowledge of architecture, security, and accountability.",
+		"↺  Retry Technical Interview"
 	)
+	await fail_ui.retry_pressed
+	fail_ui.queue_free()
+
 	_set_meeting_room_quest()
 
 
-func _complete_interview_success() -> void:
+func _complete_interview_success(score: int = 3) -> void:
 	await _walk_august_to(Vector2(1010.0, -76.0))
 	await _walk_august_to(Vector2(1010.0, 100.0))
 	await _walk_august_to(Vector2(1138.0, 100.0))
 	_set_august_facing("up")
-	await _play_bubble(august, [
-		{"name": "August Creed", "text": "Hey! Kid! Don't let Ivana's stone face scare you."},
-		{"name": "August Creed", "text": "Between you and me... you basically got it."},
-		{"name": "August Creed", "text": "In two years, I haven't seen Hanna stop tapping her pen like that."},
-		{"name": "August Creed", "text": "Go home. Eat a good dinner with your parents, and check your inbox tonight!"}
-	])
+	var august_lines: Array
+	if score == 3:
+		august_lines = [
+			{"name": "August Creed", "text": "Hey! Kid! Perfect score. Ivana doesn't hand those out."},
+			{"name": "August Creed", "text": "Architecture, data privacy, accountability — you answered every one cold."},
+			{"name": "August Creed", "text": "I've been here two years and Hanna stopped tapping her pen. That never happens."},
+			{"name": "August Creed", "text": "Go home, eat a proper meal, and check your inbox tonight. You've got this."}
+		]
+	else:
+		# score == 2: passed but with one mistake
+		august_lines = [
+			{"name": "August Creed", "text": "Hey! Kid! Don't let Ivana's expression worry you."},
+			{"name": "August Creed", "text": "You got the important ones right. One slip doesn't sink an application here."},
+			{"name": "August Creed", "text": "Go home. Eat a good dinner with your family, and check your inbox tonight."}
+		]
+	await _play_bubble(august, august_lines)
 	character_data.ch3_interview_passed = true
 	if august and august.has_meta("interview_entry"):
 		august.remove_meta("interview_entry")
 	await _play_acceptance_placeholder()
 	await _transition_to_day_one()
 	_set_day1_quest()
-
-
-func _show_interview_card(title: String, body: String) -> void:
-	intro_layer.visible = true
-	intro_overlay.color.a = 0.96
-	scene_header.text = title
-	frame_placeholder.text = body + "\n\n[Press interact to continue]"
-	await get_tree().process_frame
-	if dialogue_box:
-		dialogue_box.start([{"name": "Narration", "text": "Take a moment to reflect on the evaluation, then return to the Meeting Room and try again."}])
-		await dialogue_box.dialogue_finished
-	intro_layer.visible = false
 
 
 func _show_interview_wait() -> void:
@@ -1734,6 +1787,9 @@ func _play_acceptance_placeholder() -> void:
 	if is_instance_valid(august):
 		august.global_position = AUGUST_INTERVIEW_POSITION
 		_set_august_facing("down")
+	_set_npc_facing(kenna, "down")
+	_set_npc_facing(ivana, "down")
+	_set_npc_facing(hanna, "down")
 	await _play_frame("CUT_04B", 1, "Chapter 4 — CUT_04B: Midnight Acceptance Email", "Player lies awake in bed in the dark bedroom at 11:42 PM. The silent smartphone rests on their chest.", [
 		{"name": "Narration", "text": "11:42 PM. You stare at the dark ceiling, clutching your phone against your chest. Every second feels like an eternity."}
 	])
@@ -1806,7 +1862,8 @@ func _welcome_player_on_day_one() -> void:
 			await item_popup.show_item(
 				"green_ojt_badge",
 				"Green OJT Badge",
-				"Grants access to Floor 1 Trainee Desks, QA & Design, and Sprint Meeting Room."
+				"Grants access to Floor 1 Trainee Desks, QA & Design, and Sprint Meeting Room.",
+				load("res://Textures/Items/color_green_ID_pixelart.png")
 			)
 	if is_instance_valid(kendra):
 		await _play_bubble(kendra, [
@@ -1844,11 +1901,13 @@ func _play_bubble(npc: Node2D, lines: Array) -> void:
 		bubble.name = "Ch3ChatBubble"
 		npc.add_child(bubble)
 	_set_room_indicator_visible(false)
+	if "suppress_player_unlock" in bubble:
+		bubble.suppress_player_unlock = sequence_running
 	bubble.start(lines)
 	await bubble.dialogue_finished
 	_set_room_indicator_visible(not sequence_running)
-	if player:
-		player.can_move = false
+	if player and not sequence_running:
+		player.can_move = true
 
 
 func _face_npc_toward_player(npc: Node2D) -> void:
@@ -1950,12 +2009,16 @@ func _close_inner_door_for_august() -> void:
 		door.set_badge_access_override(false)
 
 
-func _set_august_facing(direction: String) -> void:
-	if august == null:
+func _set_npc_facing(npc: Node2D, direction: String) -> void:
+	if npc == null:
 		return
-	var sprite := august.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
-	if sprite:
+	var sprite := npc.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation("idle_" + direction):
 		sprite.play("idle_" + direction)
+
+
+func _set_august_facing(direction: String) -> void:
+	_set_npc_facing(august, direction)
 
 
 func _fade_and_reset_august() -> void:

@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://ch3_new_recruit_npc"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/NewRecruitNPC.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_recruit"]
+radius = 12.0
+
+[node name="NewRecruitNPC" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "New Recruit"
+interaction_text = "Talk to New Recruit"
+dialogue_line_1 = "Um, excuse me... is this DJQ Corp? I'm here for the OJT technical interview..."
+dialogue_line_2 = "I've been holding onto this portfolio all morning. I'm really nervous about whether my skills are ready for a real company..."
+second_visit_dialogue = "I hope I do well in the technical interview. I really want to learn how real systems are built."
+reminder_dialogue = "Excuse me... is the interview room around here?"
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_recruit")

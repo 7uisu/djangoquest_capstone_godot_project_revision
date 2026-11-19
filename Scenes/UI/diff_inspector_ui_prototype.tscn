@@ -1,0 +1,182 @@
+[gd_scene format=3 uid="uid://jcmxksfopmvy"]
+
+[ext_resource type="Script" uid="uid://kxib47c3i21h" path="res://Scripts/Interactables/diff_inspector_ui_prototype.gd" id="1"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/reference_manual_dock_prototype.tscn" id="manual_scene"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.19, 0.22, 0.27, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="DiffInspectorUIPrototype" type="CanvasLayer" unique_id=2024027585]
+layer = 90
+script = ExtResource("1")
+
+[node name="Screen" type="Control" parent="." unique_id=1856032006]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen" unique_id=810784897]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen" unique_id=614958928]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Window" type="PanelContainer" parent="Screen/CenterContainer" unique_id=1133885120]
+custom_minimum_size = Vector2(960, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="Screen/CenterContainer/Window" unique_id=1026178575]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="MainVBox" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin" unique_id=1543226744]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox" unique_id=851177204]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header" unique_id=226008113]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.94, 0.96, 0.99, 1)
+theme_override_font_sizes/font_size = 21
+text = "GetHub  /  Review diff"
+
+[node name="ReferenceButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+text = "Engineering Manual"
+
+[node name="CloseButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Header" unique_id=1460817133]
+layout_mode = 2
+text = "Close"
+
+[node name="FileTitle" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox" unique_id=1330925593]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.47, 0.67, 0.91, 1)
+text = "student_portal/views.py"
+
+[node name="Body" type="HBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox" unique_id=133387539]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="LineScroll" type="ScrollContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body" unique_id=1495784964]
+custom_minimum_size = Vector2(650, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LineList" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body/LineScroll" unique_id=1248593816]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Side" type="VBoxContainer" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body" unique_id=1969867339]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LineInfo" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body/Side" unique_id=518750423]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "Select a line to inspect it."
+autowrap_mode = 3
+
+[node name="FlagButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body/Side" unique_id=5795231]
+layout_mode = 2
+text = "Flag as Bug"
+
+[node name="ReviewedButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body/Side" unique_id=964362682]
+layout_mode = 2
+text = "Mark Reviewed"
+
+[node name="Annotation" type="RichTextLabel" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox/Body/Side" unique_id=195156040]
+custom_minimum_size = Vector2(230, 100)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.78, 0.82, 0.87, 1)
+text = "Line annotations appear here."
+fit_content = true
+
+[node name="ResultLabel" type="Label" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox" unique_id=736238186]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.59, 0.65, 1)
+text = "Select a line, inspect its annotation, then flag the unsafe code."
+autowrap_mode = 3
+
+[node name="SubmitButton" type="Button" parent="Screen/CenterContainer/Window/WindowMargin/MainVBox" unique_id=1028623097]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Submit Review"
+
+[node name="AnnotationPopup" type="PopupPanel" parent="Screen" unique_id=693774377]
+size = Vector2i(420, 190)
+
+[node name="PopupMargin" type="MarginContainer" parent="Screen/AnnotationPopup" unique_id=1891565774]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 416.0
+offset_bottom = 186.0
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="PopupBox" type="VBoxContainer" parent="Screen/AnnotationPopup/PopupMargin" unique_id=176528200]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PopupAnnotationLabel" type="RichTextLabel" parent="Screen/AnnotationPopup/PopupMargin/PopupBox" unique_id=413826020]
+custom_minimum_size = Vector2(380, 100)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+
+[node name="DismissPopup" type="Button" parent="Screen/AnnotationPopup/PopupMargin/PopupBox" unique_id=1759689629]
+layout_mode = 2
+text = "Close annotation"
+
+[node name="ManualDockHost" type="HBoxContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 2
+z_index = 20
+
+[node name="ReferenceManualDockPrototype" parent="Screen/ManualDockHost" instance=ExtResource("manual_scene")]
+custom_minimum_size = Vector2(72, 520)
+start_opened = false
+manual_title = "Code Review Reference"
+rule_entries = [{"id":"REV-01","title":"Check ownership before trusting an ID","badge":"SECURITY","description":"A URL supplied student ID is not proof that the signed-in user owns the requested record.","bad_code":"StudentEnrollment.objects.filter(student_id=student_id).first()","good_code":"StudentEnrollment.objects.filter(student_id=student_id, student__user=request.user).first()"}]

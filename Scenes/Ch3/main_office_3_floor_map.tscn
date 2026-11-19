@@ -33,20 +33,31 @@
 [ext_resource type="PackedScene" uid="uid://dm4k87r3qaq2a" path="res://Scenes/Interactables/animated_locker_interactable.tscn" id="28_locker"]
 [ext_resource type="PackedScene" uid="uid://c8m2p5q1wx7r0" path="res://Scenes/Interactables/workstation_interactable.tscn" id="29_workstation"]
 [ext_resource type="PackedScene" path="res://Scenes/Interactables/Ch3/npc_kenna_louisa_arizobal.tscn" id="30_kenna"]
+[ext_resource type="PackedScene" path="res://Scenes/Interactables/npc_directory_interactable.tscn" id="31_staff_directory"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4tc6l"]
 texture = ExtResource("6_s8k8h")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
+0:0/0/y_sort_origin = 16
 1:0/0 = 0
+1:0/0/y_sort_origin = 16
 2:0/0 = 0
+2:0/0/y_sort_origin = 16
 3:0/0 = 0
+3:0/0/y_sort_origin = 16
 4:0/0 = 0
+4:0/0/y_sort_origin = 16
 5:0/0 = 0
+5:0/0/y_sort_origin = 16
 6:0/0 = 0
+6:0/0/y_sort_origin = 16
 7:0/0 = 0
+7:0/0/y_sort_origin = 16
 8:0/0 = 0
+8:0/0/y_sort_origin = 16
 9:0/0 = 0
+9:0/0/y_sort_origin = 16
 10:0/0 = 0
 10:0/0/y_sort_origin = 16
 11:0/0 = 0
@@ -151,17 +162,17 @@ texture_region_size = Vector2i(32, 32)
 10:7/0 = 0
 11:7/0 = 0
 0:8/0 = 0
-0:8/0/y_sort_origin = 15
+0:8/0/y_sort_origin = 16
 1:8/0 = 0
-1:8/0/y_sort_origin = 15
+1:8/0/y_sort_origin = 16
 2:8/0 = 0
-2:8/0/y_sort_origin = 15
+2:8/0/y_sort_origin = 16
 3:8/0 = 0
-3:8/0/y_sort_origin = 15
+3:8/0/y_sort_origin = 16
 4:8/0 = 0
-4:8/0/y_sort_origin = 15
+4:8/0/y_sort_origin = 16
 5:8/0 = 0
-5:8/0/y_sort_origin = 15
+5:8/0/y_sort_origin = 16
 6:8/0 = 0
 7:8/0 = 0
 8:8/0 = 0
@@ -189,26 +200,31 @@ texture_region_size = Vector2i(32, 32)
 8:9/0 = 0
 9:9/0 = 0
 10:9/0 = 0
+10:9/0/y_sort_origin = 16
 11:9/0 = 0
 14:9/0 = 0
 15:9/0 = 0
 0:10/0 = 0
-0:10/0/y_sort_origin = 15
+0:10/0/y_sort_origin = 16
 1:10/0 = 0
-1:10/0/y_sort_origin = 15
+1:10/0/y_sort_origin = 16
 2:10/0 = 0
-2:10/0/y_sort_origin = 15
+2:10/0/y_sort_origin = 16
 3:10/0 = 0
-3:10/0/y_sort_origin = 15
+3:10/0/y_sort_origin = 16
 4:10/0 = 0
-4:10/0/y_sort_origin = 15
+4:10/0/y_sort_origin = 16
 5:10/0 = 0
-5:10/0/y_sort_origin = 15
+5:10/0/y_sort_origin = 16
 6:10/0 = 0
 7:10/0 = 0
+7:10/0/y_sort_origin = 16
 8:10/0 = 0
+8:10/0/y_sort_origin = 16
 9:10/0 = 0
+9:10/0/y_sort_origin = 16
 10:10/0 = 0
+10:10/0/y_sort_origin = 16
 12:10/0 = 0
 13:10/0 = 0
 14:10/0 = 0
@@ -235,10 +251,15 @@ texture_region_size = Vector2i(32, 32)
 4:12/0 = 0
 5:12/0 = 0
 6:12/0 = 0
+6:12/0/y_sort_origin = 16
 7:12/0 = 0
+7:12/0/y_sort_origin = 16
 8:12/0 = 0
+8:12/0/y_sort_origin = 16
 9:12/0 = 0
+9:12/0/y_sort_origin = 16
 10:12/0 = 0
+10:12/0/y_sort_origin = 16
 11:12/0 = 0
 12:12/0 = 0
 13:12/0 = 0
@@ -267,7 +288,9 @@ texture_region_size = Vector2i(32, 32)
 7:14/0 = 0
 8:14/0 = 0
 9:14/0 = 0
+9:14/0/y_sort_origin = 16
 10:14/0 = 0
+10:14/0/y_sort_origin = 16
 11:14/0 = 0
 12:14/0 = 0
 14:14/0 = 0
@@ -480,8 +503,11 @@ texture_region_size = Vector2i(32, 32)
 11:28/0 = 0
 12:28/0 = 0
 13:28/0 = 0
+13:28/0/y_sort_origin = 16
 14:28/0 = 0
+14:28/0/y_sort_origin = 16
 15:28/0 = 0
+15:28/0/y_sort_origin = 16
 7:29/0 = 0
 8:29/0 = 0
 9:29/0 = 0
@@ -501,8 +527,11 @@ texture_region_size = Vector2i(32, 32)
 8:30/0 = 0
 9:30/0 = 0
 10:30/0 = 0
+10:30/0/y_sort_origin = 16
 11:30/0 = 0
+11:30/0/y_sort_origin = 16
 12:30/0 = 0
+12:30/0/y_sort_origin = 16
 13:30/0 = 0
 14:30/0 = 0
 15:30/0 = 0
@@ -522,8 +551,11 @@ texture_region_size = Vector2i(32, 32)
 14:31/0 = 0
 15:31/0 = 0
 10:32/0 = 0
+10:32/0/y_sort_origin = 16
 11:32/0 = 0
+11:32/0/y_sort_origin = 16
 12:32/0 = 0
+12:32/0/y_sort_origin = 16
 13:32/0 = 0
 14:32/0 = 0
 15:32/0 = 0
@@ -539,9 +571,9 @@ texture_region_size = Vector2i(32, 32)
 5:34/0 = 0
 7:34/0 = 0
 8:34/0 = 0
-8:34/0/y_sort_origin = 15
+8:34/0/y_sort_origin = 16
 9:34/0 = 0
-9:34/0/y_sort_origin = 15
+9:34/0/y_sort_origin = 16
 13:34/0 = 0
 14:34/0 = 0
 15:34/0 = 0
@@ -593,12 +625,19 @@ texture_region_size = Vector2i(32, 32)
 6:38/0 = 0
 7:38/0 = 0
 8:38/0 = 0
+8:38/0/y_sort_origin = 16
 9:38/0 = 0
+9:38/0/y_sort_origin = 16
 10:38/0 = 0
+10:38/0/y_sort_origin = 16
 11:38/0 = 0
+11:38/0/y_sort_origin = 16
 12:38/0 = 0
+12:38/0/y_sort_origin = 16
 13:38/0 = 0
+13:38/0/y_sort_origin = 16
 15:38/0 = 0
+15:38/0/y_sort_origin = 16
 1:39/0 = 0
 2:39/0 = 0
 3:39/0 = 0
@@ -623,13 +662,17 @@ texture_region_size = Vector2i(32, 32)
 12:40/0 = 0
 13:40/0 = 0
 15:40/0 = 0
+15:40/0/y_sort_origin = 16
 0:41/0 = 0
 1:41/0 = 0
 2:41/0 = 0
 3:41/0 = 0
 9:41/0 = 0
+9:41/0/y_sort_origin = 16
 11:41/0 = 0
+11:41/0/y_sort_origin = 16
 13:41/0 = 0
+13:41/0/y_sort_origin = 16
 14:41/0 = 0
 15:41/0 = 0
 1:42/0 = 0
@@ -824,14 +867,17 @@ y_sort_enabled = true
 tile_map_data = PackedByteArray("AAALAAUAAAAHADgAAAALAAYAAAAHADkAAAALAAcAAAAHADoAAAAPAAYAAAAGADkAAAAPAAcAAAAGADoAAAAEAPn/AAAIACsAAAAEAPr/AAAIACwAAAAFAPn/AAAJACsAAAAFAPr/AAAJACwAAAAAAPn/AAAIACsAAAAAAPr/AAAIACwAAAABAPn/AAAJACsAAAABAPr/AAAJACwAAAADAP3/AAAFABQAAAADAP7/AAAFABUAAAADAPr/AAAFABQAAAADAPv/AAAFABUAAAA=")
 
 [node name="OfficeObjects1" parent="." unique_id=1252109316 instance=ExtResource("5_4tc6l")]
+y_sort_enabled = true
 tile_map_data = PackedByteArray("AAAEAP3/AAAEAB4AAAAEAP7/AAAEAB8AAAAFAP3/AAAFAB4AAAAFAP7/AAAFAB8AAAAGAP3/AAAGAB4AAAAGAP7/AAAGAB8AAAD6//n/AAAJAAoAAAD6//r/AAAJAAsAAAD7//n/AAAKAAoAAAD7//r/AAAKAAsAAAD+//n/AAAJAAoAAAD+//r/AAAJAAsAAAD///n/AAAKAAoAAAD///r/AAAKAAsAAAAEAPr/AAAKABwAAAAEAPv/AAAKAB0AAAAFAPr/AAALABwAAAAFAPv/AAALAB0AAAAGAPr/AAAMABwAAAAGAPv/AAAMAB0AAAAAAPr/AAACABQAAAAAAPv/AAACABUAAAAAAPz/AAACABYAAAABAPr/AAADABQAAAABAPv/AAADABUAAAABAPz/AAADABYAAAACAPr/AAAEABQAAAACAPv/AAAEABUAAAD+//3/AAADAAYAAAD9//3/AAACAAYAAAD8//3/AAACAAYAAAD7//3/AAABAAYAAAD7//z/AAABAAQAAAD8//z/AAACAAQAAAD9//z/AAACAAQAAAD+//z/AAADAAQAAAD5//n/AAAGAAwAAAD5//r/AAAGAA0AAAD5//v/AAAGAA4AAAAfAPr/AAAGAAwAAAAfAPv/AAAGAA0AAAAfAPz/AAAGAA4AAAAqAPr/AAAHAAwAAAAqAPv/AAAHAA0AAAAqAPz/AAAHAA4AAAArAPr/AAAIAAwAAAArAPv/AAAIAA0AAAArAPz/AAAIAA4AAAAiAPr/AAAJAAwAAAAiAPv/AAAJAA0AAAAjAPr/AAAKAAwAAAAjAPv/AAAKAA0AAAAoAPr/AAAJAA4AAAAoAPv/AAAJAA8AAAApAPr/AAAKAA4AAAApAPv/AAAKAA8AAAAhAP7/AAALAAAAAAAhAAEAAAALAAIAAAApAAEAAAANAAIAAAApAP7/AAANAAAAAAApAP//AAANAAEAAAApAAAAAAANAAEAAAAhAP//AAALAAEAAAAhAAAAAAALAAEAAAAiAAEAAAAMAAIAAAAjAAEAAAAMAAIAAAAkAAEAAAAMAAIAAAAlAAEAAAAMAAIAAAAmAAEAAAAMAAIAAAAnAAEAAAAMAAIAAAAoAAEAAAAMAAIAAAAiAP7/AAAMAAAAAAAjAP7/AAAMAAAAAAAkAP7/AAAMAAAAAAAlAP7/AAAMAAAAAAAmAP7/AAAMAAAAAAAnAP7/AAAMAAAAAAAoAP7/AAAMAAAAAAAiAP//AAAMAAEAAAAjAP//AAAMAAEAAAAkAP//AAAMAAEAAAAlAP//AAAMAAEAAAAmAP//AAAMAAEAAAAnAP//AAAMAAEAAAAoAP//AAAMAAEAAAAoAAAAAAAMAAEAAAAnAAAAAAAMAAEAAAAmAAAAAAAMAAEAAAAlAAAAAAAMAAEAAAAkAAAAAAAMAAEAAAAjAAAAAAAMAAEAAAAiAAAAAAAMAAEAAAA=")
 tile_set = SubResource("TileSet_01vuh")
 
 [node name="OfficeObjects2" parent="." unique_id=1467283332 instance=ExtResource("5_4tc6l")]
+y_sort_enabled = true
 tile_map_data = PackedByteArray("AAAFAPr/AAAOABEAAAAFAPv/AAAOABIAAAAEAP3/AAAKABoAAAAEAP7/AAAKABsAAAAFAP3/AAALABoAAAAFAP7/AAALABsAAAAgAAAAAAAFAAgAAAAgAAEAAAAFAAkAAAAiAAEAAAABAAgAAAAiAAIAAAABAAkAAAAmAAEAAAABAAgAAAAmAAIAAAABAAkAAAAoAAEAAAABAAgAAAAoAAIAAAABAAkAAAAqAAAAAAAEAAgAAAAqAAEAAAAEAAkAAAA=")
 tile_set = SubResource("TileSet_01vuh")
 
 [node name="OfficeObjects3" parent="." unique_id=1649220688 instance=ExtResource("5_4tc6l")]
+y_sort_enabled = true
 tile_map_data = PackedByteArray("AAAFAPv/AAABAAgAAAAFAPz/AAABAAkAAAD6//z/AAAFAAoAAAD6//3/AAAFAAsAAAD8//3/AAABAAoAAAD8//7/AAABAAsAAAD+//3/AAABAAoAAAD+//7/AAABAAsAAAD8//z/AAAIACwAAAA=")
 tile_set = SubResource("TileSet_01vuh")
 
@@ -922,6 +968,9 @@ required_badge = "Green OJT Badge"
 [node name="YSortLayer" type="Node2D" parent="." unique_id=2047253618]
 y_sort_enabled = true
 
+[node name="NPCDirectoryInteractable" parent="YSortLayer" unique_id=1343382059 instance=ExtResource("31_staff_directory")]
+position = Vector2(320, 260)
+
 [node name="NPCKendraBarba" parent="YSortLayer" unique_id=1042378077 instance=ExtResource("16_kendra")]
 position = Vector2(607, 297)
 
@@ -937,13 +986,13 @@ y_sort_enabled = true
 position = Vector2(608, 482)
 
 [node name="Player" parent="YSortLayer" unique_id=833241429 instance=ExtResource("13_u21ej")]
-position = Vector2(607, 584)
+position = Vector2(607, 594)
 
 [node name="NPCAugustCreed" parent="YSortLayer" unique_id=468941276 instance=ExtResource("21_august")]
 position = Vector2(1077, -76)
 
 [node name="OfficeChairFacingUp" parent="YSortLayer" unique_id=1125566732 instance=ExtResource("27_office_chair")]
-position = Vector2(1168, 60)
+position = Vector2(1168, 72)
 
 [node name="NPCIvanaDanielaGabani" parent="YSortLayer" unique_id=2057335144 instance=ExtResource("22_ivana")]
 position = Vector2(1196, -77)

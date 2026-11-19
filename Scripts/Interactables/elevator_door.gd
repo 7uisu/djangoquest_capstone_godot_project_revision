@@ -10,6 +10,12 @@ extends Area2D
 ## Which floor is THIS elevator on? Must match one of the floor names below.
 @export var current_floor: String = "Ground Floor"
 
+## Optional per-floor scene overrides. If non-empty, replace the matching FLOORS entry.
+## Useful in template/sandbox scenes to redirect to template maps instead of story maps.
+@export_file("*.tscn") var override_ground_floor_scene: String = ""
+@export_file("*.tscn") var override_2nd_floor_scene: String = ""
+@export_file("*.tscn") var override_3rd_floor_scene: String = ""
+
 @onready var interaction_label: Label = $Label
 @onready var anim_sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var static_body: StaticBody2D = $StaticBody2D
@@ -106,9 +112,21 @@ func _open_floor_menu():
 	# Disable player movement while menu is open
 	_set_player_movement(false)
 
+	# Build floor list, applying any per-instance overrides
+	var floors := []
+	for entry in FLOORS:
+		var e: Dictionary = entry.duplicate()
+		if e["name"] == "Ground Floor" and override_ground_floor_scene != "":
+			e["scene"] = override_ground_floor_scene
+		elif e["name"] == "2nd Floor" and override_2nd_floor_scene != "":
+			e["scene"] = override_2nd_floor_scene
+		elif e["name"] == "3rd Floor" and override_3rd_floor_scene != "":
+			e["scene"] = override_3rd_floor_scene
+		floors.append(e)
+
 	_elevator_ui_instance = _elevator_ui_scene.instantiate()
 	get_tree().current_scene.add_child(_elevator_ui_instance)
-	_elevator_ui_instance.setup(FLOORS, current_floor)
+	_elevator_ui_instance.setup(floors, current_floor)
 	_elevator_ui_instance.floor_selected.connect(_on_floor_selected)
 	_elevator_ui_instance.cancelled.connect(_on_cancelled)
 

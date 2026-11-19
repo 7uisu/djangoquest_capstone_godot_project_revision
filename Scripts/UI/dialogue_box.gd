@@ -33,6 +33,9 @@ var _quest_hud: CanvasLayer
 var _room_indicator: Node
 var _room_indicator_layer: CanvasLayer
 var _room_indicator_was_visible := true
+## When true, _close() will NOT re-enable player movement.
+## Set by scripted cutscenes that manage player.can_move themselves.
+var suppress_player_unlock: bool = false
 
 signal choice_selected(choice_index: int)
 
@@ -253,8 +256,9 @@ func _close():
 	current_line_index = -1
 
 	_restore_walk_hud()
-	# Unfreeze the player
-	_set_player_can_move(true)
+	# Unfreeze the player only when no cutscene is managing movement externally.
+	if not suppress_player_unlock:
+		_set_player_can_move(true)
 
 	emit_signal("dialogue_finished")
 

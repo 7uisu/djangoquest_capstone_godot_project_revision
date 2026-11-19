@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://npc_mom_interactable"]
+
+[ext_resource type="PackedScene" uid="uid://b8y5bh6o8qf1n" path="res://Scenes/Interactables/dialogue_interactable.tscn" id="1_base"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Parents/Mom.png" id="2_texture"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_mom"]
+radius = 12.0
+
+[node name="NPCMom" instance=ExtResource("1_base")]
+y_sort_enabled = true
+npc_texture = ExtResource("2_texture")
+speaker_name = "Mom"
+dialogue_line_1 = "Congratulations, my dear! I knew you could do it!"
+dialogue_line_2 = "All those late nights studying and debugging... it was all worth it."
+second_visit_dialogue = "Make sure to take lots of pictures with everyone!"
+reminder_dialogue = "Don't forget to eat well and rest after all this hard work."
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." index="3"]
+collision_layer = 16
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" index="0"]
+y_sort_enabled = true
+position = Vector2(0, 9)
+shape = SubResource("CircleShape2D_mom")

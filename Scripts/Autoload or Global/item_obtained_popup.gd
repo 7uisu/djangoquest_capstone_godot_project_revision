@@ -15,9 +15,17 @@ var _is_showing := false
 var _close_requested := false
 
 
+const DEFAULT_ITEM_ICONS := {
+	"ojt_kit": "res://Textures/Items/internship_kit.png",
+	"green_ojt_badge": "res://Textures/Items/color_green_ID_pixelart.png",
+	"blue_junior_developer_badge": "res://Textures/Items/color_blue_ID_pixelart.png",
+}
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	if icon_texture:
+		icon_texture.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	continue_button.pressed.connect(_close_popup)
 	backdrop.gui_input.connect(_on_backdrop_gui_input)
 	card.gui_input.connect(_on_card_gui_input)
@@ -30,6 +38,10 @@ func show_item(
 	icon: Texture2D = null,
 	quantity: int = 1
 ) -> void:
+	if icon == null and DEFAULT_ITEM_ICONS.has(item_id):
+		var resolved_icon = load(DEFAULT_ITEM_ICONS[item_id])
+		if resolved_icon is Texture2D:
+			icon = resolved_icon
 	# Player input is blocked while this card is open, so normal gameplay cannot
 	# queue a second pickup. Keep a small guard for scripted rewards as well.
 	if _is_showing:

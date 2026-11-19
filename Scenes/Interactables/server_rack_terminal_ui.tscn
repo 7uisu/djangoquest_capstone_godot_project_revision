@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://Scripts/Interactables/server_rack_terminal_ui.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://Textures/NPC/Office_DjangoCorp_NPC_Sprites/Divino_Cinaon_Server_and_Network_Engineer.png" id="2_divino_texture"]
 
 [sub_resource type="StyleBoxFlat" id="WindowStyle"]
 bg_color = Color(0.035, 0.055, 0.075, 1)
@@ -38,9 +39,14 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="AtlasTexture" id="DivinoPortrait"]
+atlas = ExtResource("2_divino_texture")
+region = Rect2(576, 64, 32, 64)
+
 [node name="ServerRackTerminalUI" type="CanvasLayer"]
 layer = 120
 script = ExtResource("1_script")
+divino_portrait = SubResource("DivinoPortrait")
 
 [node name="Screen" type="Control" parent="."]
 layout_mode = 3
@@ -124,7 +130,13 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
-[node name="OutputLabel" type="RichTextLabel" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin"]
+[node name="OutputContent" type="VBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="OutputLabel" type="RichTextLabel" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.82, 0.87, 0.92, 1)
@@ -132,6 +144,63 @@ theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
 scroll_active = true
 text = "$ tail -f /var/log/django/production.log\n\n django.db.utils.ProgrammingError: column \"enrolled_at\" of relation \"student_enrollment\" does not exist\n\nThe production database schema is behind the application release. The login endpoint is returning HTTP 500."
+
+[node name="RootCauseSplit" type="HBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+visible = false
+
+[node name="GitBlamePanel" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="GitBlameMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit/GitBlamePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="GitBlameContent" type="VBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit/GitBlamePanel/GitBlameMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HistoryHeading" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit/GitBlamePanel/GitBlameMargin/GitBlameContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.73, 0.39, 1)
+theme_override_font_sizes/font_size = 13
+text = "Commit & Author History (git blame)"
+
+[node name="GitBlameLabel" type="RichTextLabel" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit/GitBlamePanel/GitBlameMargin/GitBlameContent"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.87, 0.92, 1)
+theme_override_font_sizes/normal_font_size = 13
+bbcode_enabled = false
+scroll_active = true
+
+[node name="MigrationStatusPanel" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MigrationStatusMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit/MigrationStatusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="MigrationStatusLabel" type="RichTextLabel" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/OutputPanel/OutputMargin/OutputContent/RootCauseSplit/MigrationStatusPanel/MigrationStatusMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.87, 0.92, 1)
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = false
+scroll_active = true
 
 [node name="CommandRow" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
 layout_mode = 2
@@ -154,13 +223,19 @@ theme_override_font_sizes/font_size = 15
 text = "console 2  ·  incident diagnostics"
 
 [node name="CommandLineEdit" type="LineEdit" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/CommandRow/CommandMargin/CommandRowContents"]
-custom_minimum_size = Vector2(550, 34)
+custom_minimum_size = Vector2(360, 34)
 size_flags_horizontal = 3
 layout_mode = 2
 theme_override_colors/font_color = Color(0.78, 0.91, 0.81, 1)
 theme_override_colors/font_placeholder_color = Color(0.42, 0.51, 0.47, 1)
 theme_override_font_sizes/font_size = 15
 placeholder_text = "Type the migration command..."
+
+[node name="QuickFillButton" type="Button" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox/CommandRow/CommandMargin/CommandRowContents"]
+custom_minimum_size = Vector2(130, 34)
+layout_mode = 2
+text = "Fill Command"
+visible = false
 
 [node name="HintLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/WindowVBox"]
 layout_mode = 2

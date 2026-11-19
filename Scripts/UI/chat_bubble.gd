@@ -27,6 +27,9 @@ var _quest_hud: CanvasLayer
 var _room_indicator: Node
 var _room_indicator_layer: CanvasLayer
 var _room_indicator_was_visible := true
+## When true, _close() will NOT re-enable player movement.
+## Set by scripted cutscenes that manage player.can_move themselves.
+var suppress_player_unlock: bool = false
 
 func _ready():
 	add_to_group("chat_bubble")
@@ -199,7 +202,8 @@ func _close():
 	current_line_index = -1
 
 	_restore_walk_hud()
-	_set_player_can_move(true)
+	if not suppress_player_unlock:
+		_set_player_can_move(true)
 	emit_signal("dialogue_finished")
 
 

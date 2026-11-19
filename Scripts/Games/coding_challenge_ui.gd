@@ -7,6 +7,32 @@ signal challenge_failed
 signal hint_used
 signal alt_tab_to_gethub
 
+@export_group("Guided Mission Steps")
+@export var guided_completed_prefix: String = "✓ "
+@export var guided_active_prefix: String = "▶ "
+@export var guided_pending_prefix: String = "○ "
+@export var guided_hint_button_label: String = "Show step hint"
+@export var guided_completed_title_color: Color = Color("7ee787")
+@export var guided_completed_description_color: Color = Color("8b949e")
+@export var guided_completed_background: Color = Color("13251c")
+@export var guided_completed_border: Color = Color("238636")
+@export var guided_active_title_color: Color = Color("f0f6fc")
+@export var guided_active_description_color: Color = Color("c9d1d9")
+@export var guided_active_background: Color = Color("161b22")
+@export var guided_active_border: Color = Color("1f6feb")
+@export var guided_active_glow_color: Color = Color(0.12, 0.43, 0.92, 0.45)
+@export_range(0, 16, 1) var guided_active_glow_size: int = 6
+@export_range(0, 8, 1) var guided_active_accent_width: int = 3
+@export var guided_pending_title_color: Color = Color("484f58")
+@export var guided_pending_description_color: Color = Color("484f58")
+@export var guided_pending_background: Color = Color("0d1117")
+@export var guided_pending_border: Color = Color("21262d")
+@export_range(8, 24, 1) var guided_title_font_size: int = 12
+@export_range(8, 24, 1) var guided_description_font_size: int = 11
+@export_range(0, 16, 1) var guided_row_padding: int = 8
+@export_range(0, 16, 1) var guided_row_separation: int = 4
+@export_range(0, 16, 1) var guided_row_corner_radius: int = 4
+
 # ─── Challenge Data ──────────────────────────────────────────────────────────
 var current_challenge: Dictionary = {}
 var selected_option: int = -1
@@ -39,6 +65,10 @@ var project_tree_panel: PanelContainer = null
 var terminal_prefix_label: Label = null
 var _active_file_name: String = ""
 var _file_buffers: Dictionary = {}
+var _guided_steps: Array[Dictionary] = []
+var _guided_step_rows: Array[Control] = []
+var _guided_completed: Array[bool] = []
+var _guided_action_history: Dictionary = {}
 const PREMIUM_HINT_INSTRUCTIONS := "You are a tutoring assistant. Give exactly 3 short, straight-to-the-point hints. Do NOT reveal the final answer or paste the full correct code. If the user is wrong, explain what concept to look at and what to change, in ≤ 2 sentences per hint. Use bullet points."
 
 # ─── Node References ─────────────────────────────────────────────────────────
@@ -317,6 +347,10 @@ func load_challenge(challenge: Dictionary) -> void:
 	_switch_to_ide_instant()
 	_setup_terminal()
 	_setup_file_tabs()
+	var initially_open_file := _active_file_name if not _active_file_name.is_empty() else str(current_challenge.get("file_name", ""))
+	if not initially_open_file.is_empty():
+		_record_guided_action("file_opened", initially_open_file)
+	_evaluate_active_step()
 	
 	# Initialize Tree
 	if current_challenge.has("project_tree"):
@@ -400,31 +434,42 @@ func _setup_mission_panel():
 	for child in steps_container.get_children():
 		child.queue_free()
 
-	# Add mission steps
-	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
-	var steps = current_challenge.get("mission_steps", [])
-	
+	# Interactive steps are authored on the ticket resource. Older challenges keep the legacy list.
+	_guided_steps.clear()
+	_guided_step_rows.clear()
+	_guided_completed.clear()
+	_guided_action_history.clear()
 	_current_why_text = ""
 	if why_button:
 		why_button.visible = false
-
-	var step_idx = 1
-	for i in range(steps.size()):
-		var step_text = steps[i]
-		if step_text.begins_with("Why:"):
-			_current_why_text = step_text.substr(4).strip_edges()
-			if why_button:
-				why_button.visible = true
-			continue
-
-		var step_label = Label.new()
-		step_label.text = str(step_idx) + ". " + step_text
-		step_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		step_label.add_theme_color_override("font_color", Color("abb2bf"))
-		step_label.add_theme_font_override("font", code_font)
-		step_label.add_theme_font_size_override("font_size", 12)
-		steps_container.add_child(step_label)
-		step_idx += 1
+	var code_font = preload("res://Textures/Fonts/JetBrainsMono/JetBrainsMono-Regular.ttf")
+	var authored_steps: Array = current_challenge.get("interactive_steps", [])
+	if not authored_steps.is_empty():
+		for step: Dictionary in authored_steps:
+			_guided_steps.append(step.duplicate(true))
+			_guided_completed.append(false)
+			var row := _create_guided_step_row(step, code_font)
+			_guided_step_rows.append(row)
+			steps_container.add_child(row)
+	else:
+		var steps = current_challenge.get("mission_steps", [])
+		var step_idx = 1
+		for i in range(steps.size()):
+			var step_text = steps[i]
+			if step_text.begins_with("Why:"):
+				_current_why_text = step_text.substr(4).strip_edges()
+				if why_button:
+					why_button.visible = true
+				continue
+			var step_label = Label.new()
+			step_label.text = str(step_idx) + ". " + step_text
+			step_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			step_label.add_theme_color_override("font_color", Color("abb2bf"))
+			step_label.add_theme_font_override("font", code_font)
+			step_label.add_theme_font_size_override("font_size", 12)
+			steps_container.add_child(step_label)
+			step_idx += 1
+	_evaluate_active_step()
 
 	# Office tickets use authored mentor guidance, not a generated AI answer.
 	var mentor_hint := str(current_challenge.get("mentor_hint", ""))
@@ -439,6 +484,134 @@ func _setup_mission_panel():
 	overflow_stack_button.visible = has_hint
 	if has_hint:
 		_update_overflow_button_label()
+
+
+func _create_guided_step_row(step: Dictionary, code_font: Font) -> PanelContainer:
+	var row := PanelContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", guided_row_separation)
+	var title := Label.new()
+	title.name = "StepTitle"
+	title.add_theme_font_override("font", code_font)
+	title.add_theme_font_size_override("font_size", guided_title_font_size)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var description := Label.new()
+	description.name = "StepDescription"
+	description.text = str(step.get("description", ""))
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	description.add_theme_font_size_override("font_size", guided_description_font_size)
+	content.add_child(title)
+	content.add_child(description)
+	var step_hint := str(step.get("hint", ""))
+	if not step_hint.is_empty():
+		var hint := Button.new()
+		hint.name = "StepHintButton"
+		hint.text = str(step.get("hint_button_label", guided_hint_button_label))
+		hint.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		hint.pressed.connect(_show_guided_step_hint.bind(step_hint))
+		content.add_child(hint)
+	row.add_child(content)
+	return row
+
+
+func _show_guided_step_hint(step_hint: String) -> void:
+	hint_label.text = step_hint
+	hint_label.visible = true
+
+
+func _record_guided_action(trigger: String, value: String = "") -> void:
+	if not _guided_action_history.has(trigger):
+		_guided_action_history[trigger] = []
+	var values: Array = _guided_action_history[trigger]
+	values.append(value)
+	_guided_action_history[trigger] = values
+	_evaluate_active_step()
+
+
+func _evaluate_active_step() -> void:
+	if _guided_steps.is_empty():
+		return
+	var first_pending := -1
+	var completed_a_step := false
+	for index in range(_guided_steps.size()):
+		if not _guided_completed[index] and _guided_step_is_satisfied(_guided_steps[index]):
+			_guided_completed[index] = true
+			completed_a_step = true
+		if first_pending == -1 and not _guided_completed[index]:
+			first_pending = index
+	for index in range(_guided_step_rows.size()):
+		var row := _guided_step_rows[index]
+		var content := row.get_child(0) as VBoxContainer
+		var title := content.get_node("StepTitle") as Label
+		var description := content.get_node("StepDescription") as Label
+		var step := _guided_steps[index]
+		var is_done := _guided_completed[index]
+		var is_active := index == first_pending
+		var state_prefix := guided_completed_prefix if is_done else (guided_active_prefix if is_active else guided_pending_prefix)
+		title.text = state_prefix + str(step.get("title", "Step %d" % (index + 1)))
+		description.visible = is_active or is_done
+		title.add_theme_color_override("font_color", guided_completed_title_color if is_done else (guided_active_title_color if is_active else guided_pending_title_color))
+		description.add_theme_color_override("font_color", guided_completed_description_color if is_done else (guided_active_description_color if is_active else guided_pending_description_color))
+		var style := StyleBoxFlat.new()
+		style.bg_color = guided_completed_background if is_done else (guided_active_background if is_active else guided_pending_background)
+		style.border_color = guided_completed_border if is_done else (guided_active_border if is_active else guided_pending_border)
+		style.set_border_width_all(1 if not is_active else 0)
+		if is_active:
+			style.border_width_left = guided_active_accent_width
+			style.shadow_color = guided_active_glow_color
+			style.shadow_size = guided_active_glow_size
+		style.set_corner_radius_all(guided_row_corner_radius)
+		style.set_content_margin_all(guided_row_padding)
+		row.add_theme_stylebox_override("panel", style)
+		var hint_button := row.find_child("StepHintButton", true, false) as Button
+		if hint_button:
+			hint_button.visible = is_active
+	if completed_a_step and keypad_sfx.stream and not keypad_sfx.playing:
+		keypad_sfx.play()
+	if first_pending >= 0:
+		call_deferred("_scroll_guided_step_into_view", first_pending)
+
+
+func _guided_step_is_satisfied(step: Dictionary) -> bool:
+	var trigger := str(step.get("trigger", ""))
+	var expected := str(step.get("validator_value", ""))
+	if trigger == "code_contains":
+		if expected.is_empty():
+			return false
+		var regex := RegEx.new()
+		var status := regex.compile(expected)
+		var source := _get_guided_source_text(str(step.get("validator_file", "")))
+		return source.contains(expected) if status != OK else regex.search(source) != null
+	var values: Array = _guided_action_history.get(trigger, [])
+	if values.is_empty():
+		return false
+	return expected.is_empty() or values.has(expected)
+
+
+func _get_guided_source_text(only_file: String = "") -> String:
+	if code_edit.visible and not _active_file_name.is_empty():
+		_file_buffers[_active_file_name] = code_edit.text
+	if free_type_edit.visible:
+		return free_type_edit.text
+	if not only_file.is_empty():
+		return str(_file_buffers.get(only_file, ""))
+	var sources: PackedStringArray = []
+	for source in _file_buffers.values():
+		sources.append(str(source))
+	if code_edit.visible and sources.is_empty():
+		return code_edit.text
+	return "\n".join(sources)
+
+
+func _scroll_guided_step_into_view(index: int) -> void:
+	if index < 0 or index >= _guided_step_rows.size():
+		return
+	var ancestor: Node = steps_container.get_parent()
+	while ancestor and not ancestor is ScrollContainer:
+		ancestor = ancestor.get_parent()
+	if ancestor is ScrollContainer:
+		(ancestor as ScrollContainer).ensure_control_visible(_guided_step_rows[index])
 
 func _setup_code_panel():
 	# File tab
@@ -802,7 +975,6 @@ func _setup_file_tabs():
 		first_file = false
 
 func _on_file_tab_pressed(file_name: String):
-	_play_click()
 	var files = current_challenge.get("files", {})
 	var content = files.get(file_name, "")
 	var topic = current_challenge.get("topic", "python")
@@ -876,6 +1048,7 @@ func _on_file_tab_pressed(file_name: String):
 				hover_style.bg_color = Color("2d3042")
 			child.add_theme_stylebox_override("hover", hover_style)
 			child.add_theme_stylebox_override("pressed", style)
+	_record_guided_action("file_opened", file_name)
 
 # Generate fake rendered website content for the browser preview
 func _get_browser_preview_content(challenge_id: String, correct_output: String) -> String:
@@ -1621,6 +1794,7 @@ func _on_free_type_changed():
 	# Enable run button when player has typed something (legacy TextEdit)
 	if (is_free_type or is_terminal) and not is_completed:
 		run_button.disabled = free_type_edit.text.strip_edges() == ""
+	_evaluate_active_step()
 
 func _on_code_edit_changed():
 	# Enable run button when player has typed something (CodeEdit)
@@ -1629,6 +1803,7 @@ func _on_code_edit_changed():
 			_file_buffers[_active_file_name] = code_edit.text
 		run_button.disabled = code_edit.text.strip_edges() == ""
 		_refresh_custom_browser_preview()
+	_evaluate_active_step()
 
 
 func _refresh_custom_browser_preview() -> void:
@@ -1766,6 +1941,7 @@ func _handle_server_result(result: Dictionary):
 	var output = result.get("output", "")
 
 	if is_correct:
+		_record_guided_action("run_executed", "success")
 		is_completed = true
 		timer_running = false
 		free_type_edit.editable = false
@@ -1915,6 +2091,7 @@ func _run_free_type_local(submission: Dictionary, expected_answers):
 
 	if is_correct:
 		# ── Correct: lock everything and show results ──
+		_record_guided_action("run_executed", "success")
 		is_completed = true
 		timer_running = false
 		free_type_edit.editable = false
@@ -2636,6 +2813,7 @@ func _switch_to_browser():
 	if _is_browser_visible:
 		return
 	_play_click()
+	_record_guided_action("preview_viewed")
 	_is_browser_visible = true
 	browser_screen.visible = true
 	# Hide results overlay so it stays on the IDE only

@@ -50,6 +50,8 @@ class_name GetHubTicket
 	"Keep the existing flex layout and make the cards wrap.",
 	"Run the checks, then return to GetHub and submit the ticket to QA."
 ]
+@export_category("Interactive Guided Steps")
+@export var interactive_steps: Array[Dictionary] = []
 @export_multiline var preview_before: String = "[center][b]STUDENT PORTAL · MOBILE 375 PX[/b][/center]\n\n[color=#8b949e]Dashboard cards[/color]\n\n[bgcolor=#3b2028][color=#ff7b72]  Attendance  →  Grades  →  Assignments  →[/color][/bgcolor]\n\n[color=#ff7b72]⚠ Horizontal overflow — content clipped[/color]"
 @export_multiline var preview_after: String = "[center][b]STUDENT PORTAL · MOBILE 375 PX[/b][/center]\n\n[color=#8b949e]Dashboard cards[/color]\n\n[bgcolor=#193528][color=#7ee787]  Attendance  ✓[/color][/bgcolor]\n\n[bgcolor=#193528][color=#7ee787]  Grades  ✓[/color][/bgcolor]\n\n[bgcolor=#193528][color=#7ee787]  Assignments  ✓[/color][/bgcolor]\n\n[color=#7ee787]✓ Cards wrap cleanly inside the viewport[/color]"
 
@@ -79,6 +81,7 @@ func build_challenge() -> Dictionary:
 		"project_tree": project_tree,
 		"expected_answers": [expected_code],
 		"mission_steps": mission_steps,
+		"interactive_steps": interactive_steps,
 		"hint": hint,
 		"mentor_name": mentor_name,
 		"mentor_hint": mentor_hint,

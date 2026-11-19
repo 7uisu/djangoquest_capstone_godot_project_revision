@@ -5,13 +5,25 @@ extends Node
 
 signal inventory_changed
 
+const DEFAULT_ICONS := {
+	"ojt_kit": "res://Textures/Items/internship_kit.png",
+	"green_ojt_badge": "res://Textures/Items/color_green_ID_pixelart.png",
+	"blue_junior_developer_badge": "res://Textures/Items/color_blue_ID_pixelart.png",
+}
+
 ## Each entry: { "id": String, "name": String, "description": String, "icon": Texture2D, "quantity": int }
 var items: Array = []
 
 ## Add an item (or stack if it already exists).
 func add_item(id: String, item_name: String, description: String = "", icon: Texture2D = null, quantity: int = 1):
+	if icon == null and DEFAULT_ICONS.has(id):
+		var tex = load(DEFAULT_ICONS[id])
+		if tex is Texture2D:
+			icon = tex
 	for item in items:
 		if item["id"] == id:
+			if item.get("icon") == null and icon != null:
+				item["icon"] = icon
 			item["quantity"] += quantity
 			emit_signal("inventory_changed")
 			return
@@ -50,6 +62,11 @@ func get_item_quantity(id: String) -> int:
 
 ## Return all items (read-only copy).
 func get_items() -> Array:
+	for item in items:
+		if item.get("icon") == null and DEFAULT_ICONS.has(item.get("id", "")):
+			var tex = load(DEFAULT_ICONS[item["id"]])
+			if tex is Texture2D:
+				item["icon"] = tex
 	return items.duplicate(true)
 
 ## Clear the entire inventory.

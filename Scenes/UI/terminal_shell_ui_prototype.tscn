@@ -1,0 +1,157 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Interactables/terminal_shell_ui_prototype.gd" id="1"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/reference_manual_dock_prototype.tscn" id="manual_scene"]
+
+[sub_resource type="StyleBoxFlat" id="WindowStyle"]
+bg_color = Color(0.055, 0.067, 0.086, 1)
+border_color = Color(0.19, 0.22, 0.27, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="TerminalShellUIPrototype" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TerminalWindow" type="PanelContainer" parent="Screen/CenterContainer"]
+custom_minimum_size = Vector2(960, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("WindowStyle")
+
+[node name="WindowMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="MainVBox" type="VBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 11
+
+[node name="Header" type="HBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.94, 0.96, 0.99, 1)
+theme_override_font_sizes/font_size = 21
+text = "DJQ  /  Production Console"
+
+[node name="ReferenceButton" type="Button" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+text = "Engineering Manual"
+
+[node name="Badge" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.86, 0.62, 1)
+text = "RUNBOOK MODE"
+
+[node name="OutputPanel" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 210)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="OutputMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/OutputPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="OutputView" type="RichTextLabel" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/OutputPanel/OutputMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.82, 0.86, 0.91, 1)
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+scroll_active = true
+text = "DJQ Production Console"
+
+[node name="RunbookTitle" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.87, 1)
+text = "Runbook quick actions"
+
+[node name="QuickCommandBar" type="HBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CommandRow" type="PanelContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox"]
+layout_mode = 2
+
+[node name="CommandMargin" type="MarginContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/CommandRow"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="CommandRowContents" type="HBoxContainer" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/CommandRow/CommandMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Prompt" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/CommandRow/CommandMargin/CommandRowContents"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.86, 0.62, 1)
+text = "djq-prod:$"
+
+[node name="CommandInput" type="LineEdit" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox/CommandRow/CommandMargin/CommandRowContents"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Type a command or use Tab completion..."
+
+[node name="HintLabel" type="Label" parent="Screen/CenterContainer/TerminalWindow/WindowMargin/MainVBox"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.62, 0.69, 1)
+text = "↑/↓ history  •  Tab autocomplete  •  Use a quick command if you want a hint."
+autowrap_mode = 3
+[node name="ManualDockHost" type="HBoxContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+alignment = 2
+z_index = 20
+
+[node name="ReferenceManualDockPrototype" parent="Screen/ManualDockHost" instance=ExtResource("manual_scene")]
+custom_minimum_size = Vector2(72, 520)
+start_opened = false
+manual_title = "Release Runbook"
+rule_entries = [{"id":"RUN-02","title":"Check schema migrations before restarting","badge":"DEVOPS","description":"When logs report a missing database column, inspect migration status and apply pending migrations before restarting services.","bad_code":"systemctl restart gunicorn","good_code":"python manage.py showmigrations"}]

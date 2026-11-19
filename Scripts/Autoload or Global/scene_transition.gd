@@ -21,7 +21,7 @@ func _ready():
 	color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer = 100
 
-func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, entry_dir: String = "up") -> void:
+func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, entry_dir: String = "up", fade_out_time: float = FADE_OUT_DURATION, fade_in_time: float = FADE_IN_DURATION) -> void:
 	_spawn_position = spawn_pos
 	_has_pending_spawn = spawn_pos != Vector2.ZERO
 	_spawn_direction = entry_dir
@@ -57,7 +57,7 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 
 	# --- Step 2: Fade to black with smooth ease ---
 	var fade_out = create_tween()
-	fade_out.tween_property(color_rect, "color:a", 1.0, FADE_OUT_DURATION).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	fade_out.tween_property(color_rect, "color:a", 1.0, fade_out_time).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
 	await fade_out.finished
 
 	# --- Step 3: Brief hold on black screen ---
@@ -90,7 +90,7 @@ func transition_to_scene(scene_path: String, spawn_pos: Vector2 = Vector2.ZERO, 
 
 	# --- Step 6: Fade back in with a smooth ease ---
 	var fade_in = create_tween()
-	fade_in.tween_property(color_rect, "color:a", 0.0, FADE_IN_DURATION).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	fade_in.tween_property(color_rect, "color:a", 0.0, fade_in_time).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
 	await fade_in.finished
 	scene_transition_finished.emit()
 

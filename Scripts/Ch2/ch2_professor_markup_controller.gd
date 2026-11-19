@@ -1654,25 +1654,32 @@ func _show_ojt_dialogue() -> void:
 	if player:
 		player.can_move = false
 
+	# ── College ending: thesis celebration + faculty send-off ────────────────
+	# This scene bridges directly into the office intro (job hunt / arrival).
+	# CUT_01 (office ground floor) starts AFTER this send-off, not before it.
 	dialogue_box.start([
 		{ "name": "Professor Markup", "text": "..." },
-		{ "name": "Professor Markup", "text": "You actually did it." },
-		{ "name": "Professor Markup", "text": "You defended your thesis." },
-		{ "name": "Professor Markup", "text": "I'll be honest — there were moments I wasn't sure you'd make it." },
-		{ "name": "Student", "text": "...neither was I." },
-		{ "name": "Professor Markup", "text": "But you did. And that's what matters." },
-		{ "name": "Professor Markup", "text": "As your adviser, I'm proud of you." },
-		{ "name": "Professor Markup", "text": "Now… there's one more thing." },
-		{ "name": "Professor Markup", "text": "Your [color=#f0c674]OJT[/color] — On-the-Job Training." },
-		{ "name": "Professor Markup", "text": "You'll be working at a real company. Applying everything you've learned." },
-		{ "name": "Professor Markup", "text": "But before that — make sure you don't have anything else to do here." },
+		{ "name": "Professor Markup", "text": "Take a breath." },
+		{ "name": "Professor Markup", "text": "The panel just signed the final defense sheet. You passed." },
+		{ "name": "Student", "text": "I... I can't believe it, sir. Four months of debugging that model... it feels surreal." },
+		{ "name": "Professor Markup", "text": "It is a milestone. Be proud of it. But the hardest part starts now." },
+		{ "name": "Student", "text": "The OJT requirement?" },
+		{ "name": "Professor Markup", "text": "In here is your official endorsement letter and your 300-hour checklist." },
+		{ "name": "Professor Markup", "text": "In this faculty room, if your code threw an unhandled exception, we deducted five points and gave you partial credit." },
+		{ "name": "Professor Markup", "text": "Out there, in the tech district — no one curves your grade." },
+		{ "name": "Professor Markup", "text": "If your backend leaks student records, real families get compromised. If your database crashes on exam day, thousands of students suffer." },
+		{ "name": "Professor Markup", "text": "I've seen top-of-the-class students get fired in their first week because they were too proud to ask questions." },
+		{ "name": "Professor Markup", "text": "And I've seen average students get hired because they knew how to listen, admit mistakes, and read the documentation." },
+		{ "name": "Student", "text": "I'll remember that, sir. I won't let you down." },
+		{ "name": "Professor Markup", "text": "Good." },
+		{ "name": "Professor Markup", "text": "But before you go — make sure you don't have anything else to do here." },
 		{ "name": "Professor Markup", "text": "Talk to your friends, revisit your lessons, explore the campus…" },
 		{ "name": "Professor Markup", "text": "Once you start your OJT, there's no coming back for a while." },
-		{ "name": "Professor Markup", "text": "After you finish your OJT, come back to me. I'll be waiting." },
-		{ "name": "Professor Markup", "text": "And then… [color=#f0c674]graduation[/color]." },
+		{ "name": "Professor Markup", "text": "After you finish, come back to me. I'll be waiting." },
+		{ "name": "Professor Markup", "text": "And then — [color=#f0c674]graduation[/color]." },
 		{
 			"name": "Professor Markup",
-			"text": "So — are you ready to proceed with your OJT?",
+			"text": "So — are you ready to find a company that will challenge you?",
 			"choices": ["Yes, let's go!", "Not yet, I want to explore more"]
 		}
 	])
@@ -1686,9 +1693,8 @@ func _on_ojt_choice_markup(choice_index: int) -> void:
 		# Yes — go to OJT
 		if dialogue_box:
 			dialogue_box.start([
-				{ "name": "Professor Markup", "text": "Alright. Head to the office — they're expecting you." },
-				{ "name": "Professor Markup", "text": "After your OJT, come back to me for [color=#f0c674]graduation[/color]." },
-				{ "name": "Professor Markup", "text": "Good luck out there." }
+				{ "name": "Professor Markup", "text": "Go. Find a company that will challenge you." },
+				{ "name": "Professor Markup", "text": "Go make our department proud." },
 			])
 			await dialogue_box.dialogue_finished
 

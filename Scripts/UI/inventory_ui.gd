@@ -58,6 +58,10 @@ func _create_slot(item: Dictionary) -> PanelContainer:
 	# Slot container
 	var slot = PanelContainer.new()
 	slot.custom_minimum_size = SLOT_SIZE
+	slot.size = SLOT_SIZE
+	slot.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	slot.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	slot.clip_contents = true
 
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.12, 0.12, 0.22, 0.85)
@@ -82,14 +86,31 @@ func _create_slot(item: Dictionary) -> PanelContainer:
 	icon_rect.custom_minimum_size = Vector2(32, 32)
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	if item.get("icon") is Texture2D:
-		icon_rect.texture = item["icon"]
+	icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	var item_icon = item.get("icon")
+	if item_icon == null:
+		var fallback_icons := {
+			"ojt_kit": "res://Textures/Items/internship_kit.png",
+			"green_ojt_badge": "res://Textures/Items/color_green_ID_pixelart.png",
+			"blue_junior_developer_badge": "res://Textures/Items/color_blue_ID_pixelart.png",
+		}
+		var item_id: String = item.get("id", "")
+		if fallback_icons.has(item_id):
+			var tex = load(fallback_icons[item_id])
+			if tex is Texture2D:
+				item_icon = tex
+	if item_icon is Texture2D:
+		icon_rect.texture = item_icon
 	vbox.add_child(icon_rect)
 
 	# Name
 	var name_label = Label.new()
 	name_label.text = item.get("name", "???")
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_label.custom_minimum_size = Vector2(SLOT_SIZE.x - 8, 0)
+	name_label.clip_text = true
 	name_label.add_theme_font_size_override("font_size", 10)
 	name_label.add_theme_color_override("font_color", Color(0.9, 0.92, 1.0))
 	vbox.add_child(name_label)

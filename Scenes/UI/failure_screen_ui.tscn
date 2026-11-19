@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3 uid="uid://failure_screen_ui_scene"]
+
+[ext_resource type="Script" path="res://Scripts/UI/failure_screen_ui.gd" id="1_fail_script"]
+
+[node name="FailureScreenUI" type="CanvasLayer"]
+layer = 120
+script = ExtResource("1_fail_script")
+
+[node name="Screen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.02, 0.03, 0.95)
+
+[node name="CenterContainer" type="CenterContainer" parent="Screen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Screen/CenterContainer"]
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Screen/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.25, 0.25, 1)
+theme_override_font_sizes/font_size = 36
+text = "OPPORTUNITY LOST"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="QuoteLabel" type="Label" parent="Screen/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.75, 0.55, 1)
+theme_override_font_sizes/font_size = 18
+text = "\"Bugs can be patched in minutes. Lost trust cannot.\""
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="Screen/CenterContainer/VBox"]
+layout_mode = 2
+
+[node name="DescriptionLabel" type="Label" parent="Screen/CenterContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1)
+theme_override_font_sizes/font_size = 15
+text = "You completed your OJT hours, but failed to earn the team's trust.\nIn software engineering, technical debt is inherited, but accountability is non-negotiable."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Spacer" type="Control" parent="Screen/CenterContainer/VBox"]
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+
+[node name="RetryButton" type="Button" parent="Screen/CenterContainer/VBox"]
+custom_minimum_size = Vector2(240, 44)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "↺  Retry Incident"

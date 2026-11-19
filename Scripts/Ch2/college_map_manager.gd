@@ -48,6 +48,26 @@ func _ready() -> void:
 	# Wait a frame so all sibling nodes are ready
 	await get_tree().process_frame
 	print("CollegeMapManager: Frame waited, setting up professors...")
+
+	# ── DEBUG: Skip all college challenges ──────────────────────────────
+	# @TODO: Set to false before final build
+	var DEBUG_SKIP_ALL_COLLEGE := true
+	if DEBUG_SKIP_ALL_COLLEGE and cd:
+		# Mark all professor lessons done
+		for flag in PROF_KEY_MAP.values():
+			cd.set(flag, true)
+		# Mark all student sequences done (progress = 5 means finished)
+		for prof_key in PROF_KEY_MAP.keys():
+			if not cd.student_seq_progress.has(prof_key):
+				cd.student_seq_progress[prof_key] = 0
+			cd.student_seq_progress[prof_key] = 5
+		cd.student_seq_active_professor = ""
+		# Mark thesis/panelists done
+		cd.thesis_panelist_progress = 3
+		cd.thesis_completed = true
+		cd.thesis_completed_at = Time.get_datetime_string_from_system()
+		print("CollegeMapManager: DEBUG_SKIP_ALL_COLLEGE — all flags set")
+	# ── END DEBUG ────────────────────────────────────────────────────────
 	_setup_professor_markup()
 	_setup_professor_syntax()
 	_setup_professor_view()
